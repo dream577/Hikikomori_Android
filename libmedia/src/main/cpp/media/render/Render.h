@@ -21,8 +21,6 @@ class Render {
 protected:
     RenderCallback *m_Callback;
 
-    virtual int unInit() = 0;
-
 public:
     Render(RenderCallback *callback) {
         m_Callback = callback;
@@ -33,6 +31,8 @@ public:
     }
 
     virtual int init() = 0;
+
+    virtual int unInit() = 0;
 
     virtual int destroy() = 0;
 

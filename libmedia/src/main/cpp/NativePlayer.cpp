@@ -3,7 +3,7 @@
 //
 
 #include <jni.h>
-#include "FFMediaPlayer.h"
+#include "VioletMediaPlayer.h"
 #include "LogUtil.h"
 
 extern "C"
@@ -37,7 +37,7 @@ Java_com_violet_libmedia_VioletMediaClient_native_1Init(JNIEnv *env, jobject thi
                                                         jint player_type, jint render_type,
                                                         jobject surface) {
     const char *path = env->GetStringUTFChars(url, nullptr);
-    MediaPlayer *player = new FFMediaPlayer();
+    MediaPlayer *player = new VioletMediaPlayer();
     player->Init(env, thiz, const_cast<char *>(path), 0, render_type, surface);
     env->ReleaseStringUTFChars(url, path);
     return reinterpret_cast<jlong>(player);
@@ -89,5 +89,43 @@ Java_com_violet_libmedia_VioletMediaClient_native_1seekToPosition(JNIEnv *env, j
     if (player_handle != 0) {
         MediaPlayer *player = reinterpret_cast<MediaPlayer *>(player_handle);
         player->SeekToPosition(position);
+    }
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_violet_libmedia_VioletMediaClient_native_1pnSurfaceCreated(JNIEnv *env, jobject thiz,
+                                                                    jlong player_handle) {
+    if (player_handle != 0) {
+        MediaPlayer *player = reinterpret_cast<MediaPlayer *>(player_handle);
+        VideoRender *render = player->GetVideoRender();
+        render->OnSurfaceCreated();
+    }
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_violet_libmedia_VioletMediaClient_native_1onSurfaceChanged(JNIEnv *env, jobject thiz,
+                                                                    jlong player_handle, jint w,
+                                                                    jint h) {
+    if (player_handle != 0) {
+        MediaPlayer *player = reinterpret_cast<MediaPlayer *>(player_handle);
+        VideoRender *videoRender = player->GetVideoRender();
+        if (videoRender) {
+            videoRender->OnSurfaceChanged(w, h);
+        }
+    }
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_violet_libmedia_VioletMediaClient_native_1onSurfaceDestroyed(JNIEnv *env, jobject thiz,
+                                                                      jlong player_handle) {
+    if (player_handle != 0) {
+        MediaPlayer *player = reinterpret_cast<MediaPlayer *>(player_handle);
+        VideoRender *videoRender = player->GetVideoRender();
+        if (videoRender) {
+            videoRender->OnSurfaceDestroyed();
+        }
     }
 }

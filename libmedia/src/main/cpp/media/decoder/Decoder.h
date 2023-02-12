@@ -11,8 +11,6 @@
 
 class DecoderCallback {
 public:
-    virtual void OnDecoderReady(int type) = 0;
-
     virtual void OnDecodeOneFrame(Frame *frame) = 0;
 
     virtual void OnSeekResult(int mediaType, bool result) = 0;
@@ -35,9 +33,9 @@ public:
 
     virtual int init() = 0;
 
-    virtual int destroy() = 0;
+    virtual int unInit() = 0;
 
-    virtual void decodingLoop() = 0;
+    virtual int destroy() = 0;
 
     virtual void startDecodeThread() = 0;
 
@@ -48,13 +46,9 @@ protected:
 
     AVMediaType m_MediaType = AVMEDIA_TYPE_UNKNOWN;
 
-    virtual int unInit() = 0;
-
     virtual int decode() = 0;
 
     virtual Frame *OnFrameAvailable() = 0;
-
-    virtual void onDecoderReady() {};
 
 private:
 };

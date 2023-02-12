@@ -58,6 +58,10 @@ public:
         m_MediaType = type;
     }
 
+    AVCodecContext *GetAVCodecContext() {
+        return m_AVCodecContext;
+    }
+
     virtual ~FFBaseDecoder();
 
     virtual int init() override;
@@ -68,7 +72,7 @@ public:
 
     virtual void seekPosition(float timestamp) override;
 
-    virtual void decodingLoop() override;
+    virtual void decodingLoop();
 
 };
 

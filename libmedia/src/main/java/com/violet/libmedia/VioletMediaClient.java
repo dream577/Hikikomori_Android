@@ -42,13 +42,25 @@ public class VioletMediaClient {
     }
 
     /**
-     * 定位到某个时间戳    todo 先pause再seek会有崩溃问题，待解决
+     * 定位到某个时间戳
      *
      * @param timestamp 单位：s
      */
     public void seekToPosition(float timestamp) {
         if (mNativePlayerHandle == 0) return;
         native_seekToPosition(mNativePlayerHandle, timestamp);
+    }
+
+    public void onSurfaceCreated() {
+        native_pnSurfaceCreated(mNativePlayerHandle);
+    }
+
+    public void onSurfaceChanged(int w, int h) {
+        native_onSurfaceChanged(mNativePlayerHandle, w, h);
+    }
+
+    public void onSurfaceDestroyed() {
+        native_onSurfaceDestroyed(mNativePlayerHandle);
     }
 
     private static native String native_GetFFmpegVersion();
@@ -64,4 +76,11 @@ public class VioletMediaClient {
     private native void native_stop(long playerHandle);
 
     private native void native_seekToPosition(long playerHandle, float position);
+
+    private native void native_pnSurfaceCreated(long playerHandle);
+
+    private native void native_onSurfaceChanged(long playerHandle, int w, int h);
+
+    private native void native_onSurfaceDestroyed(long playerHandle);
+
 }

@@ -1,7 +1,9 @@
 package com.violet.hikikomori;
 
 import android.Manifest;
+import android.nfc.Tag;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.View;
 
@@ -16,6 +18,7 @@ import pub.devrel.easypermissions.EasyPermissions;
 
 public class MainActivity extends AppCompatActivity implements SurfaceHolder.Callback, View.OnClickListener {
 
+    private final String TAG = MainActivity.class.getSimpleName();
     private ActivityMainBinding mBinding;
     private String path = "/storage/emulated/0/视频/[Airota][Fate stay night Heaven's Feel III.spring song][Movie][BDRip 1080p AVC AAC][CHS].mp4";
     private VioletMediaClient client;
@@ -51,14 +54,15 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
 
     @Override
     public void surfaceCreated(@NonNull SurfaceHolder holder) {
+        Log.d(TAG, "surfaceCreated time=" + System.currentTimeMillis());
         client = new VioletMediaClient();
         client.init(path, holder.getSurface());
-        client.play();
     }
 
     @Override
     public void surfaceChanged(@NonNull SurfaceHolder holder, int format, int width, int height) {
-
+        Log.d(TAG, "surfaceChanged time=" + System.currentTimeMillis());
+        client.onSurfaceChanged(width, height);
     }
 
     @Override
@@ -69,6 +73,9 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
+            case R.id.play:
+                client.play();
+                break;
             case R.id.pause:
                 client.pause();
                 break;

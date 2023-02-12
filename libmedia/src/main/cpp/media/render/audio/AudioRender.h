@@ -13,12 +13,7 @@ public:
 
     virtual ~AudioRender() {}
 
-    virtual int init() = 0;
-
     virtual void renderAudioFrame() = 0;
-
-protected:
-    virtual int unInit() = 0;
 };
 
 

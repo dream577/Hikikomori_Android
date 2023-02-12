@@ -23,6 +23,8 @@ public:
 
     virtual int init() override;
 
+    virtual int unInit() override;
+
     virtual int destroy() override;
 
     virtual void startRenderThread() override;
@@ -33,8 +35,6 @@ private:
     int createOutputMixer();
 
     int createAudioPlayer();
-
-    virtual int unInit() override;
 
     void startPlay();
 

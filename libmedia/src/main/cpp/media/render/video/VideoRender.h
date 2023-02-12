@@ -9,30 +9,26 @@
 
 class VideoRender : public Render {
 protected:
-    int m_RenderType = VIDEO_RENDER_UNKONWN;
     int m_VideoWidth, m_VideoHeight;
     int m_RenderWidth, m_RenderHeight;
+    int m_WindowWidth, m_WindowHeight;
 
 public:
     VideoRender(RenderCallback *callback) : Render(callback) {}
 
     virtual ~VideoRender() {}
 
-    virtual int init() = 0;
+    virtual void OnSurfaceCreated() = 0;
+
+    virtual void OnSurfaceChanged(int w, int h) = 0;
+
+    virtual void OnSurfaceDestroyed() = 0;
 
     virtual void renderVideoFrame(Frame *frame) = 0;
 
     void setVideoSize(int videoWidth, int videoHeight) {
         m_VideoWidth = videoWidth;
         m_VideoHeight = videoHeight;
-    }
-
-    int getRenderWidth() {
-        return m_RenderWidth;
-    }
-
-    int getRenderHeight() {
-        return m_RenderHeight;
     }
 };
 

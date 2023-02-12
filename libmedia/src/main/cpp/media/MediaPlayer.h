@@ -7,6 +7,12 @@
 
 #include "jni.h"
 #include "MediaDef.h"
+#include "VideoNativeRender.h"
+#include "OpenSLAudioRender.h"
+#include "AudioDecoder.h"
+#include "VideoDecoder.h"
+#include "MediaSync.h"
+#include "ThreadSafeQueue.h"
 
 class MediaPlayer {
 public:
@@ -29,12 +35,32 @@ public:
 
     virtual void SeekToPosition(float position) = 0;
 
+    VideoRender *GetVideoRender() {
+        return m_VideoRender;
+    }
+
+    AudioRender *GetAudioRender() {
+        return m_AudioRender;
+    }
+
 protected:
     JavaVM *m_JavaVM = nullptr;
 
     jobject m_JavaObj = nullptr;
 
     volatile PlayerState state = STATE_UNKNOWN;
+
+    VideoDecoder *m_VideoDecoder;
+    AudioDecoder *m_AudioDecoder;
+    VideoRender *m_VideoRender;
+    AudioRender *m_AudioRender;
+    MediaSync *m_AVSync;
+
+    mutex m_Mutex;
+    condition_variable m_Cond;
+
+    ThreadSafeQueue *m_VideoFrameQueue;
+    ThreadSafeQueue *m_AudioFrameQueue;
 };
 
 #endif //HIKIKOMORI_MEDIAPLAYER_H

@@ -19,18 +19,6 @@ VideoDecoder::~VideoDecoder() {
 
 int VideoDecoder::unInit() {
     LOGCATE("VideoDecoder::unInit start")
-    if (m_SwsContext) {
-        sws_freeContext(m_SwsContext);
-        m_SwsContext = nullptr;
-    }
-    if (m_FrameBuffer) {
-        free(m_FrameBuffer);
-        m_FrameBuffer = nullptr;
-    }
-    if (m_RGBAFrame) {
-        av_frame_free(&m_RGBAFrame);
-        m_RGBAFrame = nullptr;
-    }
     FFBaseDecoder::unInit();
     LOGCATE("VideoDecoder::unInit finish")
     return 0;
@@ -38,50 +26,46 @@ int VideoDecoder::unInit() {
 
 Frame *VideoDecoder::OnFrameAvailable() {
     LOGCATE("VideoDecoder::OnFrameAvailable")
-    Frame *frame = nullptr;
-    if (useNaiveWindow) {
-        AVRational timeBase = m_AVFormatContext->streams[m_StreamIndex]->time_base;
-        long dts = (long) ((m_AVFrame->pkt_dts * av_q2d(timeBase)) * 1000);
-        long pts = (long) ((m_AVFrame->pts * av_q2d(timeBase)) * 1000);
+    VideoFrame *frame = nullptr;
 
-        sws_scale(m_SwsContext, m_AVFrame->data, m_AVFrame->linesize, 0,
-                  m_VideoHeight, m_RGBAFrame->data, m_RGBAFrame->linesize);
+    AVRational timeBase = m_AVFormatContext->streams[m_StreamIndex]->time_base;
+    long dts = (long) ((m_AVFrame->pkt_dts * av_q2d(timeBase)) * 1000);
+    long pts = (long) ((m_AVFrame->pts * av_q2d(timeBase)) * 1000);
 
-        uint8_t *data = (uint8_t *) malloc(m_BufferSize);
-        memcpy(data, m_RGBAFrame->data[0], m_BufferSize);
+    if (m_AVCodecContext->pix_fmt == AV_PIX_FMT_YUV420P ||
+        m_AVCodecContext->pix_fmt == AV_PIX_FMT_YUVJ420P) {
+        frame = new VideoFrame();
 
-        uint8_t *yuvBuffer[3];
-        int planeSize[3] = {m_RGBAFrame->linesize[0], 0, 0};
-        yuvBuffer[0] = data;
-        yuvBuffer[1] = yuvBuffer[2] = nullptr;
-        frame = new VideoFrame(yuvBuffer, planeSize, m_RenderWidth, m_RenderHeight,
-                               dts, pts, VIDEO_FRAME_FORMAT_RGBA);
+        int yPlaneByteSize = m_AVFrame->width * m_AVFrame->height;
+        int uvPlaneByteSize = yPlaneByteSize / 4;
+
+        uint8_t *data0 = (uint8_t *) malloc(yPlaneByteSize);
+        uint8_t *data1 = (uint8_t *) malloc(uvPlaneByteSize);
+        uint8_t *data2 = (uint8_t *) malloc(uvPlaneByteSize);
+        memcpy(data0, m_AVFrame->data[0], yPlaneByteSize);
+        memcpy(data1, m_AVFrame->data[1], uvPlaneByteSize);
+        memcpy(data2, m_AVFrame->data[2], uvPlaneByteSize);
+
+        frame->format = VIDEO_FRAME_FORMAT_I420;
+        frame->width = m_AVFrame->width;
+        frame->height = m_AVFrame->height;
+        frame->yuvBuffer[0] = data0;
+        frame->yuvBuffer[1] = data1;
+        frame->yuvBuffer[2] = data2;
+        frame->planeSize[0] = m_AVFrame->linesize[0];
+        frame->planeSize[1] = m_AVFrame->linesize[1];
+        frame->planeSize[2] = m_AVFrame->linesize[2];
+        frame->dts = dts;
+        frame->pts = pts;
+
+        if (frame->yuvBuffer[0] && frame->yuvBuffer[1] && !frame->yuvBuffer[2] &&
+            frame->planeSize[0] == frame->planeSize[1] && frame->planeSize[2] == 0) {
+            // on some android device, output of h264 mediacodec decoder is NV12 兼容某些设备可能出现的格式不匹配问题
+            frame->format = VIDEO_FRAME_FORMAT_NV12;
+        }
         LOGCATE("VideoDecoder::OnFrameAvailable frame[w,h]=[%d,%d], [dts,pts]=[%ld,%ld], format=%d ,[line0,line1,line2]=[%d,%d,%d]",
-                m_RenderWidth, m_RenderHeight, dts, pts, m_AVCodecContext->pix_fmt,
-                planeSize[0],
-                planeSize[1], planeSize[2])
+                m_VideoWidth, m_VideoHeight, dts, pts, m_AVCodecContext->pix_fmt,
+                m_AVFrame->linesize[0], m_AVFrame->linesize[1], m_AVFrame->linesize[2])
     }
     return frame;
-}
-
-void VideoDecoder::startDecodeThread() {
-    LOGCATE("VideoDecoder::startDecodeThread")
-    FFBaseDecoder::startDecodeThread();
-}
-
-void VideoDecoder::onDecoderReady() {
-    Decoder::onDecoderReady();
-    if (useNaiveWindow) {
-        m_RGBAFrame = av_frame_alloc();
-        m_BufferSize = av_image_get_buffer_size(DST_PIXEL_FORMAT, m_RenderWidth, m_RenderHeight,1);
-
-        m_FrameBuffer = (uint8_t *) av_malloc(m_BufferSize * sizeof(uint8_t));
-
-        av_image_fill_arrays(m_RGBAFrame->data, m_RGBAFrame->linesize,
-                             m_FrameBuffer, DST_PIXEL_FORMAT, m_RenderWidth, m_RenderHeight, 1);
-
-        m_SwsContext = sws_getContext(m_VideoWidth, m_VideoHeight, m_AVCodecContext->pix_fmt,
-                                      m_RenderWidth, m_RenderHeight, DST_PIXEL_FORMAT,
-                                      SWS_BICUBIC, nullptr, nullptr, nullptr);
-    }
 }

@@ -2,23 +2,17 @@
 // Created by bronyna on 2023/2/5.
 //
 
-#ifndef HIKIKOMORI_FFMEDIAPLAYER_H
-#define HIKIKOMORI_FFMEDIAPLAYER_H
+#ifndef HIKIKOMORI_VIOLETMEDIAPLAYER_H
+#define HIKIKOMORI_VIOLETMEDIAPLAYER_H
 
 #include "MediaPlayer.h"
-#include "decoder/video/VideoDecoder.h"
-#include "decoder/audio/AudioDecoder.h"
-#include "OpenSLAudioRender.h"
-#include "NativeVideoRender.h"
-#include "MediaSync.h"
-#include "ThreadSafeQueue.h"
 
-class FFMediaPlayer : public MediaPlayer, public DecoderCallback, public RenderCallback {
+class VioletMediaPlayer : public MediaPlayer, public DecoderCallback, public RenderCallback {
 
 public:
-    FFMediaPlayer() {};
+    VioletMediaPlayer() {};
 
-    virtual ~FFMediaPlayer();
+    virtual ~VioletMediaPlayer();
 
     virtual int Init(JNIEnv *jniEnv, jobject obj, char *url, int decodeType,
                      int renderType, jobject surface) override;
@@ -35,8 +29,6 @@ public:
 
     virtual Frame *GetOneFrame(int type) override;
 
-    virtual void OnDecoderReady(int type) override;
-
     virtual void OnDecodeOneFrame(Frame *frame) override;
 
     virtual void OnSeekResult(int mediaType, bool result) override;
@@ -50,17 +42,10 @@ protected:
     virtual int UnInit() override;
 
 private:
-    Decoder *m_VideoDecoder;
-    Decoder *m_AudioDecoder;
-    Render *m_VideoRender;
-    Render *m_AudioRender;
-    MediaSync *m_AVSync;
 
-    mutex m_Mutex;
-    condition_variable m_Cond;
+    int initAudioPlayer(char *url);
 
-    ThreadSafeQueue *m_VideoFrameQueue;
-    ThreadSafeQueue *m_AudioFrameQueue;
+    int initVideoPlayer(JNIEnv *jniEnv, jobject surface, char *url);
 
     void unInitAudioPlayer();
 
@@ -69,4 +54,4 @@ private:
 };
 
 
-#endif //HIKIKOMORI_FFMEDIAPLAYER_H
+#endif //HIKIKOMORI_VIOLETMEDIAPLAYER_H

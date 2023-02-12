@@ -7,6 +7,7 @@ include_directories(
         include
         glm
         media
+        media/egl
         media/common
         media/decoder
         media/decoder/audio
@@ -23,7 +24,6 @@ include_directories(
 
 file(GLOB src-files
         ${CMAKE_SOURCE_DIR}/*cpp
-        ${CMAKE_SOURCE_DIR}/NativePlayer.cpp
         ${CMAKE_SOURCE_DIR}/media/*cpp
         ${CMAKE_SOURCE_DIR}/media/decoder/*cpp
         ${CMAKE_SOURCE_DIR}/media/decoder/audio/*cpp
@@ -35,6 +35,7 @@ file(GLOB src-files
         ${CMAKE_SOURCE_DIR}/media/output/*cpp
         ${CMAKE_SOURCE_DIR}/media/queue/*cpp
         ${CMAKE_SOURCE_DIR}/media/sync/*cpp
+        ${CMAKE_SOURCE_DIR}/media/util/*cpp
         )
 
 add_library( # Sets the name of the library.

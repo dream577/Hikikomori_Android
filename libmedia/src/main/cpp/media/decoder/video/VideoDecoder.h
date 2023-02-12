@@ -15,24 +15,11 @@ extern "C" {
 
 class VideoDecoder : public FFBaseDecoder {
 private:
-    AVPixelFormat DST_PIXEL_FORMAT = AV_PIX_FMT_RGBA;
-
     bool useNaiveWindow = true;
 
     int m_VideoWidth, m_VideoHeight;
-    int m_RenderWidth, m_RenderHeight;
-
-    AVFrame *m_RGBAFrame = nullptr;
-    uint8_t *m_FrameBuffer = nullptr;
-    int m_BufferSize = 0;
-
-    SwsContext *m_SwsContext = nullptr;
-
-    virtual void startDecodeThread() override;
 
     Frame *OnFrameAvailable() override;
-
-    virtual void onDecoderReady() override;
 
 public:
     VideoDecoder(char *path, bool useNativeWindow, DecoderCallback *callback)
@@ -52,11 +39,6 @@ public:
 
     int getVideoHeight() {
         return m_VideoHeight;
-    }
-
-    void setRenderSize(int renderWidth, int renderHeight) {
-        m_RenderWidth = renderWidth;
-        m_RenderHeight = renderHeight;
     }
 };
 

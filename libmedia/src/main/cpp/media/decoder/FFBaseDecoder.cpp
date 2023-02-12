@@ -137,19 +137,12 @@ void FFBaseDecoder::DoAVDecoding(FFBaseDecoder *decoder) {
 
 void FFBaseDecoder::decodingLoop() {
     LOGCATE("FFBaseDecoder::decodingLoop");
-    do {
-        if (init() != 0) {
-            break;
+    for (;;) {
+        while (m_Callback->GetPlayerState() == STATE_PAUSE) {
+            this_thread::sleep_for(std::chrono::milliseconds(10));
         }
-        m_Callback->OnDecoderReady(m_MediaType);
-        onDecoderReady();
-        for (;;) {
-            while (m_Callback->GetPlayerState() == STATE_PAUSE) {
-                this_thread::sleep_for(std::chrono::milliseconds(10));
-            }
-            if (decode() != 0 || m_Callback->GetPlayerState() == STATE_STOP) break;
-        }
-    } while (false);
+        if (decode() != 0 || m_Callback->GetPlayerState() == STATE_STOP) break;
+    }
 }
 
 int FFBaseDecoder::decode() {

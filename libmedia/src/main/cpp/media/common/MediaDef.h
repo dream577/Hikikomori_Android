@@ -28,6 +28,7 @@
 #define MAX_VIDEO_QUEUE_SIZE   5
 
 enum PlayerState {
+    STATE_ERROR = -1,
     STATE_UNKNOWN = 0,
     STATE_PLAYING,
     STATE_PAUSE,
@@ -40,6 +41,8 @@ public:
     long pts;
     int type;
     int format;
+
+    Frame() {};
 
     Frame(long dts, long pts, int type, int format) {
         Frame::dts = dts;
@@ -57,6 +60,8 @@ public:
     int dataSize;
     int channels;
     int sampleRate;
+
+    AudioFrame() : Frame() { type = MEDIA_TYPE_AUDIO; }
 
     AudioFrame(uint8_t *data, int dataSize, int channels, int sampleRate, long dts, long pts,
                int format) : Frame(dts, pts, MEDIA_TYPE_AUDIO, format) {
@@ -80,6 +85,8 @@ public:
     int planeSize[3];
     int width;
     int height;
+
+    VideoFrame() : Frame() { type = MEDIA_TYPE_VIDEO; };
 
     VideoFrame(uint8_t *yuvBuffer[3], int planeSize[3], int width, int height, long dts, long pts,
                int format)
