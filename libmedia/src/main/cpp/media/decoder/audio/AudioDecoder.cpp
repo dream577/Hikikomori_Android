@@ -68,9 +68,7 @@ int AudioDecoder::init() {
 }
 
 int AudioDecoder::unInit() {
-    LOGCATE("AudioDecoder::unInit");
-    FFBaseDecoder::unInit();
-
+    LOGCATE("AudioDecoder::unInit start");
     if (m_AudioOutBuffer) {
         delete m_AudioOutBuffer;
         m_AudioOutBuffer = nullptr;
@@ -80,9 +78,13 @@ int AudioDecoder::unInit() {
         swr_free(&m_SwrContext);
         m_SwrContext = nullptr;
     }
+
+    FFBaseDecoder::unInit();
+
+    LOGCATE("AudioDecoder::unInit finish");
     return 0;
 }
 
 AudioDecoder::~AudioDecoder() {
-    AudioDecoder::unInit();
+//    AudioDecoder::unInit();
 }

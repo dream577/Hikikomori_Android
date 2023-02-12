@@ -42,11 +42,13 @@ protected:
 
     AVMediaType m_MediaType = AVMEDIA_TYPE_UNKNOWN;
 
-    long m_SeekPosition = -1;                         // seek position
+    volatile float m_SeekPosition = -1;                         // seek position
 
-    static void DoAVDecoding(Decoder *decode);
+    static void DoAVDecoding(FFBaseDecoder *decode);
 
     virtual int decode() override;
+
+    virtual int unInit() override;
 
 public:
 
@@ -60,11 +62,13 @@ public:
 
     virtual int init() override;
 
-    virtual int unInit() override;
+    virtual int destroy() override;
 
     virtual void startDecodeThread() override;
 
-    virtual void DecodingLoop() override;
+    virtual void seekPosition(float timestamp) override;
+
+    virtual void decodingLoop() override;
 
 };
 

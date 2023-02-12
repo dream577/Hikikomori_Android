@@ -26,19 +26,22 @@ public:
 
     virtual int init() override;
 
-    virtual int unInit() override;
-
-    virtual void renderVideoFrame(Frame *frame) override;
+    virtual int destroy() override;
 
     virtual void startRenderThread() override;
 
-    static void StartRenderLoop(NativeVideoRender *render);
-
-    void doRenderLoop();
+protected:
+    virtual int unInit() override;
 
 private:
     ANativeWindow_Buffer m_NativeWindowBuffer;
     ANativeWindow *m_NativeWindow = nullptr;
+
+    virtual void renderVideoFrame(Frame *frame) override;
+
+    static void StartRenderLoop(NativeVideoRender *render);
+
+    void doRenderLoop();
 
     thread *m_thread = nullptr;
 };

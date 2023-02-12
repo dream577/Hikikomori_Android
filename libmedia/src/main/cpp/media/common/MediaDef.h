@@ -5,9 +5,11 @@
 #ifndef HIKIKOMORI_MEDIADEF_H
 #define HIKIKOMORI_MEDIADEF_H
 
-// 帧类型
-#define FRAME_TYPE_AUDIO 0x00
-#define FRAME_TYPE_VIDEO 0x01
+#include "libavutil/avutil.h"
+
+
+#define MEDIA_TYPE_VIDEO 0x00
+#define MEDIA_TYPE_AUDIO 0x01
 
 // 视频帧类型
 #define VIDEO_FRAME_FORMAT_RGBA           0x01
@@ -57,7 +59,7 @@ public:
     int sampleRate;
 
     AudioFrame(uint8_t *data, int dataSize, int channels, int sampleRate, long dts, long pts,
-               int format) : Frame(dts, pts, FRAME_TYPE_AUDIO, format) {
+               int format) : Frame(dts, pts, MEDIA_TYPE_AUDIO, format) {
         AudioFrame::data = data;
         AudioFrame::dataSize = dataSize;
         AudioFrame::channels = channels;
@@ -81,7 +83,7 @@ public:
 
     VideoFrame(uint8_t *yuvBuffer[3], int planeSize[3], int width, int height, long dts, long pts,
                int format)
-            : Frame(dts, pts, FRAME_TYPE_VIDEO, format) {
+            : Frame(dts, pts, MEDIA_TYPE_VIDEO, format) {
         for (int i = 0; i < 3; i++) {
             VideoFrame::yuvBuffer[i] = yuvBuffer[i];
             VideoFrame::planeSize[i] = planeSize[i];

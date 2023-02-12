@@ -21,7 +21,7 @@ class ThreadSafeQueue {
 public:
     ThreadSafeQueue();
 
-    ThreadSafeQueue(int maxSize);
+    ThreadSafeQueue(int maxSize, int type);
 
     ~ThreadSafeQueue();
 
@@ -47,6 +47,8 @@ public:
 
     void flush();
 
+    void clearCache();
+
     void start();
 
 private:
@@ -55,6 +57,8 @@ private:
     mutex m_Mutex;
 
     condition_variable m_CondVar;
+
+    int m_MediaType = 0;
 
     int m_Size;
 

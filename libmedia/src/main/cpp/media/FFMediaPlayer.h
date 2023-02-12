@@ -23,8 +23,6 @@ public:
     virtual int Init(JNIEnv *jniEnv, jobject obj, char *url, int decodeType,
                      int renderType, jobject surface) override;
 
-    virtual int UnInit() override;
-
     virtual void Play() override;
 
     virtual void Pause() override;
@@ -41,9 +39,15 @@ public:
 
     virtual void OnDecodeOneFrame(Frame *frame) override;
 
+    virtual void OnSeekResult(int mediaType, bool result) override;
+
     virtual int GetPlayerState() override;
 
     virtual void SetPlayerState(PlayerState state) override;
+
+protected:
+
+    virtual int UnInit() override;
 
 private:
     Decoder *m_VideoDecoder;
@@ -54,7 +58,6 @@ private:
 
     mutex m_Mutex;
     condition_variable m_Cond;
-    thread *m_Thread = nullptr;
 
     ThreadSafeQueue *m_VideoFrameQueue;
     ThreadSafeQueue *m_AudioFrameQueue;

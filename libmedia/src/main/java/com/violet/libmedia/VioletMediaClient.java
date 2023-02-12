@@ -18,15 +18,37 @@ public class VioletMediaClient {
     }
 
     public void play() {
+        if (mNativePlayerHandle == 0) return;
         native_Play(mNativePlayerHandle);
     }
 
     public void pause() {
+        if (mNativePlayerHandle == 0) return;
         native_pause(mNativePlayerHandle);
     }
 
+    /**
+     * 处于暂停状态时使用该方法恢复播放，暂停时调用play方法不会生效
+     */
     public void resume() {
+        if (mNativePlayerHandle == 0) return;
         native_resume(mNativePlayerHandle);
+    }
+
+    public void stop() {
+        if (mNativePlayerHandle == 0) return;
+        native_stop(mNativePlayerHandle);
+        mNativePlayerHandle = 0;
+    }
+
+    /**
+     * 定位到某个时间戳    todo 先pause再seek会有崩溃问题，待解决
+     *
+     * @param timestamp 单位：s
+     */
+    public void seekToPosition(float timestamp) {
+        if (mNativePlayerHandle == 0) return;
+        native_seekToPosition(mNativePlayerHandle, timestamp);
     }
 
     private static native String native_GetFFmpegVersion();
@@ -38,4 +60,8 @@ public class VioletMediaClient {
     private native void native_pause(long playerHandle);
 
     private native void native_resume(long playerHandle);
+
+    private native void native_stop(long playerHandle);
+
+    private native void native_seekToPosition(long playerHandle, float position);
 }

@@ -15,6 +15,8 @@ public:
 
     virtual void OnDecodeOneFrame(Frame *frame) = 0;
 
+    virtual void OnSeekResult(int mediaType, bool result) = 0;
+
     virtual int GetPlayerState() = 0;
 
     virtual void SetPlayerState(PlayerState state) = 0;
@@ -33,16 +35,20 @@ public:
 
     virtual int init() = 0;
 
-    virtual int unInit() = 0;
+    virtual int destroy() = 0;
 
-    virtual void DecodingLoop() = 0;
+    virtual void decodingLoop() = 0;
 
     virtual void startDecodeThread() = 0;
+
+    virtual void seekPosition(float timestamp) = 0;
 
 protected:
     DecoderCallback *m_Callback;
 
     AVMediaType m_MediaType = AVMEDIA_TYPE_UNKNOWN;
+
+    virtual int unInit() = 0;
 
     virtual int decode() = 0;
 

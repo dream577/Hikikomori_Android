@@ -15,94 +15,130 @@ int FFMediaPlayer::Init(JNIEnv *jniEnv, jobject obj, char *url, int decodeType,
 
     m_AudioDecoder = new AudioDecoder(url, this);
     m_AudioRender = new OpenSLAudioRender(this);
-    m_AudioFrameQueue = new ThreadSafeQueue(MAX_AUDIO_QUEUE_SIZE);
+    m_AudioFrameQueue = new ThreadSafeQueue(MAX_AUDIO_QUEUE_SIZE, MEDIA_TYPE_AUDIO);
 
     m_VideoDecoder = new VideoDecoder(url, true, this);
     m_VideoRender = new NativeVideoRender(jniEnv, surface, this);
-    m_VideoFrameQueue = new ThreadSafeQueue(MAX_VIDEO_QUEUE_SIZE);
+    m_VideoFrameQueue = new ThreadSafeQueue(MAX_VIDEO_QUEUE_SIZE, MEDIA_TYPE_VIDEO);
 
     m_AVSync = new MediaSync();
     return result;
 }
 
 Frame *FFMediaPlayer::GetOneFrame(int type) {
-    Frame *frame;
-    if (type == FRAME_TYPE_VIDEO) {
+    LOGCATE("FFMediaPlayer::GetOneFrame, MediaType=%d", type)
+    Frame *frame = nullptr;
+    if (GetPlayerState() == STATE_STOP) return frame;
+    if (type == MEDIA_TYPE_VIDEO) {
         frame = m_VideoFrameQueue->poll();
-        m_AVSync->videoSyncToSystemClock(frame->dts, frame->pts);
+        if (frame) m_AVSync->videoSyncToSystemClock(frame->pts);
     } else {
         frame = m_AudioFrameQueue->poll();
-        m_AVSync->audioSyncToSystemClock(frame->dts, frame->pts);
+        if (frame) m_AVSync->audioSyncToSystemClock(frame->pts);
     }
     return frame;
 }
 
 int FFMediaPlayer::UnInit() {
+    LOGCATE("FFMediaPlayer::UnInit")
     unInitAudioPlayer();
     unInitVideoPlayer();
     return 0;
 }
 
 FFMediaPlayer::~FFMediaPlayer() {
-    FFMediaPlayer::UnInit();
+//    FFMediaPlayer::UnInit();
 }
 
 void FFMediaPlayer::unInitAudioPlayer() {
+    LOGCATE("FFMediaPlayer::unInitAudioPlayer")
+    if (m_AudioFrameQueue) {
+        m_AudioFrameQueue->abort();
+    }
     if (m_AudioDecoder) {
-        m_AudioDecoder->unInit();
+        m_AudioDecoder->destroy();
         delete m_AudioDecoder;
         m_AudioDecoder = nullptr;
-    }
-    if (m_AudioRender) {
-        m_AudioRender->unInit();
-        delete m_AudioRender;
-        m_AudioRender = nullptr;
     }
     if (m_AudioFrameQueue) {
         delete m_AudioFrameQueue;
         m_AudioFrameQueue = nullptr;
     }
+    if (m_AudioRender) {
+        m_AudioRender->destroy();
+        delete m_AudioRender;
+        m_AudioRender = nullptr;
+    }
 }
 
 void FFMediaPlayer::unInitVideoPlayer() {
+    LOGCATE("FFMediaPlayer::unInitVideoPlayer")
+    if (m_VideoFrameQueue) {
+        m_VideoFrameQueue->abort();
+    }
     if (m_VideoDecoder) {
-        m_VideoDecoder->unInit();
+        m_VideoDecoder->destroy();
         delete m_VideoDecoder;
         m_VideoDecoder = nullptr;
     }
-
-    if (m_VideoRender) {
-        m_VideoRender->unInit();
-        delete m_VideoRender;
-        m_VideoRender = nullptr;
-    }
-
     if (m_VideoFrameQueue) {
         delete m_VideoFrameQueue;
         m_VideoFrameQueue = nullptr;
     }
+    if (m_VideoRender) {
+        m_VideoRender->destroy();
+        delete m_VideoRender;
+        m_VideoRender = nullptr;
+    }
 }
 
 void FFMediaPlayer::Play() {
+    LOGCATE("FFMediaPlayer::Play")
+    if (GetPlayerState() != STATE_UNKNOWN) return;
     SetPlayerState(STATE_PLAYING);
     m_AudioDecoder->startDecodeThread();
     m_VideoDecoder->startDecodeThread();
 }
 
 void FFMediaPlayer::Pause() {
+    LOGCATE("FFMediaPlayer::Pause")
+    if (GetPlayerState() != STATE_PLAYING) return;
     SetPlayerState(STATE_PAUSE);
 }
 
 void FFMediaPlayer::Resume() {
+    LOGCATE("FFMediaPlayer::Resume")
+    if (GetPlayerState() != STATE_PAUSE) return;
+    if (m_AVSync) {
+        m_AVSync->syncTimeStampWhenResume();
+    }
     SetPlayerState(STATE_PLAYING);
 }
 
 void FFMediaPlayer::Stop() {
-
+    LOGCATE("FFMediaPlayer::Stop")
+    SetPlayerState(STATE_STOP);
+    UnInit();
 }
 
 void FFMediaPlayer::SeekToPosition(float position) {
+    LOGCATE("FFMediaPlayer::SeekToPosition")
+    switch (GetPlayerState()) {
+        case STATE_PAUSE:
+            FFMediaPlayer::Resume();
+            break;
+        case STATE_STOP:
+        case STATE_UNKNOWN:
+            return;
+        default:;
+    }
 
+    if (m_AudioDecoder) {
+        m_AudioDecoder->seekPosition(position);
+    }
+    if (m_VideoDecoder) {
+        m_VideoDecoder->seekPosition(position);
+    }
 }
 
 void FFMediaPlayer::OnDecoderReady(int type) {
@@ -133,10 +169,23 @@ void FFMediaPlayer::OnDecoderReady(int type) {
 }
 
 void FFMediaPlayer::OnDecodeOneFrame(Frame *frame) {
-    if (frame->type == FRAME_TYPE_VIDEO) {
+    LOGCATE("FFMediaPlayer::OnDecodeOneFrame MediaType=%d", frame->type)
+    if (GetPlayerState() == STATE_STOP) return;
+    if (frame->type == MEDIA_TYPE_VIDEO) {
         m_VideoFrameQueue->offer(frame);
     } else {
         m_AudioFrameQueue->offer(frame);
+    }
+}
+
+void FFMediaPlayer::OnSeekResult(int mediaType, bool result) {
+    if (mediaType == MEDIA_TYPE_VIDEO && result) {
+        m_VideoFrameQueue->clearCache();
+        m_AVSync->videoSeekToPositionSuccess();
+    }
+    if (mediaType == MEDIA_TYPE_AUDIO && result) {
+        m_AudioFrameQueue->clearCache();
+        m_AVSync->audioSeekToPositionSuccess();
     }
 }
 

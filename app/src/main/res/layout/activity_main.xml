@@ -42,6 +42,22 @@
             android:text="继续"
             app:layout_constraintTop_toBottomOf="@+id/pause" />
 
+        <Button
+            android:id="@+id/stop"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="@{listener}"
+            android:text="停止"
+            app:layout_constraintTop_toBottomOf="@+id/resume" />
+
+        <Button
+            android:id="@+id/seek"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="@{listener}"
+            android:text="定位到50秒"
+            app:layout_constraintTop_toBottomOf="@+id/stop" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </layout>

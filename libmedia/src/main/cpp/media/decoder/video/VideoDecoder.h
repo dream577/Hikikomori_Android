@@ -28,10 +28,6 @@ private:
 
     SwsContext *m_SwsContext = nullptr;
 
-    virtual int init() override;
-
-    virtual int unInit() override;
-
     virtual void startDecodeThread() override;
 
     Frame *OnFrameAvailable() override;
@@ -45,6 +41,10 @@ public:
     }
 
     virtual ~VideoDecoder();
+
+    virtual int init() override;
+
+    virtual int unInit() override;
 
     int getVideoWidth() {
         return m_VideoWidth;

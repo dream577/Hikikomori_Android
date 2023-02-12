@@ -13,23 +13,36 @@ extern "C" {
 
 #include <stdint.h>
 
-#define DELAY_THRESHOLD 100 //100ms
+#define SYNC_DELAY_THRESHOLD 100    //100ms
+
+#define SYNC_INITIAL_TIMESTAMP      -1
+#define SYNC_SEEK_POSITION_FLAG     -2
 
 class MediaSync {
 
 public:
-    void audioSyncToSystemClock(long dts, long pts);
+    MediaSync() {};
 
-    void videoSyncToSystemClock(long dts, long pts);
+    ~MediaSync();
+
+    void audioSyncToSystemClock(long pts);
+
+    void videoSyncToSystemClock(long pts);
 
     void videoSynToAudioClock();
 
-private:
-    long m_CurrAudioTimeStamp = -1;         // 当前音频帧的时间戳
-    long m_AudioStartTime = -1;             // 音频开始播放时的时间戳
+    void syncTimeStampWhenResume();
 
-    long m_CurrVideoTimeStamp = -1;         // 当前视频帧的时间戳
-    long m_VideoStartTime = -1;             // 视频始播放时的时间戳
+    void audioSeekToPositionSuccess();
+
+    void videoSeekToPositionSuccess();
+
+private:
+    long m_CurrAudioTimeStamp = SYNC_INITIAL_TIMESTAMP;         // 当前音频帧的时间戳
+    long m_AudioStartTime = SYNC_INITIAL_TIMESTAMP;             // 音频开始播放时的时间戳
+
+    long m_CurrVideoTimeStamp = SYNC_INITIAL_TIMESTAMP;         // 当前视频帧的时间戳
+    long m_VideoStartTime = SYNC_INITIAL_TIMESTAMP;             // 视频始播放时的时间戳
 };
 
 

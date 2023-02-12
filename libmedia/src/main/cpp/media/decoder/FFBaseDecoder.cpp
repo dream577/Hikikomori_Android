@@ -87,13 +87,7 @@ int FFBaseDecoder::init() {
 }
 
 int FFBaseDecoder::unInit() {
-    LOGCATE("FFBaseDecoder::unInit");
-    if (m_Thread) {
-        m_Thread->join();
-        delete m_Thread;
-        m_Thread = nullptr;
-    }
-    avformat_network_deinit();
+    LOGCATE("FFBaseDecoder::unInit start");
     if (m_AVFrame != nullptr) {
         av_frame_free(&m_AVFrame);
         m_AVFrame = nullptr;
@@ -113,6 +107,19 @@ int FFBaseDecoder::unInit() {
         avformat_free_context(m_AVFormatContext);
         m_AVFormatContext = nullptr;
     }
+    LOGCATE("FFBaseDecoder::unInit finish");
+    return 0;
+}
+
+int FFBaseDecoder::destroy() {
+    LOGCATE("FFBaseDecoder::destroy start");
+    m_Callback->SetPlayerState(STATE_STOP);
+    if (m_Thread) {
+        m_Thread->join();
+        delete m_Thread;
+        m_Thread = nullptr;
+    }
+    LOGCATE("FFBaseDecoder::destroy finish");
     return 0;
 }
 
@@ -122,14 +129,14 @@ void FFBaseDecoder::startDecodeThread() {
     m_Thread = new thread(DoAVDecoding, this);
 }
 
-void FFBaseDecoder::DoAVDecoding(Decoder *decoder) {
+void FFBaseDecoder::DoAVDecoding(FFBaseDecoder *decoder) {
     LOGCATE("FFBaseDecoder::DoAVDecoding");
-    decoder->DecodingLoop();
+    decoder->decodingLoop();
     decoder->unInit();
 }
 
-void FFBaseDecoder::DecodingLoop() {
-    LOGCATE("FFBaseDecoder::DecodingLoop");
+void FFBaseDecoder::decodingLoop() {
+    LOGCATE("FFBaseDecoder::decodingLoop");
     do {
         if (init() != 0) {
             break;
@@ -148,7 +155,22 @@ void FFBaseDecoder::DecodingLoop() {
 int FFBaseDecoder::decode() {
     LOGCATE("FFBaseDecoder::decode m_MediaType=%d", m_MediaType);
     if (m_SeekPosition > 0) {
-
+        int64_t seek_target = static_cast<int64_t>(m_SeekPosition * 1000000);
+        int64_t seek_min = INT64_MIN;
+        int64_t seek_max = INT64_MAX;
+        int seek_ret = avformat_seek_file(m_AVFormatContext, -1, seek_min,
+                                          seek_target, seek_max, 0);
+        if (seek_ret < 0) {
+            m_Callback->OnSeekResult(m_MediaType, false);
+            LOGCATE("BaseDecoder::decode error while seeking m_MediaType=%d", m_MediaType);
+        } else {
+            if (-1 != m_StreamIndex) {
+                avcodec_flush_buffers(m_AVCodecContext);
+            }
+            m_Callback->OnSeekResult(m_MediaType, true);
+            LOGCATE("BaseDecoder::decode success while seeking m_MediaType=%d", m_MediaType);
+        }
+        m_SeekPosition = -1;   // 重置seek标志位
     }
 
     int result = av_read_frame(m_AVFormatContext, m_AVPacket);
@@ -180,5 +202,9 @@ int FFBaseDecoder::decode() {
     __EXIT:
     av_packet_unref(m_AVPacket);
     return result;
+}
+
+void FFBaseDecoder::seekPosition(float timestamp) {
+    m_SeekPosition = timestamp;
 }
 

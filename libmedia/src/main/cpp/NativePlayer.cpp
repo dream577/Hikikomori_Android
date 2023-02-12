@@ -67,6 +67,27 @@ Java_com_violet_libmedia_VioletMediaClient_native_1resume(JNIEnv *env, jobject t
                                                           jlong player_handle) {
     if (player_handle != 0) {
         MediaPlayer *player = reinterpret_cast<MediaPlayer *>(player_handle);
-        player->Pause();
+        player->Resume();
+    }
+}
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_violet_libmedia_VioletMediaClient_native_1stop(JNIEnv *env, jobject thiz,
+                                                        jlong player_handle) {
+    if (player_handle != 0) {
+        MediaPlayer *player = reinterpret_cast<MediaPlayer *>(player_handle);
+        player->Stop();
+        delete player;
+    }
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_violet_libmedia_VioletMediaClient_native_1seekToPosition(JNIEnv *env, jobject thiz,
+                                                                  jlong player_handle,
+                                                                  jfloat position) {
+    if (player_handle != 0) {
+        MediaPlayer *player = reinterpret_cast<MediaPlayer *>(player_handle);
+        player->SeekToPosition(position);
     }
 }

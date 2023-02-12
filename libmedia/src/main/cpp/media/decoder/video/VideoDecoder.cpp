@@ -14,26 +14,25 @@ int VideoDecoder::init() {
 }
 
 VideoDecoder::~VideoDecoder() {
-    VideoDecoder::unInit();
+//    VideoDecoder::unInit();
 }
 
 int VideoDecoder::unInit() {
-    LOGCATE("VideoDecoder::unInit")
-    FFBaseDecoder::unInit();
+    LOGCATE("VideoDecoder::unInit start")
     if (m_SwsContext) {
         sws_freeContext(m_SwsContext);
         m_SwsContext = nullptr;
     }
-
     if (m_FrameBuffer) {
         free(m_FrameBuffer);
         m_FrameBuffer = nullptr;
     }
-
     if (m_RGBAFrame) {
         av_frame_free(&m_RGBAFrame);
         m_RGBAFrame = nullptr;
     }
+    FFBaseDecoder::unInit();
+    LOGCATE("VideoDecoder::unInit finish")
     return 0;
 }
 

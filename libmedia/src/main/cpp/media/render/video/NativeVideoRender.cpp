@@ -29,21 +29,27 @@ int NativeVideoRender::init() {
 }
 
 int NativeVideoRender::unInit() {
-    stop = true;
+    LOGCATE("NativeVideoRender::unInit start")
+    if (m_NativeWindow) {
+        ANativeWindow_release(m_NativeWindow);
+        m_NativeWindow = nullptr;
+    }
+    LOGCATE("NativeVideoRender::unInit finish")
+    return 0;
+}
+
+int NativeVideoRender::destroy() {
+    m_Callback->SetPlayerState(STATE_STOP);
     if (m_thread) {
         m_thread->join();
         delete m_thread;
         m_thread = nullptr;
     }
-    if (m_NativeWindow) {
-        ANativeWindow_release(m_NativeWindow);
-        m_NativeWindow = nullptr;
-    }
     return 0;
 }
 
 NativeVideoRender::~NativeVideoRender() {
-    NativeVideoRender::unInit();
+//    NativeVideoRender::unInit();
 }
 
 void NativeVideoRender::renderVideoFrame(Frame *frame) {
@@ -71,12 +77,13 @@ void NativeVideoRender::startRenderThread() {
 void NativeVideoRender::StartRenderLoop(NativeVideoRender *render) {
     LOGCATE("NativeVideoRender::StartRenderLoop");
     render->doRenderLoop();
+    render->unInit();
 }
 
 void NativeVideoRender::doRenderLoop() {
     LOGCATE("NativeVideoRender::doRenderLoop");
-    while (!stop) {
-        Frame *frame = m_Callback->GetOneFrame(FRAME_TYPE_VIDEO);
+    while (m_Callback->GetPlayerState() != STATE_STOP) {
+        Frame *frame = m_Callback->GetOneFrame(MEDIA_TYPE_VIDEO);
         renderVideoFrame(frame);
     }
 }

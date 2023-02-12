@@ -10,14 +10,19 @@
 class RenderCallback {
 public:
     virtual Frame *GetOneFrame(int type) = 0;
+
+    virtual int GetPlayerState() = 0;
+
+    virtual void SetPlayerState(PlayerState state) = 0;
 };
 
 
 class Render {
 protected:
-    volatile bool stop = false;
-
     RenderCallback *m_Callback;
+
+    virtual int unInit() = 0;
+
 public:
     Render(RenderCallback *callback) {
         m_Callback = callback;
@@ -29,7 +34,7 @@ public:
 
     virtual int init() = 0;
 
-    virtual int unInit() = 0;
+    virtual int destroy() = 0;
 
     virtual void startRenderThread() = 0;
 

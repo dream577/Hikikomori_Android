@@ -3,6 +3,7 @@
 //
 
 #include "ThreadSafeQueue.h"
+#include "LogUtil.h"
 
 ThreadSafeQueue::ThreadSafeQueue() {
     header = tail = nullptr;
@@ -11,11 +12,13 @@ ThreadSafeQueue::ThreadSafeQueue() {
     abort_request = 0;
 }
 
-ThreadSafeQueue::ThreadSafeQueue(int maxSize) : ThreadSafeQueue() {
+ThreadSafeQueue::ThreadSafeQueue(int maxSize, int type) : ThreadSafeQueue() {
     m_MaxSize = maxSize;
+    m_MediaType = type;
 }
 
 ThreadSafeQueue::~ThreadSafeQueue() {
+    LOGCATE("ThreadSafeQueue::~ThreadSafeQueue  MediaType=%d", m_MediaType)
     abort();
     flush();
 }
@@ -41,12 +44,30 @@ void ThreadSafeQueue::flush() {
         if (temp->frame) {
             delete temp->frame;
             temp->frame = nullptr;
-            free(temp);
+            delete temp;
         }
     }
     header = tail = nullptr;
     m_Size = 0;
     m_MaxSize = INT_MAX;
+    abort_request = 0;
+    m_CondVar.notify_all();
+}
+
+void ThreadSafeQueue::clearCache() {
+    unique_lock<mutex> lock(m_Mutex);
+    FrameNode *temp;
+    while (header) {
+        temp = header;
+        header = header->next;
+        if (temp->frame) {
+            delete temp->frame;
+            temp->frame = nullptr;
+            delete temp;
+        }
+    }
+    header = tail = nullptr;
+    m_Size = 0;
     abort_request = 0;
     m_CondVar.notify_all();
 }
@@ -75,7 +96,7 @@ Frame *ThreadSafeQueue::pop() {
             frame = header->frame;
             FrameNode *temp = header;
             header = header->next;
-            free(temp);
+            delete temp;
             m_Size--;
             if (m_Size == 0) {
                 tail = nullptr;
@@ -94,6 +115,7 @@ int ThreadSafeQueue::offer(Frame *frame) {
     if (!abort_request) {
         ret = put(frame);
     }
+    if (frame != nullptr && ret == -1) delete frame;
     m_CondVar.notify_all();
     lock.unlock();
     return ret;

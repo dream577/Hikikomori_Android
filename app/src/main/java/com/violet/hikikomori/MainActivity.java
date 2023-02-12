@@ -38,7 +38,15 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
             EasyPermissions.requestPermissions(this, "读取存储", 101, readPermission);
         } else {
         }
+    }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (client != null) {
+            client.stop();
+            client = null;
+        }
     }
 
     @Override
@@ -66,6 +74,13 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
                 break;
             case R.id.resume:
                 client.resume();
+                break;
+            case R.id.stop:
+                client.stop();
+                client = null;
+                break;
+            case R.id.seek:
+                client.seekToPosition(50f);
                 break;
         }
     }

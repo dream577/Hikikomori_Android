@@ -37,7 +37,7 @@ int OpenSLAudioRender::init() {
 }
 
 int OpenSLAudioRender::unInit() {
-    LOGCATE("OpenSLRender::unInit");
+    LOGCATE("OpenSLRender::unInit start");
     if (m_AudioPlayerObj) {
         (*m_AudioPlayerPlay)->SetPlayState(m_AudioPlayerPlay, SL_PLAYSTATE_STOPPED);
         m_AudioPlayerPlay = nullptr;
@@ -59,12 +59,7 @@ int OpenSLAudioRender::unInit() {
         m_EngineObj = nullptr;
         m_EngineEngine = nullptr;
     }
-
-    if (m_thread != nullptr) {
-        m_thread->join();
-        delete m_thread;
-        m_thread = nullptr;
-    }
+    LOGCATE("OpenSLRender::unInit finish");
     return 0;
 }
 
@@ -189,20 +184,22 @@ void OpenSLAudioRender::startRenderThread() {
 }
 
 void OpenSLAudioRender::createSLWaitingThread(OpenSLAudioRender *openSlRender) {
-    openSlRender->play();
+    openSlRender->startPlay();
 }
 
-void OpenSLAudioRender::play() {
+void OpenSLAudioRender::startPlay() {
     (*m_AudioPlayerPlay)->SetPlayState(m_AudioPlayerPlay, SL_PLAYSTATE_PLAYING);
     audioPlayerCallback(m_BufferQueue, this);
 }
 
+
 void OpenSLAudioRender::renderAudioFrame() {
-    Frame *frame = m_Callback->GetOneFrame(FRAME_TYPE_AUDIO);
-    if (frame == nullptr) return;
+    Frame *frame;
+    do {
+        frame = m_Callback->GetOneFrame(MEDIA_TYPE_AUDIO);
+    } while (frame == nullptr || m_Callback->GetPlayerState() == STATE_STOP);
     AudioFrame *audioFrame = (AudioFrame *) frame;
-    SLresult result = (*m_BufferQueue)->Enqueue(m_BufferQueue, audioFrame->data,
-                                                audioFrame->dataSize);
+    (*m_BufferQueue)->Enqueue(m_BufferQueue, audioFrame->data, audioFrame->dataSize);
     delete frame;
 }
 
@@ -213,6 +210,17 @@ OpenSLAudioRender::audioPlayerCallback(SLAndroidSimpleBufferQueueItf bufferQueue
 }
 
 OpenSLAudioRender::~OpenSLAudioRender() {
-    OpenSLAudioRender::unInit();
+//    OpenSLAudioRender::unInit();
+}
+
+int OpenSLAudioRender::destroy() {
+    unInit();
+    m_Callback->SetPlayerState(STATE_STOP);
+    if (m_thread != nullptr) {
+        m_thread->join();
+        delete m_thread;
+        m_thread = nullptr;
+    }
+    return 0;
 }
 

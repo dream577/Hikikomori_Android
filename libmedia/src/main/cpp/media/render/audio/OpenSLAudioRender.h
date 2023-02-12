@@ -23,7 +23,7 @@ public:
 
     virtual int init() override;
 
-    virtual int unInit() override;
+    virtual int destroy() override;
 
     virtual void startRenderThread() override;
 
@@ -34,7 +34,9 @@ private:
 
     int createAudioPlayer();
 
-    void play();
+    virtual int unInit() override;
+
+    void startPlay();
 
     static void createSLWaitingThread(OpenSLAudioRender *openSlRender);
 
