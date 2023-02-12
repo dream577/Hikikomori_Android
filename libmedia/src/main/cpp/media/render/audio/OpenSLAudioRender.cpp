@@ -197,7 +197,8 @@ void OpenSLAudioRender::renderAudioFrame() {
     Frame *frame;
     do {
         frame = m_Callback->GetOneFrame(MEDIA_TYPE_AUDIO);
-    } while (frame == nullptr || m_Callback->GetPlayerState() == STATE_STOP);
+        if (m_Callback->GetPlayerState() == STATE_STOP) return;
+    } while (frame == nullptr);
     AudioFrame *audioFrame = (AudioFrame *) frame;
     (*m_BufferQueue)->Enqueue(m_BufferQueue, audioFrame->data, audioFrame->dataSize);
     delete frame;
