@@ -11,6 +11,7 @@
 #include <GLES3/gl3.h>
 #include <GLES3/gl3platform.h>
 #include <android/native_window.h>
+#include <android/native_window_jni.h>
 
 #define    FLAG_RECORDABLE           0x01
 #define    FLAG_TRY_GLES3            0x02
@@ -33,7 +34,7 @@ private:
 
 public:
 
-    EglCore();
+    EglCore(){ LOGCATE("")};
 
     ~EglCore();
 

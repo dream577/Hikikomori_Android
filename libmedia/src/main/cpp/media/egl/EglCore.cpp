@@ -1,7 +1,6 @@
 //
 // Created by bronyna on 2023/2/12.
 //
-
 #include "EglCore.h"
 #include "LogUtil.h"
 

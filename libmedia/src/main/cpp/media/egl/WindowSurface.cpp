@@ -1,5 +1,5 @@
-#include <LogUtil.h>
 #include "WindowSurface.h"
+#include "LogUitls"
 
 WindowSurface::WindowSurface(ANativeWindow *window, bool releaseSurface) {
     mSurface = window;

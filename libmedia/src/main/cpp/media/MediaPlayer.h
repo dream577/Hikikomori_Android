@@ -8,6 +8,7 @@
 #include "jni.h"
 #include "MediaDef.h"
 #include "VideoNativeRender.h"
+#include "VideoGLRender.h"
 #include "OpenSLAudioRender.h"
 #include "AudioDecoder.h"
 #include "VideoDecoder.h"

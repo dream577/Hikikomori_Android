@@ -37,21 +37,18 @@ Frame *VideoDecoder::OnFrameAvailable() {
         frame = new VideoFrame();
 
         int yPlaneByteSize = m_AVFrame->width * m_AVFrame->height;
-        int uvPlaneByteSize = yPlaneByteSize / 4;
-
-        uint8_t *data0 = (uint8_t *) malloc(yPlaneByteSize);
-        uint8_t *data1 = (uint8_t *) malloc(uvPlaneByteSize);
-        uint8_t *data2 = (uint8_t *) malloc(uvPlaneByteSize);
-        memcpy(data0, m_AVFrame->data[0], yPlaneByteSize);
-        memcpy(data1, m_AVFrame->data[1], uvPlaneByteSize);
-        memcpy(data2, m_AVFrame->data[2], uvPlaneByteSize);
+        int uvPlaneByteSize = yPlaneByteSize / 2;
+        uint8_t *data = (uint8_t *) malloc(yPlaneByteSize + uvPlaneByteSize);
 
         frame->format = VIDEO_FRAME_FORMAT_I420;
         frame->width = m_AVFrame->width;
         frame->height = m_AVFrame->height;
-        frame->yuvBuffer[0] = data0;
-        frame->yuvBuffer[1] = data1;
-        frame->yuvBuffer[2] = data2;
+        frame->yuvBuffer[0] = data;
+        frame->yuvBuffer[1] = data + yPlaneByteSize;
+        frame->yuvBuffer[2] = data + yPlaneByteSize + uvPlaneByteSize / 2;
+        memcpy(frame->yuvBuffer[0], m_AVFrame->data[0], yPlaneByteSize);
+        memcpy(frame->yuvBuffer[1], m_AVFrame->data[1], uvPlaneByteSize / 2);
+        memcpy(frame->yuvBuffer[2], m_AVFrame->data[2], uvPlaneByteSize / 2);
         frame->planeSize[0] = m_AVFrame->linesize[0];
         frame->planeSize[1] = m_AVFrame->linesize[1];
         frame->planeSize[2] = m_AVFrame->linesize[2];

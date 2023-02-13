@@ -22,9 +22,15 @@ public:
                                 GLuint &vertexShaderHandle,
                                 GLuint &fragShaderHandle);
 
+    static GLuint CreateProgram(const char *pVertexShaderSource, const char *pFragShaderSource);
+
     static void DeleteProgram(GLuint &program);
 
     static void CheckGLError(const char *pGLOperation);
+
+    static void setInt(GLuint programId, const std::string &name, int value) {
+        glUniform1i(glGetUniformLocation(programId, name.c_str()), value);
+    }
 };
 
 

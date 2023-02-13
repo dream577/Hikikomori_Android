@@ -34,9 +34,9 @@ public:
 
     virtual int unInit() override;
 
-    virtual void startRenderThread() override;
-
     virtual int destroy() override;
+
+    virtual void startRenderThread() override;
 
     virtual void OnSurfaceCreated() override;
 

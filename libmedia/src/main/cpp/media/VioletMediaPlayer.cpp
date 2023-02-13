@@ -76,6 +76,8 @@ int VioletMediaPlayer::initVideoPlayer(JNIEnv *jniEnv, jobject surface, char *ur
     if (result == 0) {
         m_VideoRender = new VideoNativeRender(
                 jniEnv, surface, m_VideoDecoder->GetAVCodecContext()->pix_fmt, this);
+
+//        m_VideoRender = new VideoGLRender(jniEnv,surface,this);
         m_VideoRender->setVideoSize(m_VideoDecoder->getVideoWidth(),
                                     m_VideoDecoder->getVideoHeight());
 

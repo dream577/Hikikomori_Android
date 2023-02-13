@@ -5,9 +5,6 @@
 #ifndef HIKIKOMORI_MEDIADEF_H
 #define HIKIKOMORI_MEDIADEF_H
 
-#include "libavutil/avutil.h"
-
-
 #define MEDIA_TYPE_VIDEO 0x00
 #define MEDIA_TYPE_AUDIO 0x01
 
@@ -100,12 +97,12 @@ public:
     }
 
     virtual ~VideoFrame() {
-        for (int i = 0; i < 3; i++) {
-            if (yuvBuffer[i] != nullptr) {
-                delete yuvBuffer[i];
-                yuvBuffer[i] = nullptr;
-            }
+        if (yuvBuffer[0]) {
+            delete yuvBuffer[0];
         }
+        yuvBuffer[0] = nullptr;
+        yuvBuffer[1] = nullptr;
+        yuvBuffer[2] = nullptr;
     }
 };
 

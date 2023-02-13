@@ -91,3 +91,9 @@ void GLUtils::CheckGLError(const char *pGLOperation) {
         LOGCATE("GLUtils::CheckGLError GL Operation %s() glError (0x%x)\n", pGLOperation, error);
     }
 }
+
+GLuint GLUtils::CreateProgram(const char *pVertexShaderSource, const char *pFragShaderSource) {
+    GLuint vertexShaderHandle, fragShaderHandle;
+    return CreateProgram(pVertexShaderSource, pFragShaderSource, vertexShaderHandle,
+                         fragShaderHandle);
+}
