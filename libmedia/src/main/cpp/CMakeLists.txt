@@ -24,8 +24,10 @@ include_directories(
 
 file(GLOB src-files
         ${CMAKE_SOURCE_DIR}/*cpp
-        ${CMAKE_SOURCE_DIR}/egl/*.cpp
         ${CMAKE_SOURCE_DIR}/media/*cpp
+        ${CMAKE_SOURCE_DIR}/media/common/*cpp
+        ${CMAKE_SOURCE_DIR}/media/egl/*cpp
+        ${CMAKE_SOURCE_DIR}/media/egl/NativeSurface.cpp
         ${CMAKE_SOURCE_DIR}/media/decoder/*cpp
         ${CMAKE_SOURCE_DIR}/media/decoder/audio/*cpp
         ${CMAKE_SOURCE_DIR}/media/decoder/video/*cpp

@@ -51,8 +51,8 @@ public class VioletMediaClient {
         native_seekToPosition(mNativePlayerHandle, timestamp);
     }
 
-    public void onSurfaceCreated() {
-        native_pnSurfaceCreated(mNativePlayerHandle);
+    public void onSurfaceCreated(Surface surface) {
+        native_pnSurfaceCreated(mNativePlayerHandle, surface);
     }
 
     public void onSurfaceChanged(int w, int h) {
@@ -77,7 +77,7 @@ public class VioletMediaClient {
 
     private native void native_seekToPosition(long playerHandle, float position);
 
-    private native void native_pnSurfaceCreated(long playerHandle);
+    private native void native_pnSurfaceCreated(long playerHandle, Object surface);
 
     private native void native_onSurfaceChanged(long playerHandle, int w, int h);
 

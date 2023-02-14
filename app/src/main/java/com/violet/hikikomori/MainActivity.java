@@ -57,6 +57,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         Log.d(TAG, "surfaceCreated time=" + System.currentTimeMillis());
         client = new VioletMediaClient();
         client.init(path, holder.getSurface());
+        client.onSurfaceCreated(holder.getSurface());
     }
 
     @Override

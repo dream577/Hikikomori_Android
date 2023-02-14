@@ -15,16 +15,13 @@ extern "C" {
 
 class VideoDecoder : public FFBaseDecoder {
 private:
-    bool useNaiveWindow = true;
-
     int m_VideoWidth, m_VideoHeight;
 
     Frame *OnFrameAvailable() override;
 
 public:
-    VideoDecoder(char *path, bool useNativeWindow, DecoderCallback *callback)
+    VideoDecoder(char *path, DecoderCallback *callback)
             : FFBaseDecoder(path, AVMEDIA_TYPE_VIDEO, callback) {
-        VideoDecoder::useNaiveWindow = useNativeWindow;
     }
 
     virtual ~VideoDecoder();

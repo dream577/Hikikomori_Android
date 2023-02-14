@@ -12,10 +12,12 @@ class VioletMediaPlayer : public MediaPlayer, public DecoderCallback, public Ren
 public:
     VioletMediaPlayer() {};
 
-    virtual ~VioletMediaPlayer();
+    virtual ~VioletMediaPlayer() {}
 
     virtual int Init(JNIEnv *jniEnv, jobject obj, char *url, int decodeType,
                      int renderType, jobject surface) override;
+
+    virtual int UnInit() override;
 
     virtual void Play() override;
 
@@ -37,15 +39,10 @@ public:
 
     virtual void SetPlayerState(PlayerState state) override;
 
-protected:
-
-    virtual int UnInit() override;
-
 private:
-
     int initAudioPlayer(char *url);
 
-    int initVideoPlayer(JNIEnv *jniEnv, jobject surface, char *url);
+    int initVideoPlayer(char *url);
 
     void unInitAudioPlayer();
 

@@ -12,10 +12,10 @@ GLuint GLUtils::LoadShader(GLenum shaderType, const char *pSource) {
     GLuint shader = 0;
     shader = glCreateShader(shaderType);
     if (shader) {
-        glShaderSource(shader, 1, &pSource, nullptr);
+        glShaderSource(shader, 1, &pSource, NULL);
         glCompileShader(shader);
         GLint compiled = 0;
-        glGetShaderiv(shader, shaderType, &compiled);
+        glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
         if (!compiled) {
             GLint infoLen = 0;
             glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLen);

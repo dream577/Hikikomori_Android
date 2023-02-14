@@ -1,10 +1,9 @@
+//
+// Created by bronyna on 2023/2/12.
+//
+
 #include "EglSurfaceBase.h"
 #include "LogUtil.h"
-
-EglSurfaceBase::EglSurfaceBase() {
-    mEglCore = new EglCore;
-    mEglSurface = EGL_NO_SURFACE;
-}
 
 /**
  * 创建显示的Surface
@@ -14,6 +13,8 @@ void EglSurfaceBase::createWindowSurface(ANativeWindow *nativeWindow) {
     if (mEglSurface != EGL_NO_SURFACE) {
         LOGCATE("surface already created\n");
         return;
+    } else {
+        LOGCATE("surface create success\n");
     }
     mEglSurface = mEglCore->createWindowSurface(nativeWindow);
 }
@@ -101,4 +102,56 @@ char *EglSurfaceBase::getCurrentFrame() {
     char *pixels = nullptr;
     glReadPixels(0, 0, getWidth(), getHeight(), GL_RGBA, GL_UNSIGNED_BYTE, pixels);
     return pixels;
+}
+
+void EglSurfaceBase::OnSurfaceCreated(JNIEnv *jniEnv, jobject surface) {
+    LOGCATE("EglSurfaceBase::OnSurfaceCreated")
+    mNativeWindow = ANativeWindow_fromSurface(jniEnv, surface);
+    mVideoRender = new VideoGLRender(m_Callback);
+    mVideoRender->setVideoSize(mVideoWidth, mVideoHeight);
+    createWindowSurface(mNativeWindow);
+    post(MESSAGE_ON_SURFACE_CREATED, nullptr);
+}
+
+void EglSurfaceBase::OnSurfaceChanged(int w, int h) {
+    LOGCATE("EglSurfaceBase::OnSurfaceChanged");
+    mWindowSize[0] = w;
+    mWindowSize[1] = h;
+    post(MESSAGE_ON_SURFACE_CHANGED, mWindowSize);
+}
+
+void EglSurfaceBase::OnDrawFrame() {
+    LOGCATE("EglSurfaceBase::OnDrawFrame");
+    post(MESSAGE_ON_DRAW_FRAME, nullptr);
+}
+
+void EglSurfaceBase::OnSurfaceDestroyed() {
+    LOGCATE("EglSurfaceBase::OnSurfaceDestroyed");
+    post(MESSAGE_ON_SURFACE_DESTROY, nullptr, true);
+}
+
+void EglSurfaceBase::handle(int what, void *data) {
+    switch (what) {
+        case MESSAGE_ON_SURFACE_CREATED: {
+            makeCurrent();
+            mVideoRender->OnSurfaceCreated();
+            break;
+        }
+        case MESSAGE_ON_SURFACE_CHANGED: {
+            int *size = (int *) data;
+            mVideoRender->OnSurfaceChanged(size[0], size[1]);
+            break;
+        }
+        case MESSAGE_ON_DRAW_FRAME: {
+            mVideoRender->OnDrawFrame();
+            swapBuffers();
+            post(MESSAGE_ON_DRAW_FRAME, nullptr);
+            break;
+        }
+        case MESSAGE_ON_SURFACE_DESTROY: {
+            mVideoRender->OnSurfaceDestroyed();
+            break;
+        }
+        default:;
+    }
 }

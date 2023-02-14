@@ -8,7 +8,6 @@
 #include <android/native_window.h>
 #include <android/native_window_jni.h>
 #include <string.h>
-#include <thread>
 
 extern "C" {
 #include "libavutil/imgutils.h"
@@ -22,27 +21,31 @@ using namespace std;
 
 class VideoNativeRender : public VideoRender {
 public:
-    VideoNativeRender(JNIEnv *env, jobject surface, AVPixelFormat avPixelFormat,
+    VideoNativeRender(ANativeWindow *nativeWindow, AVPixelFormat avPixelFormat,
                       RenderCallback *callback) : VideoRender(callback) {
-        m_NativeWindow = ANativeWindow_fromSurface(env, surface);
+        m_NativeWindow = nativeWindow;
         m_PixelFormat = avPixelFormat;
     }
 
+    VideoNativeRender(RenderCallback *callback) : VideoRender(callback) {}
+
     virtual ~VideoNativeRender();
-
-    virtual int init() override;
-
-    virtual int unInit() override;
-
-    virtual int destroy() override;
-
-    virtual void startRenderThread() override;
 
     virtual void OnSurfaceCreated() override;
 
     virtual void OnSurfaceChanged(int w, int h) override;
 
+    virtual void OnDrawFrame() override;
+
     virtual void OnSurfaceDestroyed() override;
+
+    void SetNativeWindow(ANativeWindow *window) {
+        m_NativeWindow = window;
+    }
+
+    void SetAvPixelFormat(AVPixelFormat format) {
+        m_PixelFormat = format;
+    }
 
 private:
     ANativeWindow_Buffer m_NativeWindowBuffer;
@@ -54,14 +57,6 @@ private:
     uint8_t *m_FrameBuffer = nullptr;
     int m_BufferSize = 0;
     SwsContext *m_SwsContext = nullptr;
-
-    virtual void renderVideoFrame(Frame *frame) override;
-
-    static void StartRenderLoop(VideoNativeRender *render);
-
-    void doRenderLoop();
-
-    thread *m_thread = nullptr;
 };
 
 

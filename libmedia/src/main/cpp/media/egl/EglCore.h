@@ -17,7 +17,9 @@
 #define    FLAG_TRY_GLES3            0x02
 #define    EGL_RECORDABLE_ANDROID    0x3142
 
-typedef EGLBoolean (EGLAPIENTRYP EGL_PRESENTATION_TIME_ANDROIDPROC)(EGLDisplay display, EGLSurface surface, khronos_stime_nanoseconds_t time);
+typedef EGLBoolean (EGLAPIENTRYP EGL_PRESENTATION_TIME_ANDROIDPROC)(EGLDisplay display,
+                                                                    EGLSurface surface,
+                                                                    khronos_stime_nanoseconds_t time);
 
 class EglCore {
 private:
@@ -34,9 +36,11 @@ private:
 
 public:
 
-    EglCore(){ LOGCATE("")};
+    EglCore();
 
     ~EglCore();
+
+    EglCore(EGLContext sharedContext, int flags);
 
     bool init(EGLContext sharedContext, int flags);
 

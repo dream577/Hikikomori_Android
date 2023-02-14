@@ -1,9 +1,10 @@
 //
-// Created by 郝留凯 on 2023/2/13.
+// Created by bronyna on 2023/2/13.
 //
 
 #include "GLUtils.h"
 #include "VideoGLRender.h"
+#include <gtc/matrix_transform.hpp>
 #include "LogUtil.h"
 
 static char vShaderStr[] =
@@ -25,17 +26,55 @@ static char fShaderStr[] =
         "uniform sampler2D s_texture0;\n"
         "uniform sampler2D s_texture1;\n"
         "uniform sampler2D s_texture2;\n"
+        "uniform int u_nImgType;// 1:RGBA, 2:NV21, 3:NV12, 4:I420\n"
+        "\n"
         "void main()\n"
         "{\n"
-        "   vec3 yuv;\n"
-        "   yuv.x = texture2D(s_texture0, v_texCoord).r;\n"
-        "   yuv.y = texture2D(s_texture1, v_texCoord).r - 0.5;\n"
-        "   yuv.z = texture2D(s_texture2, v_texCoord).r - 0.5;\n"
-        "   highp vec3 rgb = mat3(1.0,     1.0,     1.0,\n"
-        "                         0.0,     -0.344,  1.770,\n"
-        "                         1.403,   -0.714,  0.0) * yuv;\n"
-        "   outColor = vec4(rgb, 1.0);\n"
+        "\n"
+        "    if(u_nImgType == 1) //RGBA\n"
+        "    {\n"
+        "        outColor = texture(s_texture0, v_texCoord);\n"
+        "    }\n"
+        "    else if(u_nImgType == 2) //NV21\n"
+        "    {\n"
+        "        vec3 yuv;\n"
+        "        yuv.x = texture(s_texture0, v_texCoord).r;\n"
+        "        yuv.y = texture(s_texture1, v_texCoord).a - 0.5;\n"
+        "        yuv.z = texture(s_texture1, v_texCoord).r - 0.5;\n"
+        "        highp vec3 rgb = mat3(1.0,       1.0,     1.0,\n"
+        "        0.0, \t-0.344, \t1.770,\n"
+        "        1.403,  -0.714,     0.0) * yuv;\n"
+        "        outColor = vec4(rgb, 1.0);\n"
+        "\n"
+        "    }\n"
+        "    else if(u_nImgType == 3) //NV12\n"
+        "    {\n"
+        "        vec3 yuv;\n"
+        "        yuv.x = texture(s_texture0, v_texCoord).r;\n"
+        "        yuv.y = texture(s_texture1, v_texCoord).r - 0.5;\n"
+        "        yuv.z = texture(s_texture1, v_texCoord).a - 0.5;\n"
+        "        highp vec3 rgb = mat3(1.0,       1.0,     1.0,\n"
+        "        0.0, \t-0.344, \t1.770,\n"
+        "        1.403,  -0.714,     0.0) * yuv;\n"
+        "        outColor = vec4(rgb, 1.0);\n"
+        "    }\n"
+        "    else if(u_nImgType == 4) //I420\n"
+        "    {\n"
+        "        vec3 yuv;\n"
+        "        yuv.x = texture(s_texture0, v_texCoord).r;\n"
+        "        yuv.y = texture(s_texture1, v_texCoord).r - 0.5;\n"
+        "        yuv.z = texture(s_texture2, v_texCoord).r - 0.5;\n"
+        "        highp vec3 rgb = mat3(1.0,       1.0,     1.0,\n"
+        "                              0.0, \t-0.344, \t1.770,\n"
+        "                              1.403,  -0.714,     0.0) * yuv;\n"
+        "        outColor = vec4(rgb, 1.0);\n"
+        "    }\n"
+        "    else\n"
+        "    {\n"
+        "        outColor = vec4(1.0);\n"
+        "    }\n"
         "}";
+
 
 GLushort indices[] = {0, 1, 2, 0, 2, 3};
 
@@ -105,13 +144,17 @@ void VideoGLRender::OnSurfaceCreated() {
 
 void VideoGLRender::OnSurfaceChanged(int w, int h) {
     LOGCATE("VideoGLRender::OnSurfaceChanged [w,h]=%d, %d", w, h);
+    m_WindowWidth = w;
+    m_WindowHeight = h;
     glViewport(0, 0, w, h);
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
-void VideoGLRender::renderVideoFrame(Frame *frame) {
-
+void VideoGLRender::OnDrawFrame() {
+    LOGCATE("VideoGLRender::OnDrawFrame");
+    Frame *frame = m_Callback->GetOneFrame(MEDIA_TYPE_VIDEO);
     auto *videoFrame = (VideoFrame *) frame;
+    if (videoFrame == nullptr) return;
     //upload Y plane data
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, m_TextureId[0]);
@@ -148,55 +191,14 @@ void VideoGLRender::renderVideoFrame(Frame *frame) {
         GLUtils::setInt(m_Program, samplerName, i);
     }
 
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (const void *) 0);
+    GLUtils::setInt(m_Program, "u_nImgType", 4);
 
-    m_WindowSurface->swapBuffers();
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (const void *) 0);
+    delete frame;
 }
 
 void VideoGLRender::OnSurfaceDestroyed() {
     LOGCATE("VideoGLRender::OnSurfaceDestroyed");
     m_Callback->SetPlayerState(STATE_STOP);
-    if (m_thread) {
-        m_thread->join();
-        delete m_thread;
-        m_thread = nullptr;
-    }
 }
 
-void VideoGLRender::startRenderThread() {
-    LOGCATE("VideoGLRender::startRenderThread");
-    m_thread = new thread(StartRenderLoop, this);
-}
-
-void VideoGLRender::StartRenderLoop(VideoGLRender *render) {
-    LOGCATE("VideoGLRender::StartRenderLoop");
-    render->doRenderLoop();
-    render->unInit();
-}
-
-void VideoGLRender::doRenderLoop() {
-    LOGCATE("VideoGLRender::doRenderLoop");
-    m_WindowSurface->makeCurrent();
-    while (m_Callback->GetPlayerState() != STATE_STOP) {
-        Frame *frame = m_Callback->GetOneFrame(MEDIA_TYPE_VIDEO);
-        renderVideoFrame(frame);
-    }
-}
-
-int VideoGLRender::init() {
-    return 0;
-}
-
-int VideoGLRender::unInit() {
-    return 0;
-}
-
-int VideoGLRender::destroy() {
-    m_Callback->SetPlayerState(STATE_STOP);
-    if (m_thread) {
-        m_thread->join();
-        delete m_thread;
-        m_thread = nullptr;
-    }
-    return 0;
-}

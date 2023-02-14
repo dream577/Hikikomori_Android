@@ -16,7 +16,14 @@ protected:
 public:
     VideoRender(RenderCallback *callback) : Render(callback) {}
 
-    virtual ~VideoRender() {}
+    virtual ~VideoRender() {
+        m_Callback = nullptr;
+    }
+
+    void setVideoSize(int videoWidth, int videoHeight) {
+        m_VideoWidth = videoWidth;
+        m_VideoHeight = videoHeight;
+    }
 
     virtual void OnSurfaceCreated() = 0;
 
@@ -24,12 +31,7 @@ public:
 
     virtual void OnSurfaceDestroyed() = 0;
 
-    virtual void renderVideoFrame(Frame *frame) = 0;
-
-    void setVideoSize(int videoWidth, int videoHeight) {
-        m_VideoWidth = videoWidth;
-        m_VideoHeight = videoHeight;
-    }
+    virtual void OnDrawFrame() = 0;
 };
 
 

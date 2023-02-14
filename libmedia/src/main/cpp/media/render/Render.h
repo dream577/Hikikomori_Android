@@ -30,13 +30,13 @@ public:
         m_Callback = nullptr;
     }
 
-    virtual int init() = 0;
+    virtual int init() {};
 
-    virtual int unInit() = 0;
+    virtual int unInit() {};
 
-    virtual int destroy() = 0;
+    virtual int destroy() {}
 
-    virtual void startRenderThread() = 0;
+    virtual void startRenderThread() {};
 
 };
 

@@ -4,12 +4,17 @@
 #include "EglCore.h"
 #include "LogUtil.h"
 
-EglCore::EglCore() {
 
+EglCore::EglCore() {
+    init(NULL, FLAG_TRY_GLES3);
 }
 
 EglCore::~EglCore() {
+    release();
+}
 
+EglCore::EglCore(EGLContext sharedContext, int flags) {
+    init(sharedContext, flags);
 }
 
 bool EglCore::init(EGLContext sharedContext, int flags) {
@@ -128,13 +133,14 @@ EGLSurface EglCore::createWindowSurface(ANativeWindow *window) {
     }
     EGLint format;
     if (!eglGetConfigAttrib(mEGLDisplay, mEGLConfig, EGL_NATIVE_VISUAL_ID, &format)) {
-        LOGCATE("EglCore::createWindowSurface returned error %d", eglGetError());
+        LOGCATE("EglCore::createWindowSurface eglGetConfigAttrib returned error %d", eglGetError());
         return surface;
     }
     ANativeWindow_setBuffersGeometry(window, 0, 0, format);
     int surfaceAttribs[] = {EGL_NONE};
     if (!(surface = eglCreateWindowSurface(mEGLDisplay, mEGLConfig, window, surfaceAttribs))) {
-        LOGCATE("EglCore::createWindowSurface returned error %d", eglGetError());
+        LOGCATE("EglCore::createWindowSurface eglCreateWindowSurface returned error %d",
+                eglGetError());
         return surface;
     }
     return surface;
@@ -212,3 +218,4 @@ void EglCore::releaseSurface(EGLSurface eglSurface) {
     eglMakeCurrent(mEGLDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
     eglDestroySurface(mEGLDisplay, eglSurface);
 }
+
