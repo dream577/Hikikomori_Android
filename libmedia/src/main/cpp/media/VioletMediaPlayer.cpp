@@ -56,9 +56,12 @@ int VioletMediaPlayer::initVideoPlayer(char *url) {
     m_VideoDecoder = new VideoDecoder(url, this);
     result = m_VideoDecoder->init();
     if (result == 0) {
-//        m_VideoSurface = new NativeSurface(m_VideoDecoder->GetAVCodecContext()->pix_fmt, this);
-        m_VideoSurface = new WindowSurface(m_VideoDecoder->getVideoWidth(),
-                                           m_VideoDecoder->getVideoHeight(), this);
+        int mVideoWidth = m_VideoDecoder->getVideoWidth();
+        int mVideoHeight = m_VideoDecoder->getVideoHeight();
+//        m_VideoRender = new VideoGLRender(this);
+        m_VideoRender = new VideoNativeRender(m_VideoDecoder->GetAVCodecContext()->pix_fmt, this);
+
+        m_VideoRender->SetVideoSize(mVideoWidth, mVideoHeight);
 
         m_VideoFrameQueue = new ThreadSafeQueue(MAX_VIDEO_QUEUE_SIZE, MEDIA_TYPE_VIDEO);
     }
@@ -100,9 +103,9 @@ void VioletMediaPlayer::unInitVideoPlayer() {
         delete m_VideoFrameQueue;
         m_VideoFrameQueue = nullptr;
     }
-    if (m_VideoSurface) {
-        delete m_VideoSurface;
-        m_VideoSurface = nullptr;
+    if (m_VideoRender) {
+        delete m_VideoRender;
+        m_VideoRender = nullptr;
     }
 }
 
@@ -116,7 +119,7 @@ void VioletMediaPlayer::Play() {
     }
     if (m_VideoDecoder) {
         m_VideoDecoder->startDecodeThread();
-        m_VideoSurface->OnDrawFrame();
+        m_VideoRender->OnDrawFrameLoop();
     }
 
 }

@@ -7,7 +7,7 @@
 
 #include "VideoRender.h"
 #include <vec2.hpp>
-#include <GLES3/gl3.h>
+#include "VioletEGLSurface.h"
 
 #define MATH_PI 3.1415926535897932384626433832802
 #define TEXTURE_NUM 3
@@ -23,16 +23,22 @@ private:
     GLuint m_VaoId;
     GLuint m_VboIds[3];
 
+    VioletEGLSurface *m_Surface;
+protected:
+    virtual void onDrawFrame() override;
+
+    virtual void onSurfaceCreated() override;
+
+    virtual void onSurfaceChanged() override;
+
+    virtual void onSurfaceDestroyed() override;
+
 public:
     VideoGLRender(RenderCallback *callback) : VideoRender(callback) {}
 
-    virtual void OnSurfaceCreated() override;
-
-    virtual void OnSurfaceChanged(int w, int h) override;
-
-    virtual void OnSurfaceDestroyed() override;
-
-    virtual void OnDrawFrame() override;
+    ~VideoGLRender() {
+        quit();
+    }
 };
 
 

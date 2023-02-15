@@ -14,8 +14,6 @@
 #include "VideoDecoder.h"
 #include "MediaSync.h"
 #include "ThreadSafeQueue.h"
-#include "NativeSurface.h"
-#include "WindowSurface.h"
 
 class MediaPlayer {
 public:
@@ -38,8 +36,8 @@ public:
 
     virtual void SeekToPosition(float position) = 0;
 
-    Surface *GetVideoSurface() {
-        return m_VideoSurface;
+    VideoRender *GetVideoRender() {
+        return m_VideoRender;
     }
 
 protected:
@@ -51,9 +49,8 @@ protected:
 
     VideoDecoder *m_VideoDecoder;
     AudioDecoder *m_AudioDecoder;
-
+    VideoRender *m_VideoRender;
     AudioRender *m_AudioRender;
-    Surface *m_VideoSurface;
     MediaSync *m_AVSync;
 
     mutex m_Mutex;

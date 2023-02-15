@@ -5,58 +5,58 @@
 #include "VideoNativeRender.h"
 #include "LogUtil.h"
 
-void VideoNativeRender::OnSurfaceCreated() {
+void VideoNativeRender::onSurfaceCreated() {
     LOGCATE("VideoNativeRender::OnSurfaceCreated");
+
 }
 
-void VideoNativeRender::OnSurfaceChanged(int w, int h) {
+void VideoNativeRender::onSurfaceChanged() {
     if (m_NativeWindow == nullptr) return;
-    LOGCATE("VideoNativeRender::OnSurfaceChanged m_NativeWindow=%p, video[w,h]=[%d, %d]",
-            m_NativeWindow, w, h)
-    m_WindowWidth = w;
-    m_WindowHeight = h;
-
-    if (m_WindowWidth < m_WindowHeight * m_VideoWidth / m_VideoHeight) {
-        m_RenderWidth = m_WindowWidth;
-        m_RenderHeight = m_WindowWidth * m_VideoHeight / m_VideoWidth;
+    if (m_WindowSize[0] < m_WindowSize[1] * m_VideoSize[0] / m_VideoSize[1]) {
+        m_RenderSize[0] = m_WindowSize[0];
+        m_RenderSize[1] = m_WindowSize[0] * m_VideoSize[1] / m_VideoSize[0];
     } else {
-        m_RenderWidth = m_WindowHeight * m_VideoWidth / m_VideoHeight;
-        m_RenderHeight = m_WindowHeight;
+        m_RenderSize[0] = m_WindowSize[1] * m_VideoSize[0] / m_VideoSize[1];
+        m_RenderSize[1] = m_WindowSize[1];
     }
+    LOGCATE("VideoNativeRender::onSurfaceChanged m_NativeWindow=%p, video[w,h]=[%d, %d]",
+            m_NativeWindow, m_VideoSize[0], m_VideoSize[1])
 
-    LOGCATE("VideoNativeRender::OnSurfaceChanged window[w,h]=[%d, %d],DstSize[w, h]=[%d, %d]",
-            w, h, m_RenderWidth, m_RenderHeight);
-    ANativeWindow_setBuffersGeometry(m_NativeWindow, m_RenderWidth, m_RenderHeight,
+    LOGCATE("VideoNativeRender::onSurfaceChanged window[w,h]=[%d, %d],DstSize[w, h]=[%d, %d]",
+            m_WindowSize[0], m_WindowSize[1], m_RenderSize[0], m_RenderSize[1]);
+    ANativeWindow_setBuffersGeometry(m_NativeWindow, m_RenderSize[0], m_RenderSize[1],
                                      WINDOW_FORMAT_RGBA_8888);
 
     m_RGBAFrame = av_frame_alloc();
-    m_BufferSize = av_image_get_buffer_size(AV_PIX_FMT_RGBA, m_RenderWidth, m_RenderHeight, 1);
+    m_BufferSize = av_image_get_buffer_size(AV_PIX_FMT_RGBA, m_RenderSize[0], m_RenderSize[1], 1);
 
     m_FrameBuffer = (uint8_t *) av_malloc(m_BufferSize * sizeof(uint8_t));
 
     av_image_fill_arrays(m_RGBAFrame->data, m_RGBAFrame->linesize,
-                         m_FrameBuffer, AV_PIX_FMT_RGBA, m_RenderWidth, m_RenderHeight, 1);
+                         m_FrameBuffer, AV_PIX_FMT_RGBA, m_RenderSize[0],
+                         m_RenderSize[1], 1);
 
-    m_SwsContext = sws_getCachedContext(m_SwsContext, m_VideoWidth, m_VideoHeight, m_PixelFormat,
-                                        m_RenderWidth, m_RenderHeight, AV_PIX_FMT_RGBA,
-                                        SWS_BICUBIC, nullptr, nullptr, nullptr);
+    m_SwsContext = sws_getCachedContext(m_SwsContext, m_VideoSize[0], m_VideoSize[1],
+                                        m_PixelFormat, m_RenderSize[0], m_RenderSize[1],
+                                        AV_PIX_FMT_RGBA, SWS_BICUBIC, nullptr,
+                                        nullptr, nullptr);
 }
 
-void VideoNativeRender::OnDrawFrame() {
-    LOGCATE("VideoNativeRender::OnDrawFrame");
+void VideoNativeRender::onDrawFrame() {
+    LOGCATE("VideoNativeRender::onDrawFrame");
     Frame *frame = m_Callback->GetOneFrame(MEDIA_TYPE_VIDEO);
     if (m_NativeWindow == nullptr || frame == nullptr) return;
     auto *videoFrame = (VideoFrame *) frame;
     ANativeWindow_lock(m_NativeWindow, &m_NativeWindowBuffer, nullptr);
 
-    sws_scale(m_SwsContext, videoFrame->yuvBuffer, videoFrame->planeSize, 0, m_VideoHeight,
-              m_RGBAFrame->data, m_RGBAFrame->linesize);
+    sws_scale(m_SwsContext, videoFrame->yuvBuffer, videoFrame->planeSize,
+              0, m_VideoSize[1], m_RGBAFrame->data, m_RGBAFrame->linesize);
 
     auto *dstBuffer = static_cast<uint8_t *>(m_NativeWindowBuffer.bits);
 
-    int srcLineSize = m_RenderWidth * 4;
+    int srcLineSize = m_RenderSize[0] * 4;
     int dstLineSize = m_NativeWindowBuffer.stride * 4;
-    for (int i = 0; i < m_RenderHeight; ++i) {
+    for (int i = 0; i < m_RenderSize[1]; ++i) {
         memcpy(dstBuffer + i * dstLineSize, m_RGBAFrame->data[0] + i * srcLineSize,
                srcLineSize);
     }
@@ -64,8 +64,13 @@ void VideoNativeRender::OnDrawFrame() {
     delete frame;
 }
 
-void VideoNativeRender::OnSurfaceDestroyed() {
-    LOGCATE("VideoNativeRender::unInit start")
+void VideoNativeRender::onSurfaceDestroyed() {
+    LOGCATE("VideoNativeRender::onSurfaceDestroyed start")
+    release();
+    LOGCATE("VideoNativeRender::onSurfaceDestroyed finish")
+}
+
+void VideoNativeRender::release() {
     m_Callback->SetPlayerState(STATE_STOP);
     if (m_NativeWindow) {
         ANativeWindow_release(m_NativeWindow);
@@ -83,9 +88,4 @@ void VideoNativeRender::OnSurfaceDestroyed() {
         av_frame_free(&m_RGBAFrame);
         m_RGBAFrame = nullptr;
     }
-    LOGCATE("VideoNativeRender::unInit finish")
-}
-
-VideoNativeRender::~VideoNativeRender() {
-
 }

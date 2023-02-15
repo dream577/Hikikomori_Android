@@ -99,9 +99,9 @@ Java_com_violet_libmedia_VioletMediaClient_native_1pnSurfaceCreated(JNIEnv *env,
                                                                     jobject surfaceObj) {
     if (player_handle != 0) {
         MediaPlayer *player = reinterpret_cast<MediaPlayer *>(player_handle);
-        Surface *surface = player->GetVideoSurface();
-        if (surface) {
-            surface->OnSurfaceCreated(env, surfaceObj);
+        VideoRender *render = player->GetVideoRender();
+        if (render) {
+            render->OnSurfaceCreated(env, surfaceObj);
         }
     }
 }
@@ -113,9 +113,9 @@ Java_com_violet_libmedia_VioletMediaClient_native_1onSurfaceChanged(JNIEnv *env,
                                                                     jint h) {
     if (player_handle != 0) {
         MediaPlayer *player = reinterpret_cast<MediaPlayer *>(player_handle);
-        Surface *surface = player->GetVideoSurface();
-        if (surface) {
-            surface->OnSurfaceChanged(w, h);
+        VideoRender *render = player->GetVideoRender();
+        if (render) {
+            render->OnSurfaceChanged(w, h);
         }
     }
 }
@@ -126,9 +126,9 @@ Java_com_violet_libmedia_VioletMediaClient_native_1onSurfaceDestroyed(JNIEnv *en
                                                                       jlong player_handle) {
     if (player_handle != 0) {
         MediaPlayer *player = reinterpret_cast<MediaPlayer *>(player_handle);
-        Surface *surface = player->GetVideoSurface();
-        if (surface) {
-            surface->OnSurfaceDestroyed();
+        VideoRender *render = player->GetVideoRender();
+        if (render) {
+            render->OnSurfaceDestroyed();
         }
     }
 }

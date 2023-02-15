@@ -21,42 +21,35 @@ using namespace std;
 
 class VideoNativeRender : public VideoRender {
 public:
-    VideoNativeRender(ANativeWindow *nativeWindow, AVPixelFormat avPixelFormat,
-                      RenderCallback *callback) : VideoRender(callback) {
-        m_NativeWindow = nativeWindow;
+    VideoNativeRender(AVPixelFormat avPixelFormat, RenderCallback *callback)
+            : VideoRender(callback) {
         m_PixelFormat = avPixelFormat;
     }
 
-    VideoNativeRender(RenderCallback *callback) : VideoRender(callback) {}
-
-    virtual ~VideoNativeRender();
-
-    virtual void OnSurfaceCreated() override;
-
-    virtual void OnSurfaceChanged(int w, int h) override;
-
-    virtual void OnDrawFrame() override;
-
-    virtual void OnSurfaceDestroyed() override;
-
-    void SetNativeWindow(ANativeWindow *window) {
-        m_NativeWindow = window;
+    virtual ~VideoNativeRender() {
+        quit();
+        release();
     }
 
-    void SetAvPixelFormat(AVPixelFormat format) {
-        m_PixelFormat = format;
-    }
+protected:
+    virtual void onDrawFrame() override;
+
+    virtual void onSurfaceCreated() override;
+
+    virtual void onSurfaceChanged() override;
+
+    virtual void onSurfaceDestroyed() override;
 
 private:
     ANativeWindow_Buffer m_NativeWindowBuffer;
-    ANativeWindow *m_NativeWindow = nullptr;
-
     AVPixelFormat m_PixelFormat;
-
     AVFrame *m_RGBAFrame = nullptr;
     uint8_t *m_FrameBuffer = nullptr;
     int m_BufferSize = 0;
     SwsContext *m_SwsContext = nullptr;
+
+private:
+    void release();
 };
 
 

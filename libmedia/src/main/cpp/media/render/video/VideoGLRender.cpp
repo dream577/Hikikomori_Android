@@ -92,8 +92,13 @@ GLfloat textureCoords[] = {
         1.0f, 0.0f         // TexCoord 3
 };
 
-void VideoGLRender::OnSurfaceCreated() {
-    LOGCATE("VideoGLRender::OnSurfaceCreated");
+void VideoGLRender::onSurfaceCreated() {
+    LOGCATE("VideoGLRender::onSurfaceCreated");
+
+    m_Surface = new VioletEGLSurface();
+    m_Surface->createWindowSurface(m_NativeWindow);
+    m_Surface->makeCurrent();
+
     m_Program = GLUtils::CreateProgram(vShaderStr, fShaderStr);
 
     if (!m_Program) {
@@ -142,16 +147,14 @@ void VideoGLRender::OnSurfaceCreated() {
     glBindVertexArray(GL_NONE);
 }
 
-void VideoGLRender::OnSurfaceChanged(int w, int h) {
-    LOGCATE("VideoGLRender::OnSurfaceChanged [w,h]=%d, %d", w, h);
-    m_WindowWidth = w;
-    m_WindowHeight = h;
-    glViewport(0, 0, w, h);
+void VideoGLRender::onSurfaceChanged() {
+    LOGCATE("VideoGLRender::onSurfaceChanged [w,h]=%d, %d", m_WindowSize[0], m_WindowSize[1]);
+    glViewport(0, 0, m_WindowSize[0], m_WindowSize[1]);
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
-void VideoGLRender::OnDrawFrame() {
-    LOGCATE("VideoGLRender::OnDrawFrame");
+void VideoGLRender::onDrawFrame() {
+    LOGCATE("VideoGLRender::onDrawFrame");
     Frame *frame = m_Callback->GetOneFrame(MEDIA_TYPE_VIDEO);
     auto *videoFrame = (VideoFrame *) frame;
     if (videoFrame == nullptr) return;
@@ -194,11 +197,15 @@ void VideoGLRender::OnDrawFrame() {
     GLUtils::setInt(m_Program, "u_nImgType", 4);
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (const void *) 0);
+    m_Surface->swapBuffers();
+
     delete frame;
 }
 
-void VideoGLRender::OnSurfaceDestroyed() {
-    LOGCATE("VideoGLRender::OnSurfaceDestroyed");
+void VideoGLRender::onSurfaceDestroyed() {
+    LOGCATE("VideoGLRender::onSurfaceDestroyed");
     m_Callback->SetPlayerState(STATE_STOP);
+    m_Surface->releaseEglSurface();
 }
+
 
