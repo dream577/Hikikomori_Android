@@ -108,6 +108,7 @@ Frame *ThreadSafeQueue::pop() {
 
 int ThreadSafeQueue::offer(Frame *frame) {
     int ret = -1;
+//    LOGCATE("ThreadSafeQueue::offer  size=%d", m_Size + 1)
     unique_lock<mutex> lock(m_Mutex);
     if (m_Size >= m_MaxSize) {
         m_CondVar.wait(lock);
@@ -130,6 +131,7 @@ Frame *ThreadSafeQueue::poll() {
     if (!abort_request) {
         frame = pop();
     }
+//    LOGCATE("ThreadSafeQueue::poll  size=%d", m_Size)
     m_CondVar.notify_all();
     lock.unlock();
     return frame;

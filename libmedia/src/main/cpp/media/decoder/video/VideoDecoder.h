@@ -17,7 +17,7 @@ class VideoDecoder : public FFBaseDecoder {
 private:
     int m_VideoWidth, m_VideoHeight;
 
-    Frame *OnFrameAvailable() override;
+    Frame *onFrameAvailable() override;
 
 public:
     VideoDecoder(char *path, DecoderCallback *callback)
@@ -26,9 +26,9 @@ public:
 
     virtual ~VideoDecoder();
 
-    virtual int init() override;
+    virtual int Init() override;
 
-    virtual int unInit() override;
+    virtual int UnInit() override;
 
     int getVideoWidth() {
         return m_VideoWidth;

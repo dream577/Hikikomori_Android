@@ -5,27 +5,27 @@
 #include "VideoDecoder.h"
 #include "LogUtil.h"
 
-int VideoDecoder::init() {
-    LOGCATE("VideoDecoder::init")
-    int result = FFBaseDecoder::init();
+VideoDecoder::~VideoDecoder() {
+    quit();
+    VideoDecoder::UnInit();
+}
+
+int VideoDecoder::Init() {
+    LOGCATE("VideoDecoder::Init")
+    int result = FFBaseDecoder::Init();
     m_VideoWidth = m_AVCodecContext->width;
     m_VideoHeight = m_AVCodecContext->height;
     return result;
 }
 
-VideoDecoder::~VideoDecoder() {
-//    VideoDecoder::unInit();
-}
-
-int VideoDecoder::unInit() {
-    LOGCATE("VideoDecoder::unInit start")
-    FFBaseDecoder::unInit();
-    LOGCATE("VideoDecoder::unInit finish")
+int VideoDecoder::UnInit() {
+    LOGCATE("VideoDecoder::UnInit start")
+    FFBaseDecoder::UnInit();
     return 0;
 }
 
-Frame *VideoDecoder::OnFrameAvailable() {
-    LOGCATE("VideoDecoder::OnFrameAvailable")
+Frame *VideoDecoder::onFrameAvailable() {
+    LOGCATE("VideoDecoder::onFrameAvailable")
     VideoFrame *frame = nullptr;
 
     AVRational timeBase = m_AVFormatContext->streams[m_StreamIndex]->time_base;
@@ -60,7 +60,7 @@ Frame *VideoDecoder::OnFrameAvailable() {
             // on some android device, output of h264 mediacodec decoder is NV12 兼容某些设备可能出现的格式不匹配问题
             frame->format = VIDEO_FRAME_FORMAT_NV12;
         }
-        LOGCATE("VideoDecoder::OnFrameAvailable frame[w,h]=[%d,%d], [dts,pts]=[%ld,%ld], format=%d ,[line0,line1,line2]=[%d,%d,%d]",
+        LOGCATE("VideoDecoder::onFrameAvailable frame[w,h]=[%d,%d], [dts,pts]=[%ld,%ld], format=%d ,[line0,line1,line2]=[%d,%d,%d]",
                 m_VideoWidth, m_VideoHeight, dts, pts, m_AVCodecContext->pix_fmt,
                 m_AVFrame->linesize[0], m_AVFrame->linesize[1], m_AVFrame->linesize[2])
     }

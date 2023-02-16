@@ -14,10 +14,16 @@
  * limitations under the License.
  */
 
+#ifndef HIKIKOMORI_LOOPER_H
+#define HIKIKOMORI_LOOPER_H
+
 #include <pthread.h>
 #include <semaphore.h>
 
 struct loopermessage;
+
+#define  ENABLE_AUTO_LOOP_MSG    10000
+#define  DISABLE_AUTO_LOOP_MSG   10001
 
 class looper {
 public:
@@ -35,6 +41,11 @@ public:
 
     virtual void handle(int what, void *data);
 
+protected:
+    void enableAutoLoop(int *what);
+
+    void disableAutoLoop();
+
 private:
     void addmsg(loopermessage *msg, bool flush);
 
@@ -47,4 +58,8 @@ private:
     sem_t headwriteprotect;
     sem_t headdataavailable;
     bool running;
+    bool autoLoopEnable = false;  // 是否允许自动循环执行指定的msg类型
+    int autoLoopMsg = -1;         // 自动循环执行的消息类型
 };
+
+#endif

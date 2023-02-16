@@ -59,7 +59,7 @@ public class VioletMediaClient {
         native_onSurfaceChanged(mNativePlayerHandle, w, h);
     }
 
-    public void onSurfaceDestroyed() {
+    public void onSurfaceDestroyed(Surface surface) {
         native_onSurfaceDestroyed(mNativePlayerHandle);
     }
 

@@ -36,9 +36,7 @@ protected:
 public:
     VideoGLRender(RenderCallback *callback) : VideoRender(callback) {}
 
-    ~VideoGLRender() {
-        quit();
-    }
+    ~VideoGLRender();
 };
 
 

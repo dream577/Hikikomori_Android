@@ -148,8 +148,8 @@ void VideoGLRender::onSurfaceCreated() {
 }
 
 void VideoGLRender::onSurfaceChanged() {
-    LOGCATE("VideoGLRender::onSurfaceChanged [w,h]=%d, %d", m_WindowSize[0], m_WindowSize[1]);
-    glViewport(0, 0, m_WindowSize[0], m_WindowSize[1]);
+    LOGCATE("VideoGLRender::onSurfaceChanged [w,h]=%d, %d", mWindowWidth, mWindowHeight);
+    glViewport(0, 0, mWindowWidth, mWindowHeight);
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
@@ -206,6 +206,11 @@ void VideoGLRender::onSurfaceDestroyed() {
     LOGCATE("VideoGLRender::onSurfaceDestroyed");
     m_Callback->SetPlayerState(STATE_STOP);
     m_Surface->releaseEglSurface();
+}
+
+VideoGLRender::~VideoGLRender() {
+    LOGCATE("VideoGLRender::~VideoGLRender");
+    quit();
 }
 
 

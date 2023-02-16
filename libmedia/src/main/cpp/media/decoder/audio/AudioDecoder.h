@@ -24,20 +24,6 @@ static const int ACC_NB_SAMPLES = 1024;
 
 class AudioDecoder : public FFBaseDecoder {
 
-public:
-    AudioDecoder(char *path, DecoderCallback *callback)
-            : FFBaseDecoder(path, AVMEDIA_TYPE_AUDIO, callback) {}
-
-    virtual ~AudioDecoder();
-
-    virtual int init() override;
-
-    virtual int unInit() override;
-
-protected:
-
-    virtual Frame *OnFrameAvailable() override;
-
 private:
     SwrContext *m_SwrContext;    // audio resample context
 
@@ -48,6 +34,20 @@ private:
     uint8_t *m_AudioOutBuffer = nullptr;
 
     const AVSampleFormat DST_SAMPLE_FORMAT = AV_SAMPLE_FMT_S16;
+
+    virtual Frame *onFrameAvailable() override;
+
+protected:
+
+public:
+    AudioDecoder(char *path, DecoderCallback *callback)
+            : FFBaseDecoder(path, AVMEDIA_TYPE_AUDIO, callback) {}
+
+    ~AudioDecoder();
+
+    virtual int Init() override;
+
+    virtual int UnInit() override;
 };
 
 

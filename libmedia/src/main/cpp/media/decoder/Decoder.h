@@ -8,6 +8,15 @@
 #define MAX_PATH_LENGTH 2048
 
 #include "MediaDef.h"
+#include "looper.h"
+
+enum DecoderMsg {
+    MESSAGE_INIT = 0,
+    MESSAGE_REINIT,
+    MESSAGE_DECODE_LOOP,
+    MESSAGE_UNINIT,
+    MESSAGE_SEEK
+};
 
 class DecoderCallback {
 public:
@@ -20,37 +29,63 @@ public:
     virtual void SetPlayerState(PlayerState state) = 0;
 };
 
-class Decoder {
+class Decoder : public looper {
+private:
+    int mLoopMsg = MESSAGE_DECODE_LOOP;
+
+protected:
+    DecoderCallback *m_Callback = nullptr;
+
+    virtual void decodeLoop() = 0;
+
+    virtual Frame *onFrameAvailable() = 0;
+
+    virtual void seekPosition(float timestamp) = 0;
+
+    volatile float m_SeekPosition = -1;               // seek position
+
 public:
-    Decoder(AVMediaType mediaType, DecoderCallback *callback) {
+    Decoder(DecoderCallback *callback) {
         m_Callback = callback;
-        m_MediaType = mediaType;
     }
 
     virtual ~Decoder() {
         m_Callback = nullptr;
     }
 
-    virtual int init() = 0;
+    virtual int Init() = 0;
 
-    virtual int unInit() = 0;
+    virtual int UnInit() = 0;
 
-    virtual int destroy() = 0;
+    virtual void StartDecodeLoop() {
+        enableAutoLoop(&mLoopMsg);
+    };
 
-    virtual void startDecodeThread() = 0;
+    int SeekPosition(float timestamp) {
+        seekPosition(timestamp);
+    }
 
-    virtual void seekPosition(float timestamp) = 0;
+    virtual void StartDecoderThread() {};
 
-protected:
-    DecoderCallback *m_Callback;
-
-    AVMediaType m_MediaType = AVMEDIA_TYPE_UNKNOWN;
-
-    virtual int decode() = 0;
-
-    virtual Frame *OnFrameAvailable() = 0;
-
-private:
+    virtual void handle(int what, void *data) override {
+        looper::handle(what, data);
+        switch (what) {
+//            case MESSAGE_INIT:
+//                Init();
+//                break;
+            case MESSAGE_DECODE_LOOP:
+                decodeLoop();
+                break;
+//            case MESSAGE_SEEK: {
+//                float *ts = (float *) data;
+//                seekPosition(*ts);
+//                break;
+//            }
+//            case MESSAGE_UNINIT:
+//                UnInit();
+//                break;
+        }
+    }
 };
 
 #endif //HIKIKOMORI_DECODER_H

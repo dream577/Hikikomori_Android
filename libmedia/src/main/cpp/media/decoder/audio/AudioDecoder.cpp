@@ -5,7 +5,12 @@
 #include "AudioDecoder.h"
 #include "LogUtil.h"
 
-Frame *AudioDecoder::OnFrameAvailable() {
+AudioDecoder::~AudioDecoder() {
+    quit();
+    AudioDecoder::UnInit();
+}
+
+Frame *AudioDecoder::onFrameAvailable() {
     int result = swr_convert(m_SwrContext, &m_AudioOutBuffer, m_DstFrameDataSize / 2,
                              (const uint8_t **) m_AVFrame->data, m_AVFrame->nb_samples);
 
@@ -22,17 +27,17 @@ Frame *AudioDecoder::OnFrameAvailable() {
 
         frame = new AudioFrame(data, m_DstFrameDataSize, channels, sampleRate,
                                dts, pts, -1);
-        LOGCATE("AudioDecoder::OnFrameAvailable data_size=%d channels=%d sampleRate=%d dts=%ld pts=%ld format=%d",
+        LOGCATE("AudioDecoder::onFrameAvailable data_size=%d channels=%d sampleRate=%d dts=%ld pts=%ld format=%d",
                 m_DstFrameDataSize, channels, sampleRate, dts, pts, -1);
     }
     return frame;
 }
 
-int AudioDecoder::init() {
-    LOGCATE("AudioDecoder::init");
+int AudioDecoder::Init() {
+    LOGCATE("AudioDecoder::Init");
     int result = -1;
     do {
-        result = FFBaseDecoder::init();
+        result = FFBaseDecoder::Init();
         if (result != 0) {
             break;
         }
@@ -48,7 +53,7 @@ int AudioDecoder::init() {
 
         swr_init(m_SwrContext);
 
-        LOGCATE("AudioDecoder::init audio metadata sample rate: %d, channel: %d, format: %d, frame_size: %d, layout: %lld",
+        LOGCATE("AudioDecoder::Init audio metadata sample rate: %d, channel: %d, format: %d, frame_size: %d, layout: %lld",
                 m_AVCodecContext->sample_rate, m_AVCodecContext->channels,
                 m_AVCodecContext->sample_fmt, m_AVCodecContext->frame_size,
                 m_AVCodecContext->channel_layout);
@@ -59,7 +64,7 @@ int AudioDecoder::init() {
                                                         m_nbSamples,
                                                         DST_SAMPLE_FORMAT, 1);
 
-        LOGCATE("AudioDecoder::init [m_nbSamples, m_DstFrameDataSze]=[%d, %d]", m_nbSamples,
+        LOGCATE("AudioDecoder::Init [m_nbSamples, m_DstFrameDataSze]=[%d, %d]", m_nbSamples,
                 m_DstFrameDataSize);
 
         m_AudioOutBuffer = (uint8_t *) malloc(m_DstFrameDataSize);
@@ -67,8 +72,8 @@ int AudioDecoder::init() {
     return result;
 }
 
-int AudioDecoder::unInit() {
-    LOGCATE("AudioDecoder::unInit start");
+int AudioDecoder::UnInit() {
+    LOGCATE("AudioDecoder::UnInit start");
     if (m_AudioOutBuffer) {
         delete m_AudioOutBuffer;
         m_AudioOutBuffer = nullptr;
@@ -79,12 +84,6 @@ int AudioDecoder::unInit() {
         m_SwrContext = nullptr;
     }
 
-    FFBaseDecoder::unInit();
-
-    LOGCATE("AudioDecoder::unInit finish");
+    FFBaseDecoder::UnInit();
     return 0;
-}
-
-AudioDecoder::~AudioDecoder() {
-//    AudioDecoder::unInit();
 }

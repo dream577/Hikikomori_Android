@@ -22,10 +22,11 @@ using namespace std;
 
 class FFBaseDecoder : public Decoder {
 private:
-    thread *m_Thread = nullptr;
+    virtual int decodeLoopOnce();
+
+//    thread *m_thread = nullptr;
 
 protected:
-
     AVFormatContext *m_AVFormatContext = nullptr;     // 封装格式上下文
 
     AVCodecContext *m_AVCodecContext = nullptr;       // 编解码器上下文
@@ -42,18 +43,12 @@ protected:
 
     AVMediaType m_MediaType = AVMEDIA_TYPE_UNKNOWN;
 
-    volatile float m_SeekPosition = -1;                         // seek position
-
-    static void DoAVDecoding(FFBaseDecoder *decode);
-
-    virtual int decode() override;
-
-    virtual int unInit() override;
+    virtual void decodeLoop() override;
 
 public:
 
-    FFBaseDecoder(const char *path, AVMediaType type, DecoderCallback *callback)
-            : Decoder(type, callback) {
+    FFBaseDecoder(const char *path, AVMediaType type, DecoderCallback *callback) : Decoder(
+            callback) {
         strcpy(m_Path, path);
         m_MediaType = type;
     }
@@ -64,15 +59,19 @@ public:
 
     virtual ~FFBaseDecoder();
 
-    virtual int init() override;
+    virtual int Init() override;
 
-    virtual int destroy() override;
-
-    virtual void startDecodeThread() override;
+    virtual int UnInit() override;
 
     virtual void seekPosition(float timestamp) override;
 
-    virtual void decodingLoop();
+//    virtual void StartDecoderThread() override {
+//        m_thread = new std::thread(startDecode, this);
+//    }
+//
+//    static void startDecode(FFBaseDecoder *decoder) {
+//        decoder->decodeLoop();
+//    }
 
 };
 

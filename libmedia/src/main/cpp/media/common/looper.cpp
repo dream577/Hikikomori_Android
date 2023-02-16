@@ -114,6 +114,10 @@ void looper::loop() {
         if (msg == NULL) {
             LOGV("no msg");
             sem_post(&headwriteprotect);
+            if (autoLoopEnable) {
+                handle(autoLoopMsg, nullptr);
+                sem_post(&headdataavailable);
+            }
             continue;
         }
         head = msg->next;
@@ -147,4 +151,24 @@ void looper::quit() {
 
 void looper::handle(int what, void *obj) {
     LOGV("dropping msg %d %p", what, obj);
+    if (what == ENABLE_AUTO_LOOP_MSG) {
+        int *p = (int *) obj;
+        if (p) {
+            autoLoopMsg = *p;
+        }
+        autoLoopEnable = true;
+        sem_post(&headdataavailable);
+    }
+    if (what == DISABLE_AUTO_LOOP_MSG) {
+        autoLoopMsg = -1;
+        autoLoopEnable = false;
+    }
+}
+
+void looper::enableAutoLoop(int *loopMsg) {
+    post(ENABLE_AUTO_LOOP_MSG, loopMsg);
+}
+
+void looper::disableAutoLoop() {
+    post(DISABLE_AUTO_LOOP_MSG, nullptr);
 }

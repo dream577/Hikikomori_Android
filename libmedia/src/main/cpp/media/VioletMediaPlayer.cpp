@@ -17,11 +17,15 @@ int VioletMediaPlayer::Init(JNIEnv *jniEnv, jobject obj, char *url, int decodeTy
     if (result1 != 0) {
         LOGCATE("VioletMediaPlayer::Init Audio Component init fail")
         unInitAudioPlayer();
+    } else {
+        LOGCATE("VioletMediaPlayer::Init Audio Component init success")
     }
     int result2 = initVideoPlayer(url);
     if (result2 != 0) {
         LOGCATE("VioletMediaPlayer::Init Video Component init fail")
         unInitVideoPlayer();
+    } else {
+        LOGCATE("VioletMediaPlayer::Init Video Component init success")
     }
 
     if (result1 == 0 || result2 == 0) {
@@ -40,7 +44,7 @@ int VioletMediaPlayer::UnInit() {
 int VioletMediaPlayer::initAudioPlayer(char *url) {
     int result = -1;
     m_AudioDecoder = new AudioDecoder(url, this);
-    result = m_AudioDecoder->init();
+    result = m_AudioDecoder->Init();
     if (result == 0) {
         m_AudioRender = new OpenSLAudioRender(this);
         result = m_AudioRender->init();
@@ -54,13 +58,12 @@ int VioletMediaPlayer::initAudioPlayer(char *url) {
 int VioletMediaPlayer::initVideoPlayer(char *url) {
     int result = -1;
     m_VideoDecoder = new VideoDecoder(url, this);
-    result = m_VideoDecoder->init();
+    result = m_VideoDecoder->Init();
     if (result == 0) {
         int mVideoWidth = m_VideoDecoder->getVideoWidth();
         int mVideoHeight = m_VideoDecoder->getVideoHeight();
-//        m_VideoRender = new VideoGLRender(this);
-        m_VideoRender = new VideoNativeRender(m_VideoDecoder->GetAVCodecContext()->pix_fmt, this);
-
+        m_VideoRender = new VideoGLRender(this);
+//        m_VideoRender = new VideoNativeRender(m_VideoDecoder->GetAVCodecContext()->pix_fmt, this);
         m_VideoRender->SetVideoSize(mVideoWidth, mVideoHeight);
 
         m_VideoFrameQueue = new ThreadSafeQueue(MAX_VIDEO_QUEUE_SIZE, MEDIA_TYPE_VIDEO);
@@ -74,7 +77,6 @@ void VioletMediaPlayer::unInitAudioPlayer() {
         m_AudioFrameQueue->abort();
     }
     if (m_AudioDecoder) {
-        m_AudioDecoder->destroy();
         delete m_AudioDecoder;
         m_AudioDecoder = nullptr;
     }
@@ -95,7 +97,6 @@ void VioletMediaPlayer::unInitVideoPlayer() {
         m_VideoFrameQueue->abort();
     }
     if (m_VideoDecoder) {
-        m_VideoDecoder->destroy();
         delete m_VideoDecoder;
         m_VideoDecoder = nullptr;
     }
@@ -114,12 +115,12 @@ void VioletMediaPlayer::Play() {
     if (GetPlayerState() != STATE_UNKNOWN) return;
     SetPlayerState(STATE_PLAYING);
     if (m_AudioDecoder) {
-        m_AudioDecoder->startDecodeThread();
+        m_AudioDecoder->StartDecodeLoop();
         m_AudioRender->startRenderThread();
     }
     if (m_VideoDecoder) {
-        m_VideoDecoder->startDecodeThread();
-        m_VideoRender->OnDrawFrameLoop();
+        m_VideoDecoder->StartDecodeLoop();
+        m_VideoRender->StartRenderLoop();
     }
 
 }

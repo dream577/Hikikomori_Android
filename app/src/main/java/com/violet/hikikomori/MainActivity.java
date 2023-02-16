@@ -68,7 +68,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
 
     @Override
     public void surfaceDestroyed(@NonNull SurfaceHolder holder) {
-
+        client.onSurfaceDestroyed(holder.getSurface());
     }
 
     @Override
