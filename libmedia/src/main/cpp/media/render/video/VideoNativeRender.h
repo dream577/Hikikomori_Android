@@ -27,9 +27,11 @@ public:
     }
 
     virtual ~VideoNativeRender() {
-        quit();
-        release();
     }
+
+    int init() override;
+
+    int unInit() override;
 
 protected:
     virtual void onDrawFrame() override;
@@ -47,9 +49,6 @@ private:
     uint8_t *m_FrameBuffer = nullptr;
     int m_BufferSize = 0;
     SwsContext *m_SwsContext = nullptr;
-
-private:
-    void release();
 };
 
 

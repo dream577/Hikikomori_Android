@@ -24,7 +24,10 @@ private:
     GLuint m_VboIds[3];
 
     VioletEGLSurface *m_Surface;
+
 protected:
+    virtual int init() override;
+
     virtual void onDrawFrame() override;
 
     virtual void onSurfaceCreated() override;
@@ -33,10 +36,12 @@ protected:
 
     virtual void onSurfaceDestroyed() override;
 
+    virtual int unInit() override;
+
 public:
     VideoGLRender(RenderCallback *callback) : VideoRender(callback) {}
 
-    ~VideoGLRender();
+    ~VideoGLRender() {}
 };
 
 

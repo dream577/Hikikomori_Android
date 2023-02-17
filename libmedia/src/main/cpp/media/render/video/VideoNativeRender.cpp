@@ -66,15 +66,16 @@ void VideoNativeRender::onDrawFrame() {
 
 void VideoNativeRender::onSurfaceDestroyed() {
     LOGCATE("VideoNativeRender::onSurfaceDestroyed start")
-    release();
+    UnInit();
 }
 
-void VideoNativeRender::release() {
+int VideoNativeRender::init() {
+    return 0;
+}
+
+int VideoNativeRender::unInit() {
+    LOGCATE("VideoNativeRender::unInit start")
     m_Callback->SetPlayerState(STATE_STOP);
-    if (m_NativeWindow) {
-        ANativeWindow_release(m_NativeWindow);
-        m_NativeWindow = nullptr;
-    }
     if (m_SwsContext) {
         sws_freeContext(m_SwsContext);
         m_SwsContext = nullptr;
@@ -87,4 +88,8 @@ void VideoNativeRender::release() {
         av_frame_free(&m_RGBAFrame);
         m_RGBAFrame = nullptr;
     }
+    VideoRender::unInit();
+    LOGCATE("VideoNativeRender::unInit finish")
+    return 0;
 }
+

@@ -31,13 +31,14 @@ int OpenSLAudioRender::init() {
 
     if (result != SL_RESULT_SUCCESS) {
         LOGCATE("OpenSLRender::Init fail. result=%d", result);
-        unInit();
+        UnInit();
     }
     return result;
 }
 
 int OpenSLAudioRender::unInit() {
     LOGCATE("OpenSLRender::unInit start");
+    AudioRender::UnInit();
     if (m_AudioPlayerObj) {
         (*m_AudioPlayerPlay)->SetPlayState(m_AudioPlayerPlay, SL_PLAYSTATE_STOPPED);
         m_AudioPlayerPlay = nullptr;
@@ -179,49 +180,72 @@ int OpenSLAudioRender::createAudioPlayer() {
     return result;
 }
 
-void OpenSLAudioRender::startRenderThread() {
-    m_thread = new std::thread(createSLWaitingThread, this);
-}
-
-void OpenSLAudioRender::createSLWaitingThread(OpenSLAudioRender *openSlRender) {
-    openSlRender->startPlay();
-}
-
-void OpenSLAudioRender::startPlay() {
-    (*m_AudioPlayerPlay)->SetPlayState(m_AudioPlayerPlay, SL_PLAYSTATE_PLAYING);
-    audioPlayerCallback(m_BufferQueue, this);
-}
-
-
-void OpenSLAudioRender::renderAudioFrame() {
+void OpenSLAudioRender::onPlayFrame() {
     Frame *frame;
     do {
         frame = m_Callback->GetOneFrame(MEDIA_TYPE_AUDIO);
         if (m_Callback->GetPlayerState() == STATE_STOP) return;
     } while (frame == nullptr);
-    AudioFrame *audioFrame = (AudioFrame *) frame;
+    auto *audioFrame = (AudioFrame *) frame;
     (*m_BufferQueue)->Enqueue(m_BufferQueue, audioFrame->data, audioFrame->dataSize);
     delete frame;
 }
 
 void
 OpenSLAudioRender::audioPlayerCallback(SLAndroidSimpleBufferQueueItf bufferQueue, void *context) {
-    OpenSLAudioRender *audioRender = static_cast<OpenSLAudioRender *>(context);
-    audioRender->renderAudioFrame();
+    auto *audioRender = (OpenSLAudioRender *) (context);
+    audioRender->playAudioFrame();
 }
 
-OpenSLAudioRender::~OpenSLAudioRender() {
-//    OpenSLAudioRender::unInit();
+void OpenSLAudioRender::onStartPlay() {
+    (*m_AudioPlayerPlay)->SetPlayState(m_AudioPlayerPlay, SL_PLAYSTATE_PLAYING);
+    audioPlayerCallback(m_BufferQueue, this);
 }
 
-int OpenSLAudioRender::destroy() {
-    unInit();
-    m_Callback->SetPlayerState(STATE_STOP);
-    if (m_thread != nullptr) {
-        m_thread->join();
-        delete m_thread;
-        m_thread = nullptr;
+void OpenSLAudioRender::playAudioFrame() {
+    post(MESSAGE_AUDIO_RENDER_LOOP, nullptr);
+}
+
+void OpenSLAudioRender::handle(int what, void *data) {
+    looper::handle(what, data);
+    switch (what) {
+        case MESSAGE_AUDIO_RENDER_INIT:
+            result = init();
+            sem_post(&runBlock);
+            break;
+        case MESSAGE_AUDIO_RENDER_START : {
+            onStartPlay();
+            break;
+        }
+        case MESSAGE_AUDIO_RENDER_LOOP:
+            onPlayFrame();
+            break;
+        case MESSAGE_CHANGE_VOLUME:
+
+            break;
+        case MESSAGE_AUDIO_RENDER_UNINIT:
+            unInit();
+            break;
     }
+}
+
+void OpenSLAudioRender::StartRenderLoop() {
+    post(MESSAGE_AUDIO_RENDER_START, nullptr);
+}
+
+int OpenSLAudioRender::Init() {
+    post(MESSAGE_AUDIO_RENDER_INIT, nullptr);
+    sem_wait(&runBlock);
+    return result;
+}
+
+int OpenSLAudioRender::UnInit() {
+    // 1. 终止自动循环
+    // 2. 执行卸载程序
+    // 3. 退出循环
+    // 4. 父类卸载
+    disableAutoLoop();
+    post(MESSAGE_AUDIO_RENDER_UNINIT, nullptr);
+    quit();
     return 0;
 }
-

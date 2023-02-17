@@ -13,7 +13,9 @@ public:
 
     virtual ~AudioRender() {}
 
-    virtual void renderAudioFrame() = 0;
+    virtual void onPlayFrame() = 0;
+
+    virtual void StartRenderLoop() = 0;
 };
 
 

@@ -25,6 +25,7 @@ static const int ACC_NB_SAMPLES = 1024;
 class AudioDecoder : public FFBaseDecoder {
 
 private:
+
     SwrContext *m_SwrContext;    // audio resample context
 
     int m_nbSamples = 0;         // number of sample per channel
@@ -43,11 +44,11 @@ public:
     AudioDecoder(char *path, DecoderCallback *callback)
             : FFBaseDecoder(path, AVMEDIA_TYPE_AUDIO, callback) {}
 
-    ~AudioDecoder();
+    virtual ~AudioDecoder() {}
 
-    virtual int Init() override;
+    virtual int init() override;
 
-    virtual int UnInit() override;
+    virtual int unInit() override;
 };
 
 

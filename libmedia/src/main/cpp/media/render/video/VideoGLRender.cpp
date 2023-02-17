@@ -92,6 +92,10 @@ GLfloat textureCoords[] = {
         1.0f, 0.0f         // TexCoord 3
 };
 
+int VideoGLRender::init() {
+    return 0;
+}
+
 void VideoGLRender::onSurfaceCreated() {
     LOGCATE("VideoGLRender::onSurfaceCreated");
 
@@ -154,7 +158,7 @@ void VideoGLRender::onSurfaceChanged() {
 }
 
 void VideoGLRender::onDrawFrame() {
-    LOGCATE("VideoGLRender::onDrawFrame");
+//    LOGCATE("VideoGLRender::onDrawFrame");
     Frame *frame = m_Callback->GetOneFrame(MEDIA_TYPE_VIDEO);
     auto *videoFrame = (VideoFrame *) frame;
     if (videoFrame == nullptr) return;
@@ -208,9 +212,11 @@ void VideoGLRender::onSurfaceDestroyed() {
     m_Surface->releaseEglSurface();
 }
 
-VideoGLRender::~VideoGLRender() {
-    LOGCATE("VideoGLRender::~VideoGLRender");
-    quit();
+int VideoGLRender::unInit() {
+    LOGCATE("VideoGLRender::unInit start");
+    VideoRender::unInit();
+    LOGCATE("VideoGLRender::unInit finish");
+    return 0;
 }
 
 

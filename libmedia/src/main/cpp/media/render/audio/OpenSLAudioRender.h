@@ -10,39 +10,39 @@
 #include <SLES/OpenSLES_Android.h>
 #include <queue>
 #include <string>
-#include <thread>
 #include "AudioRender.h"
+#include "looper.h"
 
 using namespace std;
 
-class OpenSLAudioRender : public AudioRender {
-public:
-    OpenSLAudioRender(RenderCallback *callback) : AudioRender(callback) {}
+enum AudioRenderMessage {
+    MESSAGE_AUDIO_RENDER_INIT = 0,
+    MESSAGE_AUDIO_RENDER_START,
+    MESSAGE_AUDIO_RENDER_LOOP,
+    MESSAGE_CHANGE_VOLUME,
+    MESSAGE_AUDIO_RENDER_UNINIT
+};
 
-    virtual ~OpenSLAudioRender();
-
-    virtual int init() override;
-
-    virtual int unInit() override;
-
-    virtual int destroy() override;
-
-    virtual void startRenderThread() override;
-
+class OpenSLAudioRender : public AudioRender, public looper {
 private:
+    int mLoopMsg = MESSAGE_AUDIO_RENDER_LOOP;
+
+    int result = -1;
+    sem_t runBlock;
+
     int createEngine();
 
     int createOutputMixer();
 
     int createAudioPlayer();
 
-    void startPlay();
-
-    static void createSLWaitingThread(OpenSLAudioRender *openSlRender);
+    void onStartPlay();
 
     static void audioPlayerCallback(SLAndroidSimpleBufferQueueItf bufferQueue, void *context);
 
-    virtual void renderAudioFrame() override;
+    virtual void playAudioFrame();
+
+    virtual void onPlayFrame() override;
 
     SLObjectItf m_EngineObj;
     SLEngineItf m_EngineEngine;
@@ -52,7 +52,25 @@ private:
     SLVolumeItf m_AudioPlayerVolume;
     SLAndroidSimpleBufferQueueItf m_BufferQueue;
 
-    thread *m_thread = nullptr;
+    int init();
+
+    int unInit();
+
+protected:
+    virtual void handle(int what, void *data) override;
+
+public:
+    OpenSLAudioRender(RenderCallback *callback) : AudioRender(callback) {
+        sem_init(&runBlock, 0, 0);
+    }
+
+    virtual ~OpenSLAudioRender() {}
+
+    virtual int Init() override;
+
+    virtual int UnInit() override;
+
+    virtual void StartRenderLoop() override;
 };
 
 

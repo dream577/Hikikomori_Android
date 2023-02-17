@@ -16,15 +16,13 @@ extern "C" {
 
 #include "Decoder.h"
 
-#include <thread>
-
 using namespace std;
 
 class FFBaseDecoder : public Decoder {
 private:
     virtual int decodeLoopOnce();
 
-//    thread *m_thread = nullptr;
+    float m_SeekPosition = -1;               // seek position
 
 protected:
     AVFormatContext *m_AVFormatContext = nullptr;     // 封装格式上下文
@@ -43,7 +41,13 @@ protected:
 
     AVMediaType m_MediaType = AVMEDIA_TYPE_UNKNOWN;
 
+    virtual int init() override;
+
+    virtual int unInit() override;
+
     virtual void decodeLoop() override;
+
+    virtual void seekPosition(float timestamp) override;
 
 public:
 
@@ -58,20 +62,6 @@ public:
     }
 
     virtual ~FFBaseDecoder();
-
-    virtual int Init() override;
-
-    virtual int UnInit() override;
-
-    virtual void seekPosition(float timestamp) override;
-
-//    virtual void StartDecoderThread() override {
-//        m_thread = new std::thread(startDecode, this);
-//    }
-//
-//    static void startDecode(FFBaseDecoder *decoder) {
-//        decoder->decodeLoop();
-//    }
 
 };
 

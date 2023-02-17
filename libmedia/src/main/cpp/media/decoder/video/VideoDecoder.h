@@ -19,16 +19,16 @@ private:
 
     Frame *onFrameAvailable() override;
 
+    virtual int init() override;
+
+    virtual int unInit() override;
+
 public:
     VideoDecoder(char *path, DecoderCallback *callback)
             : FFBaseDecoder(path, AVMEDIA_TYPE_VIDEO, callback) {
     }
 
-    virtual ~VideoDecoder();
-
-    virtual int Init() override;
-
-    virtual int UnInit() override;
+    virtual ~VideoDecoder() {}
 
     int getVideoWidth() {
         return m_VideoWidth;

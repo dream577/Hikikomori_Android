@@ -47,7 +47,7 @@ int VioletMediaPlayer::initAudioPlayer(char *url) {
     result = m_AudioDecoder->Init();
     if (result == 0) {
         m_AudioRender = new OpenSLAudioRender(this);
-        result = m_AudioRender->init();
+        result = m_AudioRender->Init();
         if (result == 0) {
             m_AudioFrameQueue = new ThreadSafeQueue(MAX_AUDIO_QUEUE_SIZE, MEDIA_TYPE_AUDIO);
         }
@@ -77,6 +77,7 @@ void VioletMediaPlayer::unInitAudioPlayer() {
         m_AudioFrameQueue->abort();
     }
     if (m_AudioDecoder) {
+        m_AudioDecoder->UnInit();
         delete m_AudioDecoder;
         m_AudioDecoder = nullptr;
     }
@@ -85,7 +86,7 @@ void VioletMediaPlayer::unInitAudioPlayer() {
         m_AudioFrameQueue = nullptr;
     }
     if (m_AudioRender) {
-        m_AudioRender->destroy();
+        m_AudioRender->UnInit();
         delete m_AudioRender;
         m_AudioRender = nullptr;
     }
@@ -97,6 +98,7 @@ void VioletMediaPlayer::unInitVideoPlayer() {
         m_VideoFrameQueue->abort();
     }
     if (m_VideoDecoder) {
+        m_VideoDecoder->UnInit();
         delete m_VideoDecoder;
         m_VideoDecoder = nullptr;
     }
@@ -105,6 +107,7 @@ void VioletMediaPlayer::unInitVideoPlayer() {
         m_VideoFrameQueue = nullptr;
     }
     if (m_VideoRender) {
+        m_VideoRender->UnInit();
         delete m_VideoRender;
         m_VideoRender = nullptr;
     }
@@ -116,7 +119,7 @@ void VioletMediaPlayer::Play() {
     SetPlayerState(STATE_PLAYING);
     if (m_AudioDecoder) {
         m_AudioDecoder->StartDecodeLoop();
-        m_AudioRender->startRenderThread();
+        m_AudioRender->StartRenderLoop();
     }
     if (m_VideoDecoder) {
         m_VideoDecoder->StartDecodeLoop();
@@ -159,16 +162,15 @@ void VioletMediaPlayer::SeekToPosition(float position) {
     }
 
     if (m_AudioDecoder) {
-        m_AudioDecoder->seekPosition(position);
+        m_AudioDecoder->SeekPosition(position);
     }
     if (m_VideoDecoder) {
-        m_VideoDecoder->seekPosition(position);
+        m_VideoDecoder->SeekPosition(position);
     }
 }
 
 
 Frame *VioletMediaPlayer::GetOneFrame(int type) {
-    LOGCATE("VioletMediaPlayer::GetOneFrame, MediaType=%d", type)
     Frame *frame = nullptr;
     if (GetPlayerState() == STATE_STOP) return frame;
     if (type == MEDIA_TYPE_VIDEO) {
