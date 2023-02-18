@@ -8,6 +8,8 @@
 #include "VideoRender.h"
 #include <vec2.hpp>
 #include "VioletEGLSurface.h"
+#include <android/asset_manager.h>
+#include <android/asset_manager_jni.h>
 
 #define MATH_PI 3.1415926535897932384626433832802
 #define TEXTURE_NUM 3
