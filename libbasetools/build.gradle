@@ -1,9 +1,10 @@
 plugins {
     id 'com.android.library'
+    id 'org.jetbrains.kotlin.android'
 }
 
 android {
-    namespace 'com.violet.libmedia'
+    namespace 'com.example.libbasetools'
     compileSdk 32
 
     defaultConfig {
@@ -11,20 +12,7 @@ android {
         targetSdk 32
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        sourceSets {
-            main {
-                jniLibs.srcDirs=['libs']
-            }
-        }
-
         consumerProguardFiles "consumer-rules.pro"
-
-        externalNativeBuild {
-            cmake {
-                cppFlags "-frtti -fexceptions"
-                abiFilters 'arm64-v8a', 'armeabi-v7a'
-            }
-        }
     }
 
     buildTypes {
@@ -33,17 +21,11 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             buildConfigField("boolean", "LOG_DEBUG", "false")
         }
+
         debug {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             buildConfigField("boolean", "LOG_DEBUG", "true")
-        }
-    }
-
-    externalNativeBuild {
-        cmake {
-            path "src/main/cpp/CMakeLists.txt"
-            version "3.22.1"
         }
     }
     compileOptions {
@@ -53,11 +35,30 @@ android {
 }
 
 dependencies {
-    api project(":libbasetools")
 
     implementation 'androidx.appcompat:appcompat:1.4.1'
     implementation 'com.google.android.material:material:1.5.0'
+    implementation 'androidx.core:core-ktx:+'
+    implementation 'androidx.core:core-ktx:+'
+    implementation 'androidx.core:core-ktx:+'
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+
+    /******************** 第三方库开始  ***********************/
+    implementation 'com.orhanobut:logger:2.2.0'
+
+    api("com.squareup.retrofit2:adapter-rxjava3:2.9.0")
+    api("com.google.code.gson:gson:2.8.9")
+    api("io.reactivex.rxjava3:rxandroid:3.0.0")
+    api("io.reactivex.rxjava3:rxjava:3.0.0")
+    api("androidx.room:room-runtime:2.4.2")
+
+    annotationProcessor "androidx.room:room-compiler:2.4.2"
+
+    // For developers using AndroidX in their applications
+    api("pub.devrel:easypermissions:3.0.0")
+    // For developers using the Android Support Library
+    api("pub.devrel:easypermissions:3.0.0")
+    /******************** 第三方库结束  ***********************/
 }
