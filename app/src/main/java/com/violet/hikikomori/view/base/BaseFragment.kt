@@ -5,7 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import com.violet.libbasetools.KLog
+import com.violet.libbasetools.util.KLog
 
 abstract class BaseFragment : Fragment() {
     protected val TAG = "FragmentObserver"

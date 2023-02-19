@@ -16,56 +16,52 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:fitsSystemWindows="true"
         tools:context=".MainActivity">
 
-        <com.violet.libmedia.view.VioletSurfaceView
-            android:id="@+id/surface"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            app:layout_constraintDimensionRatio="H, 16:9"
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/btn_go_media"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:onClick="@{listener}"
+            android:visibility="visible"
+            app:layout_constraintBottom_toBottomOf="@id/guideline1"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="@id/guideline1"
+            app:lottie_autoPlay="true"
+            app:lottie_loop="true"
+            app:lottie_rawRes="@raw/lottie_moon"
+            app:lottie_renderMode="hardware" />
 
-        <Button
-            android:id="@+id/play"
-            android:layout_width="match_parent"
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline1"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:onClick="@{listener}"
-            android:text="播放"
-            app:layout_constraintTop_toBottomOf="@+id/surface" />
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent="0.33" />
 
-        <Button
-            android:id="@+id/pause"
-            android:layout_width="match_parent"
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline2"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:onClick="@{listener}"
-            android:text="暂停"
-            app:layout_constraintTop_toBottomOf="@+id/play" />
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent="0.66" />
 
-        <Button
-            android:id="@+id/resume"
-            android:layout_width="match_parent"
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline3"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:onClick="@{listener}"
-            android:text="继续"
-            app:layout_constraintTop_toBottomOf="@+id/pause" />
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.33" />
 
-        <Button
-            android:id="@+id/stop"
-            android:layout_width="match_parent"
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline4"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:onClick="@{listener}"
-            android:text="停止"
-            app:layout_constraintTop_toBottomOf="@+id/resume" />
-
-        <Button
-            android:id="@+id/seek"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="@{listener}"
-            android:text="定位到50秒"
-            app:layout_constraintTop_toBottomOf="@+id/stop" />
-
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.66" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </layout>

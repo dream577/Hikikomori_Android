@@ -9,8 +9,6 @@ import androidx.annotation.NonNull;
 import androidx.databinding.DataBindingUtil;
 import androidx.databinding.ViewDataBinding;
 
-import com.silvery.moon.view.common.base.BaseFragment;
-
 public abstract class BaseBindingFragment<T extends ViewDataBinding> extends BaseFragment {
 
     protected T mBinding;

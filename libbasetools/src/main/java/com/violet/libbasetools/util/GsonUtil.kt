@@ -1,4 +1,4 @@
-package com.violet.libbasetools
+package com.violet.libbasetools.util
 
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException

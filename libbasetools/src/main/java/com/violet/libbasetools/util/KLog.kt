@@ -1,4 +1,4 @@
-package com.violet.libbasetools
+package com.violet.libbasetools.util
 
 import com.example.libbasetools.BuildConfig
 import com.orhanobut.logger.FormatStrategy

@@ -4,7 +4,7 @@ import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.google.gson.JsonSyntaxException
 
-import com.violet.libbasetools.KLog
+import com.violet.libbasetools.util.KLog
 import com.violet.libnetwork.model.Constant
 import okhttp3.Interceptor
 import okhttp3.Response

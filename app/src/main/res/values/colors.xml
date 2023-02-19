@@ -1,10 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <color name="common_purple">#BB86FC</color>
+    <color name="light_purple">#BB86FC</color>
+    <color name="dark_purple">#B100DD</color>
     <color name="purple_200">#FFBB86FC</color>
     <color name="purple_500">#FF6200EE</color>
     <color name="purple_700">#FF3700B3</color>
     <color name="teal_200">#FF03DAC5</color>
     <color name="teal_700">#FF018786</color>
+
+    <!--  black  -->
     <color name="black">#FF000000</color>
+    <color name="black_transparent_90">#E6000000</color>
+    <color name="black_transparent_80">#CC000000</color>
+    <color name="black_transparent_70">#B3000000</color>
+    <color name="black_transparent_60">#99000000</color>
+    <color name="black_transparent_50">#80000000</color>
+    <color name="black_transparent_40">#66000000</color>
+    <color name="black_transparent_30">#4D000000</color>
+    <color name="black_transparent_20">#33000000</color>
+    <color name="black_transparent_10">#1A000000</color>
+
+    <!-- white -->
     <color name="white">#FFFFFFFF</color>
+    <color name="white_transparent_40">#66FFFFFF</color>
+
+    <color name="transparent">#00FFFFFF</color>
+    <color name="grey">#989393</color>
+    <color name="transport_grey">#FF989393</color>
+    <color name="red">#FFFF0000</color>
+    <color name="light_red">#C00400</color>
+
+    <color name="blue">#03A9F4</color>
+
+    <!--text color-->
+    <color name="text_dark_blue">#0000ff</color>
+
 </resources>
