@@ -4,7 +4,6 @@ import android.view.View
 import android.view.WindowManager
 import com.violet.hikikomori.databinding.ActivityMainBinding
 import com.violet.hikikomori.view.base.BaseBindingActivity
-import com.violet.hikikomori.view.media.VioletMediaActivity
 import com.violet.hikikomori.view.media.file.FileActivity
 
 class MainActivity : BaseBindingActivity<ActivityMainBinding>(), View.OnClickListener {

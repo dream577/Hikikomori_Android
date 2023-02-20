@@ -15,15 +15,15 @@
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:keepScreenOn="true"
         android:fitsSystemWindows="true"
-        tools:context=".view.media.VideoPlayFragment">
+        android:keepScreenOn="true"
+        tools:context=".view.media.player.VideoPlayFragment">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <com.violet.libmedia.view.VioletSurfaceView
+            <SurfaceView
                 android:id="@+id/surface"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"

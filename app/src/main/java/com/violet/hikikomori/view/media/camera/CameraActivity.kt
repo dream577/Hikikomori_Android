@@ -1,18 +1,18 @@
-package com.violet.hikikomori.view.media
+package com.violet.hikikomori.view.media.camera
 
 import android.content.Context
 import android.content.Intent
 import android.view.View
 import com.violet.hikikomori.R
-import com.violet.hikikomori.databinding.ActivityVioletMediaBinding
+import com.violet.hikikomori.databinding.ActivityCameraBinding
 import com.violet.hikikomori.view.base.BaseBindingActivity
 
-class VioletMediaActivity : BaseBindingActivity<ActivityVioletMediaBinding>() {
+class CameraActivity : BaseBindingActivity<ActivityCameraBinding>() {
 
     companion object {
         @JvmStatic
         fun launch(context: Context) {
-            val intent = Intent(context, VioletMediaActivity::class.java)
+            val intent = Intent(context, CameraActivity::class.java)
             context.startActivity(intent)
         }
     }
@@ -25,5 +25,5 @@ class VioletMediaActivity : BaseBindingActivity<ActivityVioletMediaBinding>() {
 
     }
 
-    override fun getLayoutId(): Int = R.layout.activity_violet_media
+    override fun getLayoutId(): Int = R.layout.activity_camera
 }

@@ -7,8 +7,8 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.violet.hikikomori.R
+import com.violet.hikikomori.model.ImageItem
 import com.violet.hikikomori.view.media.file.MediaViewHolderCallback
-import com.violet.hikikomori.view.media.file.model.ImageBean
 
 class ImageViewHolder(val mContext: Context, itemView: View) : RecyclerView.ViewHolder(itemView) {
     private lateinit var mViewHolderCallback: MediaViewHolderCallback
@@ -23,7 +23,7 @@ class ImageViewHolder(val mContext: Context, itemView: View) : RecyclerView.View
         mTvIntroduce = itemView.findViewById(R.id.tv_introduce)
     }
 
-    fun initViewHolder(imageBean: ImageBean, callback: MediaViewHolderCallback) {
+    fun initViewHolder(imageBean: ImageItem, callback: MediaViewHolderCallback) {
         mTvIntroduce.text = imageBean.title
         mViewHolderCallback = callback
 

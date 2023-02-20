@@ -1,11 +1,11 @@
 package com.violet.hikikomori.view.media.file
 
-import com.violet.hikikomori.view.media.file.model.MediaBean
+import com.violet.hikikomori.model.MediaItem
 
 interface MediaViewHolderCallback {
-    fun onClick(mediaBean: MediaBean)
+    fun onClick(mediaBean: MediaItem)
 }
 
 interface MediaAdapterCallback {
-    fun onClick(mediaBean: MediaBean)
+    fun onClick(mediaBean: MediaItem)
 }

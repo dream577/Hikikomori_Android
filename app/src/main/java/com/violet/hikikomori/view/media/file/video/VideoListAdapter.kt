@@ -5,10 +5,10 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.violet.hikikomori.R
+import com.violet.hikikomori.model.MediaItem
+import com.violet.hikikomori.model.VideoItem
 import com.violet.hikikomori.view.media.file.MediaAdapterCallback
 import com.violet.hikikomori.view.media.file.MediaViewHolderCallback
-import com.violet.hikikomori.view.media.file.model.MediaBean
-import com.violet.hikikomori.view.media.file.model.VideoBean
 
 class VideoListAdapter(val mContext: Context) : RecyclerView.Adapter<VideoViewHolder>(),
     MediaViewHolderCallback {
@@ -16,7 +16,7 @@ class VideoListAdapter(val mContext: Context) : RecyclerView.Adapter<VideoViewHo
     private lateinit var mAdapterCallback: MediaAdapterCallback
 
 
-    val videoBeanList = mutableListOf<VideoBean>()
+    val videoBeanList = mutableListOf<VideoItem>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VideoViewHolder {
         val view =
@@ -32,13 +32,13 @@ class VideoListAdapter(val mContext: Context) : RecyclerView.Adapter<VideoViewHo
         return videoBeanList.size
     }
 
-    fun refreshMediaList(list: List<VideoBean>) {
+    fun refreshMediaList(list: List<VideoItem>) {
         videoBeanList.clear()
         videoBeanList.addAll(list)
         notifyDataSetChanged()
     }
 
-    override fun onClick(mediaBean: MediaBean) {
+    override fun onClick(mediaBean: MediaItem) {
         mAdapterCallback.onClick(mediaBean)
     }
 

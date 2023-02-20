@@ -7,9 +7,9 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.violet.hikikomori.R
 import com.violet.hikikomori.databinding.FragmentCommonListPageBinding
+import com.violet.hikikomori.model.MediaItem
 import com.violet.hikikomori.view.base.BaseBindingFragment
 import com.violet.hikikomori.view.media.file.MediaAdapterCallback
-import com.violet.hikikomori.view.media.file.model.MediaBean
 import com.violet.hikikomori.viewmodel.media.FileViewModel
 import com.violet.libbasetools.util.KLog
 import pub.devrel.easypermissions.EasyPermissions
@@ -87,7 +87,7 @@ class ImageListFragment : BaseBindingFragment<FragmentCommonListPageBinding>(),
 
     override fun getLayoutId(): Int = R.layout.fragment_common_list_page
 
-    override fun onClick(mediaBean: MediaBean) {
+    override fun onClick(mediaBean: MediaItem) {
 
     }
 }

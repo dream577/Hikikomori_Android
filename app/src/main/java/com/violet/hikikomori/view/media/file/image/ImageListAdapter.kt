@@ -5,16 +5,16 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.violet.hikikomori.R
+import com.violet.hikikomori.model.ImageItem
+import com.violet.hikikomori.model.MediaItem
 import com.violet.hikikomori.view.media.file.MediaAdapterCallback
 import com.violet.hikikomori.view.media.file.MediaViewHolderCallback
-import com.violet.hikikomori.view.media.file.model.ImageBean
-import com.violet.hikikomori.view.media.file.model.MediaBean
 
 class ImageListAdapter(val mContext: Context) : RecyclerView.Adapter<ImageViewHolder>(),
     MediaViewHolderCallback {
     private lateinit var mAdapterCallback: MediaAdapterCallback
 
-    val imageBeanList = mutableListOf<ImageBean>()
+    val imageBeanList = mutableListOf<ImageItem>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ImageViewHolder {
         val view =
@@ -30,7 +30,7 @@ class ImageListAdapter(val mContext: Context) : RecyclerView.Adapter<ImageViewHo
         return imageBeanList.size
     }
 
-    fun refreshMediaList(list: List<ImageBean>) {
+    fun refreshMediaList(list: List<ImageItem>) {
         imageBeanList.clear()
         imageBeanList.addAll(list)
         notifyDataSetChanged()
@@ -40,7 +40,7 @@ class ImageListAdapter(val mContext: Context) : RecyclerView.Adapter<ImageViewHo
         mAdapterCallback = callback
     }
 
-    override fun onClick(mediaBean: MediaBean) {
+    override fun onClick(mediaBean: MediaItem) {
         mAdapterCallback.onClick(mediaBean)
     }
 }

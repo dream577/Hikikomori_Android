@@ -1,5 +1,6 @@
 package com.violet.hikikomori.view.media.file.video
 
+import android.Manifest
 import android.graphics.Rect
 import android.view.View
 import androidx.lifecycle.ViewModelProvider
@@ -7,11 +8,10 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.violet.hikikomori.R
 import com.violet.hikikomori.databinding.FragmentCommonListPageBinding
+import com.violet.hikikomori.model.MediaItem
 import com.violet.hikikomori.view.base.BaseBindingFragment
-import com.violet.hikikomori.view.media.VideoPlayActivity
-import com.violet.hikikomori.view.media.VioletMediaActivity
+import com.violet.hikikomori.view.media.player.VideoPlayActivity
 import com.violet.hikikomori.view.media.file.MediaAdapterCallback
-import com.violet.hikikomori.view.media.file.model.MediaBean
 import com.violet.hikikomori.viewmodel.media.FileViewModel
 import com.violet.libbasetools.util.KLog
 import pub.devrel.easypermissions.EasyPermissions
@@ -28,7 +28,7 @@ class VideoListFragment : BaseBindingFragment<FragmentCommonListPageBinding>(),
 
         if (EasyPermissions.hasPermissions(
                 requireContext(),
-                "android.permission.READ_EXTERNAL_STORAGE"
+                Manifest.permission.READ_EXTERNAL_STORAGE
             )
         ) {
             mViewModel.queryVideos(requireContext())
@@ -82,7 +82,7 @@ class VideoListFragment : BaseBindingFragment<FragmentCommonListPageBinding>(),
 
     override fun getLayoutId(): Int = R.layout.fragment_common_list_page
 
-    override fun onClick(mediaBean: MediaBean) {
+    override fun onClick(mediaBean: MediaItem) {
         VideoPlayActivity.launch(requireContext(), mediaBean.path)
     }
 }

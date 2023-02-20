@@ -3,6 +3,8 @@ package com.violet.libbasetools.util
 import android.content.Context
 import java.io.File
 import java.io.FileOutputStream
+import java.text.SimpleDateFormat
+import java.util.*
 
 /**
  * 安卓中有"内部存储"和"外部存储"的概念:
@@ -28,6 +30,12 @@ import java.io.FileOutputStream
  *     7、getExternalFilesDir(“”).getAbsolutePath() = /storage/emulated/0/Android/data/{PackageName}/files  获取某个应用在外部存储中的files路径
  *     8、getExternalCacheDir().getAbsolutePath() = /storage/emulated/0/Android/data/{PackageName}/cache    获取某个应用在外部存储中的files路径
  */
+
+
+fun createFile(context: Context, extension: String): File {
+    val sdf = SimpleDateFormat("yyyy_MM_dd_HH_mm_ss_SSS", Locale.US)
+    return File(context.filesDir, "IMG_${sdf.format(Date())}.$extension")
+}
 
 /**
  * 拷贝assert文件夹下的文件到sd中

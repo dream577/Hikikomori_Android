@@ -1,14 +1,17 @@
-package com.violet.hikikomori.view.media.file.model
+package com.violet.hikikomori.model
 
 import android.graphics.Bitmap
+import android.hardware.camera2.CaptureResult
+import android.media.Image
+import java.io.Closeable
 
-open class MediaBean(
+open class MediaItem(
     val id: Int,
     val title: String,
     val path: String,
 )
 
-class VideoBean(
+class VideoItem(
     id: Int,
     title: String,
     val album: String? = null,
@@ -19,13 +22,22 @@ class VideoBean(
     val size: Long = 0,
     val duration: Int = 0,
     val thumbnail: Bitmap? = null
-) : MediaBean(id, title, path)
+) : MediaItem(id, title, path)
 
-class ImageBean(
+class ImageItem(
     id: Int = 0,
     title: String,
     path: String,
     val height: Int? = 0,
     val width: Int? = 0,
     val orientation: Int? = 0
-) : MediaBean(id, title, path)
+) : MediaItem(id, title, path)
+
+data class CombinedCaptureResult(
+    val image: Image,
+    val metadata: CaptureResult,
+    val orientation: Int,
+    val format: Int
+) : Closeable {
+    override fun close() = image.close()
+}

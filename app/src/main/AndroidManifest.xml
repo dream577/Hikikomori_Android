@@ -20,14 +20,14 @@
         android:theme="@style/Theme.Hikikomori"
         tools:targetApi="31">
         <activity
-            android:name=".view.media.VideoPlayActivity"
+            android:name=".view.media.player.VideoPlayActivity"
             android:exported="false">
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="" />
         </activity>
         <activity
-            android:name=".view.media.VioletMediaActivity"
+            android:name=".view.media.camera.CameraActivity"
             android:exported="false">
             <meta-data
                 android:name="android.app.lib_name"

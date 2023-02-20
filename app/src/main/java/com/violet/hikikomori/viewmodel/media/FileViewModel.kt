@@ -3,21 +3,23 @@ package com.violet.hikikomori.viewmodel.media
 import android.app.Application
 import android.content.Context
 import android.database.Cursor
+import android.net.Uri
 import android.provider.MediaStore
+import androidx.core.net.toUri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.violet.hikikomori.view.media.file.model.ImageBean
-import com.violet.hikikomori.view.media.file.model.VideoBean
-import com.violet.libbasetools.model.Event
+import com.violet.hikikomori.model.ImageItem
+import com.violet.hikikomori.model.VideoItem
 import com.violet.hikikomori.viewmodel.BaseViewModel
+import com.violet.libbasetools.model.Event
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.schedulers.Schedulers
 
 class FileViewModel(application: Application) : BaseViewModel(application) {
-    private val _videoListLiveData: MutableLiveData<Event<List<VideoBean>>> = MutableLiveData()
+    private val _videoListLiveData: MutableLiveData<Event<List<VideoItem>>> = MutableLiveData()
 
-    private val _imageListLiveData: MutableLiveData<Event<List<ImageBean>>> = MutableLiveData()
+    private val _imageListLiveData: MutableLiveData<Event<List<ImageItem>>> = MutableLiveData()
 
     fun queryVideos(mContext: Context) {
         Observable.just(1)
@@ -41,17 +43,17 @@ class FileViewModel(application: Application) : BaseViewModel(application) {
             .subscribe()
     }
 
-    fun getVideoListLiveData(): LiveData<Event<List<VideoBean>>> {
+    fun getVideoListLiveData(): LiveData<Event<List<VideoItem>>> {
         return _videoListLiveData;
     }
 
-    fun getImageListLiveData(): LiveData<Event<List<ImageBean>>> {
+    fun getImageListLiveData(): LiveData<Event<List<ImageItem>>> {
         return _imageListLiveData;
     }
 
 
-    private fun getVideoList(context: Context): MutableList<VideoBean> {
-        val list: MutableList<VideoBean> = ArrayList()
+    private fun getVideoList(context: Context): MutableList<VideoItem> {
+        val list: MutableList<VideoItem> = ArrayList()
         val contentResolver = context.contentResolver
         val cursor: Cursor? = contentResolver.query(
             MediaStore.Video.Media.EXTERNAL_CONTENT_URI, null, null, null, null
@@ -67,7 +69,7 @@ class FileViewModel(application: Application) : BaseViewModel(application) {
                 val path = it.getString(it.getColumnIndexOrThrow(MediaStore.Video.Media.DATA))
                 val duration = it.getInt(it.getColumnIndexOrThrow(MediaStore.Video.Media.DURATION))
                 val size = it.getLong(it.getColumnIndexOrThrow(MediaStore.Video.Media.SIZE))
-                val video = VideoBean(id, title, album, artist, displayName, mimeType, path, size, duration)
+                val video = VideoItem(id, title, album, artist, displayName, mimeType, path, size, duration)
                 list.add(video)
             }
             cursor.close()
@@ -76,11 +78,14 @@ class FileViewModel(application: Application) : BaseViewModel(application) {
     }
 
 
-    private fun getImageList(context: Context): MutableList<ImageBean> {
-        val list: MutableList<ImageBean> = ArrayList()
+    private fun getImageList(context: Context): MutableList<ImageItem> {
+        val list: MutableList<ImageItem> = ArrayList()
         val contentResolver = context.contentResolver
+//        val cursor: Cursor? = contentResolver.query(
+//            MediaStore.Images.Media.EXTERNAL_CONTENT_URI, null, null, null, null
+//        )
         val cursor: Cursor? = contentResolver.query(
-            MediaStore.Images.Media.EXTERNAL_CONTENT_URI, null, null, null, null
+            context.filesDir.toUri(), null, null, null, null
         )
         cursor?.let {
             while (it.moveToNext()) {
@@ -93,7 +98,7 @@ class FileViewModel(application: Application) : BaseViewModel(application) {
                 val vHeight = it.getInt(it.getColumnIndexOrThrow(MediaStore.Images.Media.HEIGHT))
                 val vWidth = it.getInt(it.getColumnIndexOrThrow(MediaStore.Images.Media.WIDTH))
                 val vOrientation = it.getInt(it.getColumnIndexOrThrow(MediaStore.Images.Media.ORIENTATION))
-                val image = ImageBean(vId, vTitle, vPath, vHeight, vWidth, vOrientation)
+                val image = ImageItem(vId, vTitle, vPath, vHeight, vWidth, vOrientation)
                 list.add(image)
             }
             cursor.close()

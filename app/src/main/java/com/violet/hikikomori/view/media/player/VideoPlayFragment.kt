@@ -1,4 +1,4 @@
-package com.violet.hikikomori.view.media
+package com.violet.hikikomori.view.media.player
 
 import android.Manifest
 import android.content.res.Configuration
