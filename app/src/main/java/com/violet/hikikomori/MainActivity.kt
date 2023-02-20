@@ -1,10 +1,14 @@
 package com.violet.hikikomori
 
+import android.Manifest
 import android.view.View
 import android.view.WindowManager
 import com.violet.hikikomori.databinding.ActivityMainBinding
 import com.violet.hikikomori.view.base.BaseBindingActivity
+import com.violet.hikikomori.view.media.camera.CameraActivity
 import com.violet.hikikomori.view.media.file.FileActivity
+import pub.devrel.easypermissions.EasyPermissions
+import pub.devrel.easypermissions.PermissionRequest
 
 class MainActivity : BaseBindingActivity<ActivityMainBinding>(), View.OnClickListener {
     private val TAG = MainActivity::class.java.simpleName
@@ -41,12 +45,22 @@ class MainActivity : BaseBindingActivity<ActivityMainBinding>(), View.OnClickLis
 //        }
         // 非全屏显示，显示状态栏和导航栏
         window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
-        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE or View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+        window.decorView.systemUiVisibility =
+            View.SYSTEM_UI_FLAG_VISIBLE or View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (!EasyPermissions.hasPermissions(this, Manifest.permission.CAMERA)) {
+            EasyPermissions.requestPermissions(
+                this, "请求获取相机权限", 101, Manifest.permission.CAMERA
+            )
+        }
     }
 
     override fun onClick(v: View) {
         when (v.id) {
-            R.id.btn_go_media -> FileActivity.launch(this)
+            R.id.btn_go_media -> CameraActivity.launch(this)
         }
     }
 
