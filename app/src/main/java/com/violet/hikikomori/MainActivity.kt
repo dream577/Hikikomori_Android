@@ -51,16 +51,27 @@ class MainActivity : BaseBindingActivity<ActivityMainBinding>(), View.OnClickLis
 
     override fun onResume() {
         super.onResume()
-        if (!EasyPermissions.hasPermissions(this, Manifest.permission.CAMERA)) {
-            EasyPermissions.requestPermissions(
-                this, "请求获取相机权限", 101, Manifest.permission.CAMERA
+
+        if (!EasyPermissions.hasPermissions(
+                this, Manifest.permission.CAMERA,
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
             )
+        ) {
+            EasyPermissions.requestPermissions(
+                this,
+                "请求获取权限",
+                101,
+                Manifest.permission.CAMERA,
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                )
         }
     }
 
     override fun onClick(v: View) {
         when (v.id) {
             R.id.btn_go_media -> CameraActivity.launch(this)
+            R.id.btn_go_file -> FileActivity.launch(this)
         }
     }
 

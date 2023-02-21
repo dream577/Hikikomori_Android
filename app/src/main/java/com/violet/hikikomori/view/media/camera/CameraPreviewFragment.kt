@@ -1,5 +1,6 @@
 package com.violet.hikikomori.view.media.camera
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
 import android.graphics.ImageFormat
@@ -10,6 +11,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
+import android.util.Log
 import android.view.Surface
 import android.view.SurfaceHolder
 import android.view.View
@@ -62,7 +64,7 @@ class CameraPreviewFragment : BaseBindingFragment<FragmentCameraPreviewBinding>(
     }
 
     private val characteristics: CameraCharacteristics by lazy {
-        mCameraManager.getCameraCharacteristics(getFirstCameraIdFacing(mCameraManager)!!)
+        mCameraManager.getCameraCharacteristics(args.cameraId)
     }
 
     private lateinit var imageReader: ImageReader
@@ -200,6 +202,7 @@ class CameraPreviewFragment : BaseBindingFragment<FragmentCameraPreviewBinding>(
         }
     }
 
+    @SuppressLint("MissingPermission")
     private suspend fun openCamera(
         manager: CameraManager,
         cameraId: String,
@@ -367,6 +370,21 @@ class CameraPreviewFragment : BaseBindingFragment<FragmentCameraPreviewBinding>(
                 cont.resumeWithException(exc)
             }
         }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        try {
+            cameraDevice.close()
+        } catch (exc: Throwable) {
+            Log.e(TAG, "Error closing camera", exc)
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        cameraThread.quitSafely()
+        imageReaderThread.quitSafely()
     }
 
     private fun listAllCameras() {

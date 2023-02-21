@@ -5,14 +5,14 @@ plugins {
 }
 
 android {
-    signingConfigs {
-        debug {
-            storeFile file('D:\\Users\\bronyna\\Android\\signature\\violet.jks')
-            storePassword 'bronyna123456'
-            keyAlias 'violet'
-            keyPassword 'bronyna123456'
-        }
-    }
+//    signingConfigs {
+//        debug {
+//            storeFile file('D:\\Users\\bronyna\\Android\\signature\\violet.jks')
+//            storePassword 'bronyna123456'
+//            keyAlias 'violet'
+//            keyPassword 'bronyna123456'
+//        }
+//    }
     namespace 'com.violet.hikikomori'
     compileSdk 32
 
