@@ -14,7 +14,7 @@ android {
 //        }
 //    }
     namespace 'com.violet.hikikomori'
-    compileSdk 32
+    compileSdk 33
 
     defaultConfig {
         applicationId "com.violet.hikikomori"

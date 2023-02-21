@@ -95,8 +95,7 @@ class CameraPreviewFragment : BaseBindingFragment<FragmentCameraPreviewBinding>(
         }
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+    override fun initView() {
         mBinding.listener = this
         mBinding.captureButton.setOnApplyWindowInsetsListener { v, insets ->
             v.translationX = (-insets.systemWindowInsetRight).toFloat()
@@ -121,7 +120,10 @@ class CameraPreviewFragment : BaseBindingFragment<FragmentCameraPreviewBinding>(
                     characteristics,
                     SurfaceHolder::class.java
                 )
-                KLog.d(TAG, "View finder size: ${mBinding.captureSurfaceView.width} x ${mBinding.captureSurfaceView.height}")
+                KLog.d(
+                    TAG,
+                    "View finder size: ${mBinding.captureSurfaceView.width} x ${mBinding.captureSurfaceView.height}"
+                )
                 KLog.d(TAG, "Selected preview size: $previewSize")
                 mBinding.captureSurfaceView.setAspectRatio(
                     previewSize.width,
@@ -129,7 +131,7 @@ class CameraPreviewFragment : BaseBindingFragment<FragmentCameraPreviewBinding>(
                 )
 
                 // To ensure that size is set, initialize camera in the view's thread
-                view.post { initializeCamera() }
+                requireView().post { initializeCamera() }
             }
         })
 

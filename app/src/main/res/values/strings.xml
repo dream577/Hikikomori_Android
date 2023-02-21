@@ -7,5 +7,6 @@
     <string name="title_my_resource">我的资源</string>
     <string name="title_video">视频</string>
     <string name="title_image">图片</string>
+    <string name="capture">Capture</string>
     <!-- FileActivity 结束 -->
 </resources>
