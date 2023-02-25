@@ -55,6 +55,7 @@ protected:
 public:
     VideoRender(RenderCallback *callback) : Render(callback) {
         sem_init(&runBlock, 0, 0);
+        mVideoWidth = mVideoHeight = -1;
     }
 
     virtual ~VideoRender() {
@@ -97,6 +98,7 @@ public:
         // 3. 退出循环
         // 4. 父类卸载
         disableAutoLoop();
+        post(MESSAGE_ON_SURFACE_DESTROY, nullptr);
         post(MESSAGE_VIDEO_RENDER_UNINIT, nullptr);
         quit();
         return 0;

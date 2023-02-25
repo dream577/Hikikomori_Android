@@ -1,16 +1,14 @@
-package com.violet.libmedia.recoder
+package com.violet.libmedia.recoder.audio
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import com.violet.libbasetools.util.KLog.d
 import android.media.AudioRecord
 import kotlin.Throws
-import androidx.core.app.ActivityCompat
-import android.content.pm.PackageManager
 import android.media.AudioFormat
-import com.violet.libmedia.recoder.AudioRecorder
-import com.violet.libbasetools.util.KLog
 import android.media.MediaRecorder.AudioSource
+import pub.devrel.easypermissions.EasyPermissions
 import java.lang.Exception
 import java.util.concurrent.Callable
 import java.util.concurrent.atomic.AtomicBoolean
@@ -21,13 +19,10 @@ class AudioRecorder(private val mContext: Context) : Callable<Boolean> {
     private var mMinBufferSize = 0
     private val isStop: AtomicBoolean = AtomicBoolean(false)
 
+    @SuppressLint("MissingPermission")
     @Throws(Exception::class)
     override fun call(): Boolean {
-        if (ActivityCompat.checkSelfPermission(
-                mContext,
-                Manifest.permission.RECORD_AUDIO
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
+        if (!EasyPermissions.hasPermissions(mContext, Manifest.permission.RECORD_AUDIO)) {
             return false
         }
         mMinBufferSize = AudioRecord.getMinBufferSize(

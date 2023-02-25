@@ -10,10 +10,6 @@
 class RenderCallback {
 public:
     virtual Frame *GetOneFrame(int type) = 0;
-
-    virtual int GetPlayerState() = 0;
-
-    virtual void SetPlayerState(PlayerState state) = 0;
 };
 
 

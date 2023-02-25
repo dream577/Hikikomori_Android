@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.violet.hikikomori.view.media.camera.util
+package com.violet.libmedia.view
 
 import android.content.Context
 import android.util.AttributeSet

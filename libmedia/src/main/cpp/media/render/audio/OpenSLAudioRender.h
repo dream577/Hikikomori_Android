@@ -26,6 +26,7 @@ enum AudioRenderMessage {
 class OpenSLAudioRender : public AudioRender, public looper {
 private:
     int mLoopMsg = MESSAGE_AUDIO_RENDER_LOOP;
+    volatile bool stop = false;
 
     int result = -1;
     sem_t runBlock;

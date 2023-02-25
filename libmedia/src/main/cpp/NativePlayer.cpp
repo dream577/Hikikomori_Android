@@ -8,7 +8,7 @@
 
 extern "C"
 JNIEXPORT jstring JNICALL
-Java_com_violet_libmedia_VioletMediaClient_native_1GetFFmpegVersion(JNIEnv *env, jclass clazz) {
+Java_com_violet_libmedia_VioletVideoClient_native_1GetFFmpegVersion(JNIEnv *env, jclass clazz) {
     char strBuffer[1024 * 4] = {0};
     strcat(strBuffer, "libavcodec : ");
     strcat(strBuffer, AV_STRINGIFY(LIBAVCODEC_VERSION));
@@ -33,7 +33,7 @@ Java_com_violet_libmedia_VioletMediaClient_native_1GetFFmpegVersion(JNIEnv *env,
 
 extern "C"
 JNIEXPORT jlong JNICALL
-Java_com_violet_libmedia_VioletMediaClient_native_1Init(JNIEnv *env, jobject thiz, jstring url,
+Java_com_violet_libmedia_VioletVideoClient_native_1Init(JNIEnv *env, jobject thiz, jstring url,
                                                         jint player_type, jint render_type,
                                                         jobject surface) {
     const char *path = env->GetStringUTFChars(url, nullptr);
@@ -45,7 +45,7 @@ Java_com_violet_libmedia_VioletMediaClient_native_1Init(JNIEnv *env, jobject thi
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_violet_libmedia_VioletMediaClient_native_1Play(JNIEnv *env, jobject thiz,
+Java_com_violet_libmedia_VioletVideoClient_native_1Play(JNIEnv *env, jobject thiz,
                                                         jlong player_handle) {
     if (player_handle != 0) {
         MediaPlayer *player = reinterpret_cast<MediaPlayer *>(player_handle);
@@ -54,7 +54,7 @@ Java_com_violet_libmedia_VioletMediaClient_native_1Play(JNIEnv *env, jobject thi
 }
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_violet_libmedia_VioletMediaClient_native_1pause(JNIEnv *env, jobject thiz,
+Java_com_violet_libmedia_VioletVideoClient_native_1pause(JNIEnv *env, jobject thiz,
                                                          jlong player_handle) {
     if (player_handle != 0) {
         MediaPlayer *player = reinterpret_cast<MediaPlayer *>(player_handle);
@@ -63,7 +63,7 @@ Java_com_violet_libmedia_VioletMediaClient_native_1pause(JNIEnv *env, jobject th
 }
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_violet_libmedia_VioletMediaClient_native_1resume(JNIEnv *env, jobject thiz,
+Java_com_violet_libmedia_VioletVideoClient_native_1resume(JNIEnv *env, jobject thiz,
                                                           jlong player_handle) {
     if (player_handle != 0) {
         MediaPlayer *player = reinterpret_cast<MediaPlayer *>(player_handle);
@@ -72,7 +72,7 @@ Java_com_violet_libmedia_VioletMediaClient_native_1resume(JNIEnv *env, jobject t
 }
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_violet_libmedia_VioletMediaClient_native_1stop(JNIEnv *env, jobject thiz,
+Java_com_violet_libmedia_VioletVideoClient_native_1stop(JNIEnv *env, jobject thiz,
                                                         jlong player_handle) {
     if (player_handle != 0) {
         MediaPlayer *player = reinterpret_cast<MediaPlayer *>(player_handle);
@@ -83,7 +83,7 @@ Java_com_violet_libmedia_VioletMediaClient_native_1stop(JNIEnv *env, jobject thi
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_violet_libmedia_VioletMediaClient_native_1seekToPosition(JNIEnv *env, jobject thiz,
+Java_com_violet_libmedia_VioletVideoClient_native_1seekToPosition(JNIEnv *env, jobject thiz,
                                                                   jlong player_handle,
                                                                   jfloat position) {
     if (player_handle != 0) {
@@ -94,7 +94,7 @@ Java_com_violet_libmedia_VioletMediaClient_native_1seekToPosition(JNIEnv *env, j
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_violet_libmedia_VioletMediaClient_native_1pnSurfaceCreated(JNIEnv *env, jobject thiz,
+Java_com_violet_libmedia_VioletVideoClient_native_1pnSurfaceCreated(JNIEnv *env, jobject thiz,
                                                                     jlong player_handle,
                                                                     jobject surfaceObj) {
     if (player_handle != 0) {
@@ -108,7 +108,7 @@ Java_com_violet_libmedia_VioletMediaClient_native_1pnSurfaceCreated(JNIEnv *env,
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_violet_libmedia_VioletMediaClient_native_1onSurfaceChanged(JNIEnv *env, jobject thiz,
+Java_com_violet_libmedia_VioletVideoClient_native_1onSurfaceChanged(JNIEnv *env, jobject thiz,
                                                                     jlong player_handle, jint w,
                                                                     jint h) {
     if (player_handle != 0) {
@@ -122,7 +122,7 @@ Java_com_violet_libmedia_VioletMediaClient_native_1onSurfaceChanged(JNIEnv *env,
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_violet_libmedia_VioletMediaClient_native_1onSurfaceDestroyed(JNIEnv *env, jobject thiz,
+Java_com_violet_libmedia_VioletVideoClient_native_1onSurfaceDestroyed(JNIEnv *env, jobject thiz,
                                                                       jlong player_handle) {
     if (player_handle != 0) {
         MediaPlayer *player = reinterpret_cast<MediaPlayer *>(player_handle);

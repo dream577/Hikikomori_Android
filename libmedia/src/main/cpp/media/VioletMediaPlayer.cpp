@@ -81,14 +81,14 @@ void VioletMediaPlayer::unInitAudioPlayer() {
         delete m_AudioDecoder;
         m_AudioDecoder = nullptr;
     }
-    if (m_AudioFrameQueue) {
-        delete m_AudioFrameQueue;
-        m_AudioFrameQueue = nullptr;
-    }
     if (m_AudioRender) {
         m_AudioRender->UnInit();
         delete m_AudioRender;
         m_AudioRender = nullptr;
+    }
+    if (m_AudioFrameQueue) {
+        delete m_AudioFrameQueue;
+        m_AudioFrameQueue = nullptr;
     }
 }
 
@@ -102,14 +102,14 @@ void VioletMediaPlayer::unInitVideoPlayer() {
         delete m_VideoDecoder;
         m_VideoDecoder = nullptr;
     }
-    if (m_VideoFrameQueue) {
-        delete m_VideoFrameQueue;
-        m_VideoFrameQueue = nullptr;
-    }
     if (m_VideoRender) {
         m_VideoRender->UnInit();
         delete m_VideoRender;
         m_VideoRender = nullptr;
+    }
+    if (m_VideoFrameQueue) {
+        delete m_VideoFrameQueue;
+        m_VideoFrameQueue = nullptr;
     }
 }
 

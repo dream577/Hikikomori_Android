@@ -2,6 +2,8 @@
 // Created by bronyna on 2023/2/9.
 //
 
+#include "stdint.h"
+
 #ifndef HIKIKOMORI_MEDIADEF_H
 #define HIKIKOMORI_MEDIADEF_H
 

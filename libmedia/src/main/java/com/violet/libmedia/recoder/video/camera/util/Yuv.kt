@@ -1,4 +1,4 @@
-package com.violet.hikikomori.view.media.camera.util
+package com.violet.libmedia.recoder.video.camera.util
 
 import android.graphics.ImageFormat
 import android.media.Image

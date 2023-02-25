@@ -184,7 +184,7 @@ void OpenSLAudioRender::onPlayFrame() {
     Frame *frame;
     do {
         frame = m_Callback->GetOneFrame(MEDIA_TYPE_AUDIO);
-        if (m_Callback->GetPlayerState() == STATE_STOP) return;
+        if (stop) return;
     } while (frame == nullptr);
     auto *audioFrame = (AudioFrame *) frame;
     (*m_BufferQueue)->Enqueue(m_BufferQueue, audioFrame->data, audioFrame->dataSize);
@@ -240,6 +240,7 @@ int OpenSLAudioRender::Init() {
 }
 
 int OpenSLAudioRender::UnInit() {
+    stop = true;
     // 1. 终止自动循环
     // 2. 执行卸载程序
     // 3. 退出循环

@@ -7,12 +7,11 @@ import com.violet.hikikomori.databinding.ActivityMainBinding
 import com.violet.hikikomori.view.base.BaseBindingActivity
 import com.violet.hikikomori.view.media.camera.CameraActivity
 import com.violet.hikikomori.view.media.file.FileActivity
+import com.violet.libmedia.recoder.video.camera.VioletCamera
 import pub.devrel.easypermissions.EasyPermissions
-import pub.devrel.easypermissions.PermissionRequest
 
 class MainActivity : BaseBindingActivity<ActivityMainBinding>(), View.OnClickListener {
     private val TAG = MainActivity::class.java.simpleName
-
 
     override fun initView() {
         super.initView()
@@ -64,7 +63,7 @@ class MainActivity : BaseBindingActivity<ActivityMainBinding>(), View.OnClickLis
                 101,
                 Manifest.permission.CAMERA,
                 Manifest.permission.READ_EXTERNAL_STORAGE,
-                )
+            )
         }
     }
 

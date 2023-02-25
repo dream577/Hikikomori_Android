@@ -18,9 +18,9 @@ ThreadSafeQueue::ThreadSafeQueue(int maxSize, int type) : ThreadSafeQueue() {
 }
 
 ThreadSafeQueue::~ThreadSafeQueue() {
-    LOGCATE("ThreadSafeQueue::~ThreadSafeQueue  MediaType=%d", m_MediaType)
     abort();
     flush();
+    LOGCATE("ThreadSafeQueue::~ThreadSafeQueue  MediaType=%d", m_MediaType)
 }
 
 void ThreadSafeQueue::abort() {
@@ -110,13 +110,13 @@ int ThreadSafeQueue::offer(Frame *frame) {
     int ret = -1;
 //    LOGCATE("ThreadSafeQueue::offer  size=%d", m_Size + 1)
     unique_lock<mutex> lock(m_Mutex);
-    if (m_Size >= m_MaxSize) {
+    while (m_Size >= m_MaxSize && !abort_request) {
         m_CondVar.wait(lock);
     }
     if (!abort_request) {
         ret = put(frame);
     }
-    if (frame != nullptr && ret == -1) delete frame;
+    if (frame && ret == -1) delete frame;
     m_CondVar.notify_all();
     lock.unlock();
     return ret;
@@ -125,7 +125,7 @@ int ThreadSafeQueue::offer(Frame *frame) {
 Frame *ThreadSafeQueue::poll() {
     Frame *frame = nullptr;
     unique_lock<mutex> lock(m_Mutex);
-    if (m_Size == 0) {
+    while (m_Size == 0 && !abort_request) {
         m_CondVar.wait(lock);
     }
     if (!abort_request) {

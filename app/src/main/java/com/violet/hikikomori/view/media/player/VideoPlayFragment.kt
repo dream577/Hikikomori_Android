@@ -10,14 +10,14 @@ import com.violet.hikikomori.R
 import com.violet.hikikomori.databinding.FragmentVideoPlayBinding
 import com.violet.hikikomori.view.base.BaseBindingFragment
 import com.violet.libbasetools.util.KLog
-import com.violet.libmedia.VioletMediaClient
+import com.violet.libmedia.VioletVideoClient
 import pub.devrel.easypermissions.EasyPermissions
 
 class VideoPlayFragment : BaseBindingFragment<FragmentVideoPlayBinding>(), SurfaceHolder.Callback,
     View.OnClickListener {
 
     private lateinit var path: String
-    private var client: VioletMediaClient? = null
+    private var client: VioletVideoClient? = null
     private val readPermission = Manifest.permission.READ_EXTERNAL_STORAGE
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -71,7 +71,7 @@ class VideoPlayFragment : BaseBindingFragment<FragmentVideoPlayBinding>(), Surfa
 
     override fun surfaceCreated(holder: SurfaceHolder) {
         KLog.d(TAG, "surfaceCreated time=" + System.currentTimeMillis())
-        client = VioletMediaClient()
+        client = VioletVideoClient()
         client?.init(path, holder.surface)
         client?.onSurfaceCreated(holder.surface)
     }

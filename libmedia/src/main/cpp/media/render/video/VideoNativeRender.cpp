@@ -75,7 +75,6 @@ int VideoNativeRender::init() {
 
 int VideoNativeRender::unInit() {
     LOGCATE("VideoNativeRender::unInit start")
-    m_Callback->SetPlayerState(STATE_STOP);
     if (m_SwsContext) {
         sws_freeContext(m_SwsContext);
         m_SwsContext = nullptr;

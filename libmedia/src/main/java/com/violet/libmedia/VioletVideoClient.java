@@ -2,7 +2,7 @@ package com.violet.libmedia;
 
 import android.view.Surface;
 
-public class VioletMediaClient {
+public class VioletVideoClient {
     static {
         System.loadLibrary("moonmedia");
     }

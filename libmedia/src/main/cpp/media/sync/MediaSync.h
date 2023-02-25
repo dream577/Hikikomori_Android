@@ -16,7 +16,6 @@ extern "C" {
 #define SYNC_DELAY_THRESHOLD 100    //100ms
 
 #define SYNC_INITIAL_TIMESTAMP      -1
-#define SYNC_SEEK_POSITION_FLAG     -2
 
 class MediaSync {
 

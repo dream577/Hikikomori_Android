@@ -1,19 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <layout>
 
     <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".view.media.camera.CameraListFragment">
+        tools:context=".view.media.camera.CameraRecordFragment">
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/camera_list_view"
+        <com.violet.libmedia.view.AutoFitSurfaceView
+            android:id="@+id/camera_record_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
     </FrameLayout>
-
 
 </layout>

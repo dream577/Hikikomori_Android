@@ -8,10 +8,7 @@ void MediaSync::audioSyncToSystemClock(long pts) {
     m_CurrAudioTimeStamp = pts;
 
     if (m_AudioStartTime == SYNC_INITIAL_TIMESTAMP) {
-        m_AudioStartTime = GetSysCurrentTime();
-    }
-    if (m_AudioStartTime == SYNC_SEEK_POSITION_FLAG) {
-        m_AudioStartTime = GetSysCurrentTime() - pts;
+        m_VideoStartTime = GetSysCurrentTime() - pts;
     }
     long elapsedTime = GetSysCurrentTime() - m_AudioStartTime;
     long delay = 0;
@@ -28,9 +25,6 @@ void MediaSync::videoSyncToSystemClock(long pts) {
     m_CurrVideoTimeStamp = pts;
 
     if (m_VideoStartTime == SYNC_INITIAL_TIMESTAMP) {
-        m_VideoStartTime = GetSysCurrentTime();
-    }
-    if (m_VideoStartTime == SYNC_SEEK_POSITION_FLAG) {
         m_VideoStartTime = GetSysCurrentTime() - pts;
     }
     long elapsedTime = GetSysCurrentTime() - m_VideoStartTime;
@@ -49,23 +43,19 @@ void MediaSync::videoSynToAudioClock() {
 }
 
 void MediaSync::syncTimeStampWhenResume() {
-    if (m_AudioStartTime != SYNC_INITIAL_TIMESTAMP) {
-        m_AudioStartTime = GetSysCurrentTime() - m_CurrAudioTimeStamp;
-    }
-    if (m_VideoStartTime != SYNC_INITIAL_TIMESTAMP) {
-        m_VideoStartTime = GetSysCurrentTime() - m_CurrVideoTimeStamp;
-    }
+    m_AudioStartTime = GetSysCurrentTime() - m_CurrAudioTimeStamp;
+    m_VideoStartTime = GetSysCurrentTime() - m_CurrVideoTimeStamp;
     if (m_AudioStartTime != SYNC_INITIAL_TIMESTAMP && m_VideoStartTime != SYNC_INITIAL_TIMESTAMP) {
         m_VideoStartTime = m_AudioStartTime;
     }
 }
 
 void MediaSync::audioSeekToPositionSuccess() {
-    m_AudioStartTime = SYNC_SEEK_POSITION_FLAG;
+    m_AudioStartTime = SYNC_INITIAL_TIMESTAMP;
 }
 
 void MediaSync::videoSeekToPositionSuccess() {
-    m_VideoStartTime = SYNC_SEEK_POSITION_FLAG;
+    m_VideoStartTime = SYNC_INITIAL_TIMESTAMP;
 }
 
 MediaSync::~MediaSync() {

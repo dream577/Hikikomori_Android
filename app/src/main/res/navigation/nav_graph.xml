@@ -3,86 +3,19 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/camera_list_fragment">
-
-    <fragment
-        android:id="@+id/camera_list_fragment"
-        android:name="com.violet.hikikomori.view.media.camera.CameraListFragment"
-        android:label="CameraList">
-        <action
-            android:id="@+id/action_to_preview_fragment"
-            app:destination="@id/camera_preview_fragment"
-            app:enterAnim="@anim/slide_in_from_right"
-            app:exitAnim="@anim/slide_out_from_left"
-            app:popEnterAnim="@anim/slide_in_from_left"
-            app:popExitAnim="@anim/slide_out_from_right" />
-
-        <action
-            android:id="@+id/action_to_record_fragment"
-            app:destination="@id/camera_record_fragment"
-            app:enterAnim="@anim/slide_in_from_right"
-            app:exitAnim="@anim/slide_out_from_left"
-            app:popEnterAnim="@anim/slide_in_from_left"
-            app:popExitAnim="@anim/slide_out_from_right" />
-    </fragment>
-
-    <fragment
-        android:id="@+id/camera_preview_fragment"
-        android:name="com.violet.hikikomori.view.media.camera.CameraPreviewFragment"
-        android:label="Camera"
-        tools:layout="@layout/fragment_camera_preview">
-
-        <argument
-            android:name="camera_id"
-            app:argType="string"
-            app:nullable="false" />
-
-        <argument
-            android:name="pixel_format"
-            app:argType="integer"
-            app:nullable="false" />
-
-    </fragment>
+    app:startDestination="@id/camera_record_fragment">
 
     <fragment
         android:id="@+id/camera_record_fragment"
-        android:name="com.violet.hikikomori.view.media.camera.record.PreviewFragment"
-        android:label="Camera"
-        tools:layout="@layout/fragment_preview">
-
-        <argument
-            android:name="camera_id"
-            app:argType="string"
-            app:nullable="false" />
-
-        <argument
-            android:name="width"
-            app:argType="integer" />
-
-        <argument
-            android:name="height"
-            app:argType="integer" />
-
-        <argument
-            android:name="fps"
-            app:argType="integer" />
-
-        <argument
-            android:name="dynamicRange"
-            app:argType="long" />
-
-        <argument
-            android:name="previewStabilization"
-            app:argType="boolean" />
-
-        <argument
-            android:name="filterOn"
-            app:argType="boolean" />
-
-        <argument
-            android:name="useHardware"
-            app:argType="boolean" />
-
-
+        android:name="com.violet.hikikomori.view.media.camera.CameraRecordFragment"
+        android:label="RecordFragment">
+<!--        <action-->
+<!--            android:id="@+id/action_to_record_fragment"-->
+<!--            app:destination="@id/camera_record_fragment"-->
+<!--            app:enterAnim="@anim/slide_in_from_right"-->
+<!--            app:exitAnim="@anim/slide_out_from_left"-->
+<!--            app:popEnterAnim="@anim/slide_in_from_left"-->
+<!--            app:popExitAnim="@anim/slide_out_from_right" />-->
     </fragment>
+
 </navigation>

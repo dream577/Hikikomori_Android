@@ -9,6 +9,9 @@ include_directories(
         media
         media/egl
         media/common
+        media/recorder
+        media/recorder/video
+        media/recorder/audio
         media/decoder
         media/decoder/audio
         media/decoder/video
@@ -27,6 +30,9 @@ file(GLOB src-files
         ${CMAKE_SOURCE_DIR}/media/*cpp
         ${CMAKE_SOURCE_DIR}/media/common/*cpp
         ${CMAKE_SOURCE_DIR}/media/egl/*cpp
+        ${CMAKE_SOURCE_DIR}/media/recorder/*cpp
+        ${CMAKE_SOURCE_DIR}/media/recorder/video/*cpp
+        ${CMAKE_SOURCE_DIR}/media/recorder/audio/*cpp
         ${CMAKE_SOURCE_DIR}/media/decoder/*cpp
         ${CMAKE_SOURCE_DIR}/media/decoder/audio/*cpp
         ${CMAKE_SOURCE_DIR}/media/decoder/video/*cpp

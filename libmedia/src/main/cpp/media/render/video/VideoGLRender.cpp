@@ -153,15 +153,35 @@ void VideoGLRender::onSurfaceCreated() {
 
 void VideoGLRender::onSurfaceChanged() {
     LOGCATE("VideoGLRender::onSurfaceChanged [w,h]=%d, %d", mWindowWidth, mWindowHeight);
-    glViewport(0, 0, mWindowWidth, mWindowHeight);
+    int x, y;
+
+    if (mVideoWidth == -1) mVideoWidth = mWindowWidth;
+    if (mVideoHeight == -1) mVideoHeight = mWindowHeight;
+
+    if (mWindowWidth < mWindowHeight * mVideoWidth / mVideoHeight) {
+        mRenderWidth = mWindowWidth;
+        mRenderHeight = mWindowWidth * mVideoHeight / mVideoWidth;
+    } else {
+        mRenderWidth = mWindowHeight * mVideoWidth / mVideoHeight;
+        mRenderHeight = mWindowHeight;
+    }
+
+    LOGCATE("VideoGLRender::onSurfaceChanged window[w,h]=[%d, %d],DstSize[w, h]=[%d, %d]",
+            mWindowWidth, mWindowHeight, mRenderWidth, mRenderHeight);
+
+    x = (mWindowWidth - mRenderWidth) / 2;
+    y = (mWindowHeight - mRenderHeight) / 2;
+
+    // 自适应画面居中
+    glViewport(x, y, mRenderWidth, mRenderHeight);
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
 void VideoGLRender::onDrawFrame() {
 //    LOGCATE("VideoGLRender::onDrawFrame");
     Frame *frame = m_Callback->GetOneFrame(MEDIA_TYPE_VIDEO);
+    if (frame == nullptr) return;
     auto *videoFrame = (VideoFrame *) frame;
-    if (videoFrame == nullptr) return;
     //upload Y plane data
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, m_TextureId[0]);
@@ -207,15 +227,14 @@ void VideoGLRender::onDrawFrame() {
 }
 
 void VideoGLRender::onSurfaceDestroyed() {
-    LOGCATE("VideoGLRender::onSurfaceDestroyed");
-    m_Callback->SetPlayerState(STATE_STOP);
+    LOGCATE("VideoGLRender::onSurfaceDestroyed")
     m_Surface->releaseEglSurface();
 }
 
 int VideoGLRender::unInit() {
-    LOGCATE("VideoGLRender::unInit start");
+    LOGCATE("VideoGLRender::unInit start")
     VideoRender::unInit();
-    LOGCATE("VideoGLRender::unInit finish");
+    LOGCATE("VideoGLRender::unInit finish")
     return 0;
 }
 
