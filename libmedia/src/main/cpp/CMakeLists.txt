@@ -6,6 +6,7 @@ set(EXTERNAL_LIB_DIR ${CMAKE_SOURCE_DIR}/libs)
 include_directories(
         include
         glm
+        utils
         media
         media/egl
         media/common
