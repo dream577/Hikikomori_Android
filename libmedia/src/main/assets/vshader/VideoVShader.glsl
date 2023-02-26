@@ -5,6 +5,6 @@ layout(location=1) in vec2 a_textCoord;
 out vec2 v_texCoord;
 
 void main() {
-    gl_position = a_position;
+    gl_Position = a_position;
     v_texCoord = a_textCoord;
 }

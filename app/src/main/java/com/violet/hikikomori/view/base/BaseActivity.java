@@ -113,6 +113,5 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
     @Override
     public void finish() {
         super.finish();
-        activityList.remove(this);
     }
 }
