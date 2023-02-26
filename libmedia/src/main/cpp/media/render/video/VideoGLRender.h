@@ -5,11 +5,14 @@
 #ifndef HIKIKOMORI_VIDEOGLRENDER_H
 #define HIKIKOMORI_VIDEOGLRENDER_H
 
-#include "VideoRender.h"
 #include <vec2.hpp>
+#include <glm.hpp>
+#include <gtc/matrix_transform.hpp>
+#include <gtc/type_ptr.hpp>
+
+#include "VideoRender.h"
 #include "VioletEGLSurface.h"
-#include <android/asset_manager.h>
-#include <android/asset_manager_jni.h>
+#include "NativeAssertManager.h"
 
 #define MATH_PI 3.1415926535897932384626433832802
 #define TEXTURE_NUM 3
@@ -27,7 +30,13 @@ private:
 
     VioletEGLSurface *m_Surface;
 
+    mat4 m_MVPMatrix;
+
+    void updateMVPMatrix(int angleX, int angleY, float scaleX, float scaleY);
+
 protected:
+
+
     virtual int init() override;
 
     virtual void onDrawFrame() override;
@@ -35,6 +44,8 @@ protected:
     virtual void onSurfaceCreated() override;
 
     virtual void onSurfaceChanged() override;
+
+    virtual void updateMVPMatrix() override;
 
     virtual void onSurfaceDestroyed() override;
 

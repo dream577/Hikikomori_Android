@@ -16,8 +16,32 @@ enum VideoRenderMessage {
     MESSAGE_ON_SURFACE_CREATED,
     MESSAGE_ON_SURFACE_CHANGED,
     MESSAGE_ON_SURFACE_DESTROY,
+    MESSAGE_UPDATE_MATRIX,
     MESSAGE_VIDEO_RENDER_LOOP,
     MESSAGE_VIDEO_RENDER_UNINIT
+};
+
+struct TransformMatrix {
+    int degree;
+    int mirror;
+    float translateX;
+    float translateY;
+    float scaleX;
+    float scaleY;
+    int angleX;
+    int angleY;
+
+    TransformMatrix() : translateX(0), translateY(0), scaleX(1.0), scaleY(1.0),
+                        degree(0), mirror(0), angleX(0), angleY(0) {}
+
+    void Reset() {
+        translateX = 0;
+        translateY = 0;
+        scaleX = 1.0;
+        scaleY = 1.0;
+        degree = 0;
+        mirror = 0;
+    }
 };
 
 class VideoRender : public Render, public looper {
@@ -30,6 +54,7 @@ protected:
     int mWindowWidth, mWindowHeight;
 
     ANativeWindow *m_NativeWindow = nullptr;
+    TransformMatrix m_transformMatrix;
 
     int result = -1;
     sem_t runBlock;
@@ -41,6 +66,8 @@ protected:
     virtual void onSurfaceCreated() = 0;
 
     virtual void onSurfaceChanged() = 0;
+
+    virtual void updateMVPMatrix() = 0;
 
     virtual void onSurfaceDestroyed() = 0;
 
@@ -84,13 +111,25 @@ public:
         post(MESSAGE_ON_SURFACE_CHANGED, nullptr);
     };
 
-    virtual void StartRenderLoop() override {
-        enableAutoLoop(&mLoopMsg);
+    virtual void UpdateMVPMatrix(float translateX, float translateY, float scaleX,
+                                 float scaleY, int degree, int mirror) {
+
+        m_transformMatrix.translateX = translateX;
+        m_transformMatrix.translateY = translateY;
+        m_transformMatrix.scaleX = scaleX;
+        m_transformMatrix.scaleY = scaleY;
+        m_transformMatrix.degree = degree;
+        m_transformMatrix.mirror = mirror;
+        post(MESSAGE_UPDATE_MATRIX, nullptr);
     }
 
     virtual void OnSurfaceDestroyed() {
         post(MESSAGE_ON_SURFACE_DESTROY, nullptr, true);
     };
+
+    virtual void StartRenderLoop() override {
+        enableAutoLoop(&mLoopMsg);
+    }
 
     virtual int UnInit() override {
         // 1. 终止自动循环
@@ -120,6 +159,10 @@ public:
             }
             case MESSAGE_VIDEO_RENDER_LOOP: {
                 onDrawFrame();
+                break;
+            }
+            case MESSAGE_UPDATE_MATRIX: {
+                updateMVPMatrix();
                 break;
             }
             case MESSAGE_ON_SURFACE_DESTROY: {

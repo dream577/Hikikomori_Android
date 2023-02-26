@@ -11,10 +11,11 @@ static char vShaderStr[] =
         "#version 300 es\n"
         "layout(location = 0) in vec4 a_position;\n"
         "layout(location = 1) in vec2 a_texCoord;\n"
+        "uniform mat4 u_MVPMatrix;\n"
         "out vec2 v_texCoord;\n"
         "void main()\n"
         "{\n"
-        "    gl_Position = a_position;\n"
+        "    gl_Position = u_MVPMatrix * a_position;\n"
         "    v_texCoord = a_texCoord;\n"
         "}";
 
@@ -93,6 +94,7 @@ GLfloat textureCoords[] = {
 };
 
 int VideoGLRender::init() {
+
     return 0;
 }
 
@@ -103,7 +105,17 @@ void VideoGLRender::onSurfaceCreated() {
     m_Surface->createWindowSurface(m_NativeWindow);
     m_Surface->makeCurrent();
 
+//    char *vShaderStr = VioletAssertManager::GetInstance()->GetAssertFile("vshader/VideoVShader.glsl");
+//    char *fShaderStr = VioletAssertManager::GetInstance()->GetAssertFile("fshader/VideoFShader.glsl");
+//    if (vShaderStr) {
+//        LOGCATE("顶点着色器如下：\n%s", vShaderStr)
+//    }
+//    if (fShaderStr) {
+//        LOGCATE("片段着色器如下：\n%s", fShaderStr)
+//    }
     m_Program = GLUtils::CreateProgram(vShaderStr, fShaderStr);
+//    delete vShaderStr;
+//    delete fShaderStr;
 
     if (!m_Program) {
         LOGCATE("VideoGLRender::OnSurfaceCreated create program fail");
@@ -177,6 +189,98 @@ void VideoGLRender::onSurfaceChanged() {
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
+void VideoGLRender::updateMVPMatrix(int angleX, int angleY, float scaleX, float scaleY) {
+    LOGCATE("VideoGLRender::updateMVPMatrix [%d,%d,%f,%f]", angleX, angleY, scaleX, scaleY);
+    angleX = angleX % 360;
+    angleY = angleY % 360;
+
+    //转化为弧度角
+    float radiansX = static_cast<float>(MATH_PI / 180.0f * angleX);
+    float radiansY = static_cast<float>(MATH_PI / 180.0f * angleY);
+    // Projection matrix
+    glm::mat4 Projection = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, 0.1f, 100.0f);
+    //glm::mat4 Projection = glm::frustum(-ratio, ratio, -1.0f, 1.0f, 4.0f, 100.0f);
+    //glm::mat4 Projection = glm::perspective(45.0f,ratio, 0.1f,100.f);
+
+    // View matrix
+    glm::mat4 View = glm::lookAt(
+            glm::vec3(0, 0, 4), // Camera is at (0,0,1), in World Space
+            glm::vec3(0, 0, 0), // and looks at the origin
+            glm::vec3(0, 1, 0)  // Head is up (set to 0,-1,0 to look upside-down)
+    );
+
+    // Model matrix
+    glm::mat4 Model = glm::mat4(1.0f);
+    Model = glm::scale(Model, glm::vec3(scaleX, scaleY, 1.0f));
+    Model = glm::rotate(Model, radiansX, glm::vec3(1.0f, 0.0f, 0.0f));
+    Model = glm::rotate(Model, radiansY, glm::vec3(0.0f, 1.0f, 0.0f));
+    Model = glm::translate(Model, glm::vec3(0.0f, 0.0f, 0.0f));
+
+    m_MVPMatrix = Projection * View * Model;
+}
+
+void VideoGLRender::updateMVPMatrix() {
+    LOGCATE("VideoGLRender::updateMVPMatrix [angleX=%d,angleY=%d,scaleX=%f,scaleY=%f,degree=%d,mirror=%d]",
+            m_transformMatrix.angleX, m_transformMatrix.angleY, m_transformMatrix.scaleX,
+            m_transformMatrix.scaleY, m_transformMatrix.degree, m_transformMatrix.mirror)
+    //转化为弧度角
+    float radiansX = static_cast<float>(MATH_PI / 180.0f * m_transformMatrix.angleX);
+    float radiansY = static_cast<float>(MATH_PI / 180.0f * m_transformMatrix.angleY);
+
+    float fFactorX = 1.0f;
+    float fFactorY = 1.0f;
+
+    if (m_transformMatrix.mirror == 1) {
+        fFactorX = -1.0f;
+    } else if (m_transformMatrix.mirror == 2) {
+        fFactorY = -1.0f;
+    }
+
+    float fRotate = MATH_PI * m_transformMatrix.degree * 1.0f / 180;
+    if (m_transformMatrix.mirror == 0) {
+        if (m_transformMatrix.degree == 270) {
+            fRotate = MATH_PI * 0.5;
+        } else if (m_transformMatrix.degree == 180) {
+            fRotate = MATH_PI;
+        } else if (m_transformMatrix.degree == 90) {
+            fRotate = MATH_PI * 1.5;
+        }
+    } else if (m_transformMatrix.mirror == 1) {
+        if (m_transformMatrix.degree == 90) {
+            fRotate = MATH_PI * 0.5;
+        } else if (m_transformMatrix.degree == 180) {
+            fRotate = MATH_PI;
+        } else if (m_transformMatrix.degree == 270) {
+            fRotate = MATH_PI * 1.5;
+        }
+    }
+
+    glm::mat4 Projection = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 1.0f);
+    glm::mat4 View = glm::lookAt(
+            glm::vec3(0, 0, 1), // Camera is at (0,0,1), in World Space
+            glm::vec3(0, 0, 0), // and looks at the origin
+            glm::vec3(0, 1, 0) // Head is up (set to 0,-1,0 to look upside-down)
+    );
+
+    // Model matrix : an identity matrix (model will be at the origin)
+    glm::mat4 Model = glm::mat4(1.0f);
+    Model = glm::scale(Model, glm::vec3(fFactorX * m_transformMatrix.scaleX,
+                                        fFactorY * m_transformMatrix.scaleY, 1.0f));
+    Model = glm::rotate(Model, fRotate, glm::vec3(0.0f, 0.0f, 1.0f));
+    Model = glm::rotate(Model, radiansX, glm::vec3(1.0f, 0.0f, 0.0f));
+    Model = glm::rotate(Model, radiansY, glm::vec3(0.0f, 1.0f, 0.0f));
+    Model = glm::translate(Model,
+                           glm::vec3(m_transformMatrix.translateX, m_transformMatrix.translateY,
+                                     0.0f));
+
+    LOGCATE("VideoGLRender::updateMVPMatrix rotate %d,%.2f,%0.5f,%0.5f,%0.5f,%0.5f,",
+            m_transformMatrix.degree, fRotate,
+            m_transformMatrix.translateX, m_transformMatrix.translateY,
+            fFactorX * m_transformMatrix.scaleX, fFactorY * m_transformMatrix.scaleY);
+
+    m_MVPMatrix = Projection * View * Model;
+}
+
 void VideoGLRender::onDrawFrame() {
 //    LOGCATE("VideoGLRender::onDrawFrame");
     Frame *frame = m_Callback->GetOneFrame(MEDIA_TYPE_VIDEO);
@@ -208,7 +312,10 @@ void VideoGLRender::onDrawFrame() {
 
     // Use the program object
     glUseProgram(m_Program);
+
     glBindVertexArray(m_VaoId);
+
+    GLUtils::setMat4(m_Program, "u_MVPMatrix", m_MVPMatrix);
 
     for (int i = 0; i < TEXTURE_NUM; ++i) {
         glActiveTexture(GL_TEXTURE0 + i);
@@ -229,6 +336,10 @@ void VideoGLRender::onDrawFrame() {
 void VideoGLRender::onSurfaceDestroyed() {
     LOGCATE("VideoGLRender::onSurfaceDestroyed")
     m_Surface->releaseEglSurface();
+    glDeleteBuffers(3, m_VboIds);
+    glDeleteTextures(3, m_TextureId);
+    glDeleteVertexArrays(1, &m_VaoId);
+    glDeleteProgram(m_Program);
 }
 
 int VideoGLRender::unInit() {

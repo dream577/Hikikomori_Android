@@ -92,3 +92,7 @@ int VideoNativeRender::unInit() {
     return 0;
 }
 
+void VideoNativeRender::updateMVPMatrix() {
+
+}
+

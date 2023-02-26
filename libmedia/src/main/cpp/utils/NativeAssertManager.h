@@ -8,31 +8,24 @@
 #include <android/asset_manager.h>
 #include <android/asset_manager_jni.h>
 
-namespace violet {
 
-    class VioletAssertManager {
-    private:
-        AAssetManager *manager = nullptr;
+class VioletAssertManager {
+private:
+    AAssetManager *manager = nullptr;
 
-    public:
-        VioletAssertManager(AAssetManager *aAssetManager) {
-            manager = aAssetManager;
-        }
+    VioletAssertManager();
 
-        char *GetFShaderCharArray(char *name) {
-            if (manager == nullptr) return nullptr;
-            AAsset *assertFile = AAssetManager_open(manager, name, AASSET_MODE_BUFFER);
-            char *dataBuffer = (char *) AAsset_getBuffer(assertFile);
-            AAsset_close(assertFile);
-            return dataBuffer;
-        }
+public:
+    static VioletAssertManager *GetInstance();
 
-        char *GetVShaderCharArray(char *name) {
-            return nullptr;
-        }
-    };
+    void SetAssertManager(AAssetManager *aAssetManager);
 
-    static VioletAssertManager *instance;
-}
+    char *GetAssertFile(char *name);
+
+    char *GetVShaderCharArray(char *name) {
+        return nullptr;
+    }
+};
+
 
 #endif //HIKIKOMORI_NATIVEASSERTMANAGER_H

@@ -104,6 +104,8 @@ public class VioletCamera {
             mPreviewSize = CameraSizesKt.getPreviewOutputSize(display, mCharacteristics, SurfaceTexture.class, null);
             mCaptureSize = CameraSizesKt.getPreviewOutputSize(display, mCharacteristics, SurfaceTexture.class, ImageFormat.YUV_420_888);
             mSensorOrientation = mCharacteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
+
+            KLog.d(TAG, String.format("mPreviewSize=[%s,%s]  mSensorOrientation=%s", mPreviewSize.getWidth(), mPreviewSize.getHeight(), mSensorOrientation.toString()));
             result = true;
         } while (false);
         return result;
@@ -284,5 +286,8 @@ public class VioletCamera {
         }
     }
 
-
+    public int getSensorOrientation() {
+        if (mSensorOrientation == null) return 0;
+        return mSensorOrientation;
+    }
 }

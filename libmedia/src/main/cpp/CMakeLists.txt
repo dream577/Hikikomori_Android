@@ -29,6 +29,7 @@ include_directories(
 
 file(GLOB src-files
         ${CMAKE_SOURCE_DIR}/*cpp
+        ${CMAKE_SOURCE_DIR}/utils/*cpp
         ${CMAKE_SOURCE_DIR}/media/*cpp
         ${CMAKE_SOURCE_DIR}/media/common/*cpp
         ${CMAKE_SOURCE_DIR}/media/egl/*cpp

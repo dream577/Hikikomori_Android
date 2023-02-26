@@ -33,6 +33,10 @@ public class VioletCameraRecordClient {
         native_onSurfaceChanged(recordHandle, width, height);
     }
 
+    public void setTransformMatrix(float translateX, float translateY, float scaleX, float scaleY, int degree, int mirror) {
+        native_SetTransformMatrix(recordHandle, translateX, translateY, scaleX, scaleY, degree, mirror);
+    }
+
     public void onSurfaceDestroyed() {
         native_onSurfaceDestroyed(recordHandle);
     }
@@ -50,4 +54,6 @@ public class VioletCameraRecordClient {
     private native void native_onSurfaceChanged(long recordHandle, int width, int height);
 
     private native void native_onSurfaceDestroyed(long recordHandle);
+
+    private native void native_SetTransformMatrix(long recordHandle, float translateX, float translateY, float scaleX, float scaleY, int degree, int mirror);
 }

@@ -37,6 +37,8 @@ public class VioletCameraRecorder implements SurfaceHolder.Callback, CameraFrame
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
+        int sensorOrientation = mCameraClient.getSensorOrientation();
+        mCameraRecordClient.setTransformMatrix(0f, 0f, 1.0f, 1.0f, sensorOrientation, 0);
     }
 
     @Override

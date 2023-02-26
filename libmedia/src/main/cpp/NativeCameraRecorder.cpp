@@ -75,3 +75,15 @@ Java_com_violet_libmedia_recoder_video_camera_VioletCameraRecordClient_native_1o
         delete recorder;
     }
 }
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_violet_libmedia_recoder_video_camera_VioletCameraRecordClient_native_1SetTransformMatrix(
+        JNIEnv *env, jobject thiz, jlong record_handle, jfloat translate_x, jfloat translate_y,
+        jfloat scale_x, jfloat scale_y, jint degree, jint mirror) {
+    if (record_handle != 0) {
+        CameraVideoRecorder *recorder = reinterpret_cast<CameraVideoRecorder *>(record_handle);
+        VideoGLRender *render = recorder->GetVideoRender();
+        render->UpdateMVPMatrix(translate_x, translate_y, scale_x, scale_y, degree, mirror);
+    }
+}

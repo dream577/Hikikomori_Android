@@ -42,6 +42,8 @@ protected:
 
     virtual void onSurfaceDestroyed() override;
 
+    virtual void updateMVPMatrix() override;
+
 private:
     ANativeWindow_Buffer m_NativeWindowBuffer;
     AVPixelFormat m_PixelFormat;
