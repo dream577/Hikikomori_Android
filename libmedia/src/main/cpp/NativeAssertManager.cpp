@@ -14,8 +14,6 @@ Java_com_violet_libmedia_util_NativeAssertManager_setAssertManager(JNIEnv *env, 
     AAssetManager *aAssetManager = AAssetManager_fromJava(env, manager);
     VioletAssertManager *instance = VioletAssertManager::GetInstance();
     instance->SetAssertManager(aAssetManager);
-    char *buf = instance->GetAssertFile("fshader/VideoFShader.glsl");
-    LOGCATE("着色器如下：\n%s", buf)
     return reinterpret_cast<jlong>(instance);
 }
 
