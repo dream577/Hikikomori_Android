@@ -18,6 +18,7 @@ enum VideoRenderMessage {
     MESSAGE_ON_SURFACE_DESTROY,
     MESSAGE_UPDATE_MATRIX,
     MESSAGE_VIDEO_RENDER_LOOP,
+    MESSAGE_VIDEO_DRAW_FRAME,
     MESSAGE_VIDEO_RENDER_UNINIT
 };
 
@@ -158,6 +159,10 @@ public:
                 break;
             }
             case MESSAGE_VIDEO_RENDER_LOOP: {
+                onDrawFrame();
+                break;
+            }
+            case MESSAGE_VIDEO_DRAW_FRAME: {
                 onDrawFrame();
                 break;
             }

@@ -4,16 +4,16 @@
 
 #include "GLUtils.h"
 #include "VideoGLRender.h"
-#include <gtc/matrix_transform.hpp>
 #include "LogUtil.h"
+#include <gtc/matrix_transform.hpp>
 
 GLushort indices[] = {0, 1, 2, 0, 2, 3};
 
 GLfloat verticesCoords[] = {
-        -1.0f,  1.0f, 0.0f,  // Position 0
+        -1.0f, 1.0f, 0.0f,  // Position 0
         -1.0f, -1.0f, 0.0f,  // Position 1
-         1.0f, -1.0f, 0.0f,  // Position 2
-         1.0f, 1.0f,0.0f,  // Position 3
+        1.0f, -1.0f, 0.0f,  // Position 2
+        1.0f, 1.0f, 0.0f,  // Position 3
 };
 
 GLfloat textureCoords[] = {
@@ -35,8 +35,10 @@ void VideoGLRender::onSurfaceCreated() {
     m_Surface->createWindowSurface(m_NativeWindow);
     m_Surface->makeCurrent();
 
-    char *vShaderStr = VioletAssertManager::GetInstance()->GetAssertFile("vshader/VideoVShader.glsl");
-    char *fShaderStr = VioletAssertManager::GetInstance()->GetAssertFile("fshader/VideoFShader.glsl");
+    char *vShaderStr = VioletAssertManager::GetInstance()->GetAssertFile(
+            "vshader/VideoVShader.glsl");
+    char *fShaderStr = VioletAssertManager::GetInstance()->GetAssertFile(
+            "fshader/VideoFShader.glsl");
     if (vShaderStr) {
         LOGCATE("顶点着色器如下：\n%s", vShaderStr)
     }
@@ -265,11 +267,17 @@ void VideoGLRender::onDrawFrame() {
 
 void VideoGLRender::onSurfaceDestroyed() {
     LOGCATE("VideoGLRender::onSurfaceDestroyed")
-    m_Surface->releaseEglSurface();
+    glDeleteVertexArrays(1, &m_VaoId);
     glDeleteBuffers(3, m_VboIds);
     glDeleteTextures(3, m_TextureId);
-    glDeleteVertexArrays(1, &m_VaoId);
-    glDeleteProgram(m_Program);
+    if (m_Program != GL_NONE) {
+        glDeleteProgram(m_Program);
+    }
+    if (m_Surface) {
+        m_Surface->releaseEglSurface();
+        delete m_Surface;
+        m_Surface = nullptr;
+    }
 }
 
 int VideoGLRender::unInit() {
