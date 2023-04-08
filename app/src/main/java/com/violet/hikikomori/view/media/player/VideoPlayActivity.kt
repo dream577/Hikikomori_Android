@@ -23,11 +23,9 @@ class VideoPlayActivity : FragmentPagerActivity() {
     }
 
     private lateinit var path: String
-    private lateinit var pagerManager: PagerManager
 
     override fun initData() {
         super.initData()
-        pagerManager = ViewModelProvider(this)[PagerManager::class.java]
         path = intent.getStringExtra(Constant.VIDEO_PATH) ?: ""
     }
 

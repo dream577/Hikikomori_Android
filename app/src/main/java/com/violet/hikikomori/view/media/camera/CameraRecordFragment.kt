@@ -8,7 +8,11 @@ import com.violet.libmedia.recoder.video.VioletCameraRecorder
 
 
 class CameraRecordFragment : BaseBindingFragment<FragmentCameraRecordBinding>() {
-//    private lateinit var mCameraRecorder: VioletCameraRecorder
+    companion object {
+        const val TAG = "Camera.CameraRecordFragment"
+    }
+
+    //    private lateinit var mCameraRecorder: VioletCameraRecorder
     private lateinit var mOpenGLSampleWrapper: OpenGLSampleWrapper
 
     override fun initView() {

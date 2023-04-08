@@ -22,7 +22,7 @@ public:
     virtual ~MediaPlayer() {};
 
     virtual int Init(JNIEnv *jniEnv, jobject obj, char *url, int decodeType,
-                     int renderType, jobject surface) = 0;
+                     int renderType) = 0;
 
     virtual int UnInit() = 0;
 

@@ -16,7 +16,7 @@ import com.violet.libbasetools.util.tag
 
 abstract class FragmentPagerActivity : BaseActivity() {
 
-    private lateinit var pagerManager: PagerManager
+    protected lateinit var pagerManager: PagerManager
 
     override fun initData() {
         super.initData()

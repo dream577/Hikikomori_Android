@@ -149,6 +149,7 @@ public:
         switch (what) {
             case MESSAGE_VIDEO_RENDER_INIT:
                 result = init();
+                sem_post(&runBlock);
                 break;
             case MESSAGE_ON_SURFACE_CREATED: {
                 onSurfaceCreated();

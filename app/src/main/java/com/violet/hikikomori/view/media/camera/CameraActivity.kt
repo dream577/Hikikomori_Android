@@ -7,9 +7,11 @@ import android.view.WindowManager
 import com.violet.hikikomori.R
 import com.violet.hikikomori.databinding.ActivityCameraBinding
 import com.violet.hikikomori.view.base.BaseBindingActivity
+import com.violet.hikikomori.view.base.FragmentPagerActivity
+import com.violet.hikikomori.viewmodel.base.PagerManager
 import com.violet.libmedia.recoder.video.VioletCameraRecorder
 
-class CameraActivity : BaseBindingActivity<ActivityCameraBinding>() {
+class CameraActivity : FragmentPagerActivity() {
 
     companion object {
         @JvmStatic
@@ -19,13 +21,18 @@ class CameraActivity : BaseBindingActivity<ActivityCameraBinding>() {
         }
     }
 
+    override fun initData() {
+        super.initData()
+    }
+
     override fun initView() {
         super.initView()
         updateMediaUI()
+        enterRecordFragment()
     }
 
-    override fun onClick(v: View?) {
-
+    private fun enterRecordFragment() {
+        pagerManager.enterFragment(CameraRecordFragment.TAG)
     }
 
     private fun updateMediaUI() {
@@ -40,5 +47,7 @@ class CameraActivity : BaseBindingActivity<ActivityCameraBinding>() {
                 or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
     }
 
-    override fun getLayoutId(): Int = R.layout.activity_camera
+    override fun registerFragment() {
+        registerFragment(CameraRecordFragment.TAG, CameraRecordFragment::class.java)
+    }
 }

@@ -7,9 +7,8 @@
 #include "ImageDef.h"
 
 int VioletMediaPlayer::Init(JNIEnv *jniEnv, jobject obj, char *url, int decodeType,
-                            int renderType, jobject surface) {
+                            int renderType) {
     LOGCATE("VioletMediaPlayer::Init")
-    int result = 0;
     jniEnv->GetJavaVM(&m_JavaVM);
     m_JavaObj = jniEnv->NewGlobalRef(obj);
 
@@ -31,7 +30,7 @@ int VioletMediaPlayer::Init(JNIEnv *jniEnv, jobject obj, char *url, int decodeTy
     if (result1 == 0 || result2 == 0) {
         m_AVSync = new MediaSync();
     }
-    return result | result2;
+    return result1 | result2;
 }
 
 int VioletMediaPlayer::UnInit() {

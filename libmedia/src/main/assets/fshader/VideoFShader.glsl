@@ -9,7 +9,6 @@ uniform int u_nImgType;// 1:RGBA, 2:NV21, 3:NV12, 4:I420
 
 void main()
 {
-
     if (u_nImgType == 1)//RGBA
     {
         outColor = texture(s_texture0, v_texCoord);

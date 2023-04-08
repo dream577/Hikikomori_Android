@@ -16,11 +16,9 @@
 
 package com.violet.libmedia.recoder.video.camera.util
 
-import android.graphics.ImageFormat
 import android.graphics.Point
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.params.StreamConfigurationMap
-import android.media.Image
 import android.util.Size
 import android.view.Display
 import kotlin.math.max

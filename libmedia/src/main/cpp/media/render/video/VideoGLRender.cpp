@@ -39,12 +39,12 @@ void VideoGLRender::onSurfaceCreated() {
             "vshader/VideoVShader.glsl");
     char *fShaderStr = VioletAssertManager::GetInstance()->GetAssertFile(
             "fshader/VideoFShader.glsl");
-    if (vShaderStr) {
-        LOGCATE("顶点着色器如下：\n%s", vShaderStr)
-    }
-    if (fShaderStr) {
-        LOGCATE("片段着色器如下：\n%s", fShaderStr)
-    }
+//    if (vShaderStr) {
+//        LOGCATE("顶点着色器如下：\n%s", vShaderStr)
+//    }
+//    if (fShaderStr) {
+//        LOGCATE("片段着色器如下：\n%s", fShaderStr)
+//    }
     m_Program = GLUtils::CreateProgram(vShaderStr, fShaderStr);
     delete vShaderStr;
     delete fShaderStr;

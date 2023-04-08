@@ -72,7 +72,7 @@ class VideoPlayFragment : BaseBindingFragment<FragmentVideoPlayBinding>(), Surfa
     override fun surfaceCreated(holder: SurfaceHolder) {
         KLog.d(TAG, "surfaceCreated time=" + System.currentTimeMillis())
         client = VioletVideoClient()
-        client?.init(path, holder.surface)
+        client?.init(path)
         client?.onSurfaceCreated(holder.surface)
     }
 

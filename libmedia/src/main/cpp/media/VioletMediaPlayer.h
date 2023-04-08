@@ -14,8 +14,7 @@ public:
 
     virtual ~VioletMediaPlayer() {}
 
-    virtual int Init(JNIEnv *jniEnv, jobject obj, char *url, int decodeType,
-                     int renderType, jobject surface) override;
+    virtual int Init(JNIEnv *jniEnv, jobject obj, char *url, int decodeType, int renderType) override;
 
     virtual int UnInit() override;
 
@@ -28,7 +27,6 @@ public:
     virtual void Stop() override;
 
     virtual void SeekToPosition(float position) override;
-
 
     virtual Frame *GetOneFrame(int type) override;
 

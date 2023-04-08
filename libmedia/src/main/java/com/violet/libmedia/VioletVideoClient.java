@@ -13,8 +13,8 @@ public class VioletVideoClient {
         return native_GetFFmpegVersion();
     }
 
-    public void init(String url, Surface surface) {
-        mNativePlayerHandle = native_Init(url, 0, 0, surface);
+    public void init(String url) {
+        mNativePlayerHandle = native_Init(url, 0, 0);
     }
 
     public void play() {
@@ -65,7 +65,7 @@ public class VioletVideoClient {
 
     private static native String native_GetFFmpegVersion();
 
-    private native long native_Init(String url, int playerType, int renderType, Object surface);
+    private native long native_Init(String url, int playerType, int renderType);
 
     private native void native_Play(long playerHandle);
 

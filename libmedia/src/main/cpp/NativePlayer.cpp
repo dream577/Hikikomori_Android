@@ -34,11 +34,10 @@ Java_com_violet_libmedia_VioletVideoClient_native_1GetFFmpegVersion(JNIEnv *env,
 extern "C"
 JNIEXPORT jlong JNICALL
 Java_com_violet_libmedia_VioletVideoClient_native_1Init(JNIEnv *env, jobject thiz, jstring url,
-                                                        jint player_type, jint render_type,
-                                                        jobject surface) {
+                                                        jint player_type, jint render_type) {
     const char *path = env->GetStringUTFChars(url, nullptr);
     MediaPlayer *player = new VioletMediaPlayer();
-    player->Init(env, thiz, const_cast<char *>(path), 0, render_type, surface);
+    player->Init(env, thiz, const_cast<char *>(path), 0, render_type);
     env->ReleaseStringUTFChars(url, path);
     return reinterpret_cast<jlong>(player);
 }
