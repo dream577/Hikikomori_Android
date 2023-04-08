@@ -38,6 +38,8 @@ public:
 
     EglCore();
 
+    EglCore(EglCore *eglCore);  // 以EglCore为参数，新创建出来的对象与原对象共享EGL环境
+
     ~EglCore();
 
     EglCore(EGLContext sharedContext, int flags);

@@ -56,7 +56,7 @@ class VideoPlayFragment : BaseBindingFragment<FragmentVideoPlayBinding>(), Surfa
     }
 
     companion object {
-        val VIDEO_PATH = "VIDEO_PATH"
+       const val VIDEO_PATH = "VIDEO_PATH"
 
         @JvmStatic
         fun newInstance(path: String) =

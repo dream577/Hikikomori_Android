@@ -3,7 +3,13 @@ package com.violet.hikikomori.model
 import android.graphics.Bitmap
 import android.hardware.camera2.CaptureResult
 import android.media.Image
+import android.os.Bundle
 import java.io.Closeable
+
+class ViewPager(
+    val tag: String,
+    val bundle: Bundle?,
+)
 
 open class MediaItem(
     val id: Int,

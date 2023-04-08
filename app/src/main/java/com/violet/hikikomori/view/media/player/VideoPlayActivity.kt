@@ -2,14 +2,17 @@ package com.violet.hikikomori.view.media.player
 
 import android.content.Context
 import android.content.Intent
+import android.os.Bundle
 import android.view.View
 import android.view.WindowManager
+import androidx.lifecycle.ViewModelProvider
 import com.violet.hikikomori.R
-import com.violet.hikikomori.databinding.ActivityVideoPlayBinding
-import com.violet.hikikomori.view.base.BaseBindingActivity
+import com.violet.hikikomori.view.base.FragmentPagerActivity
+import com.violet.hikikomori.viewmodel.base.PagerManager
 import com.violet.libbasetools.model.Constant
+import com.violet.libbasetools.util.tag
 
-class VideoPlayActivity : BaseBindingActivity<ActivityVideoPlayBinding>() {
+class VideoPlayActivity : FragmentPagerActivity() {
 
     companion object {
         fun launch(mContext: Context, mPath: String) {
@@ -20,29 +23,28 @@ class VideoPlayActivity : BaseBindingActivity<ActivityVideoPlayBinding>() {
     }
 
     private lateinit var path: String
+    private lateinit var pagerManager: PagerManager
 
     override fun initData() {
         super.initData()
+        pagerManager = ViewModelProvider(this)[PagerManager::class.java]
         path = intent.getStringExtra(Constant.VIDEO_PATH) ?: ""
+    }
+
+    override fun registerFragment() {
+        registerFragment(VideoPlayFragment.tag, VideoPlayFragment::class.java)
     }
 
     override fun initView() {
         super.initView()
         updateMediaUI()
-        addVideoPlayFragment()
+        enterVideoPlayFragment()
     }
 
-    override fun onClick(v: View?) {
-
-    }
-
-    override fun getLayoutId(): Int = R.layout.activity_video_play
-
-    private fun addVideoPlayFragment() {
-        val fragmentManager = supportFragmentManager
-        val transaction = fragmentManager.beginTransaction()
-        transaction.add(R.id.fragment_video, VideoPlayFragment.newInstance(path))
-        transaction.commit()
+    private fun enterVideoPlayFragment() {
+        val bundle = Bundle()
+        bundle.putString(VideoPlayFragment.VIDEO_PATH, path)
+        pagerManager.enterFragment(VideoPlayFragment.tag, bundle)
     }
 
     /**

@@ -3,7 +3,7 @@ package com.violet.libbasetools.util
 /**
  * 扩展属性，为一个类生成一个唯一的字符串标志
  */
-val Any.uniqueTag: String
+val Any.tag: String
     get() = this.javaClass.simpleName
 
 /**

@@ -9,6 +9,11 @@ EglCore::EglCore() {
     init(NULL, FLAG_TRY_GLES3);
 }
 
+EglCore::EglCore(EglCore *eglCore) {
+    EGLContext sharedContext = eglCore->mEGLContext;
+    init(sharedContext, FLAG_TRY_GLES3);
+}
+
 EglCore::~EglCore() {
     release();
 }

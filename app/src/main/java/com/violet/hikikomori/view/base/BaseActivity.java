@@ -26,6 +26,7 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
         initData();
         initView();
         subscribeToViewModel();
+        Class cls = BaseActivity.class;
     }
 
     @Override
