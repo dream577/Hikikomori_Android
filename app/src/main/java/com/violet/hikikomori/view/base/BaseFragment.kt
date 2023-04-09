@@ -8,7 +8,7 @@ import androidx.fragment.app.Fragment
 import com.violet.libbasetools.util.KLog
 
 abstract class BaseFragment : Fragment() {
-    protected val TAG = "FragmentObserver"
+    private val TAG = "Fragment"
 
     override fun onCreateView(
         inflater: LayoutInflater,

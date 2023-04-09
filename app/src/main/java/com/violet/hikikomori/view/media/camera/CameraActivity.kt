@@ -4,12 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.view.View
 import android.view.WindowManager
-import com.violet.hikikomori.R
-import com.violet.hikikomori.databinding.ActivityCameraBinding
-import com.violet.hikikomori.view.base.BaseBindingActivity
 import com.violet.hikikomori.view.base.FragmentPagerActivity
-import com.violet.hikikomori.viewmodel.base.PagerManager
-import com.violet.libmedia.recoder.video.VioletCameraRecorder
 
 class CameraActivity : FragmentPagerActivity() {
 
@@ -19,10 +14,6 @@ class CameraActivity : FragmentPagerActivity() {
             val intent = Intent(context, CameraActivity::class.java)
             context.startActivity(intent)
         }
-    }
-
-    override fun initData() {
-        super.initData()
     }
 
     override fun initView() {

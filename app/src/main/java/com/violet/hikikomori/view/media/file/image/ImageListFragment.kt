@@ -16,6 +16,10 @@ import pub.devrel.easypermissions.EasyPermissions
 
 class ImageListFragment : BaseBindingFragment<FragmentCommonListPageBinding>(),
     MediaAdapterCallback {
+    companion object {
+        const val TAG = "ImageListFragment"
+    }
+
     private lateinit var mViewModel: FileViewModel
     private lateinit var mAdapter: ImageListAdapter
 

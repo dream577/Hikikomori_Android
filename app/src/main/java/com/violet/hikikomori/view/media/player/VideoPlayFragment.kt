@@ -16,6 +16,11 @@ import pub.devrel.easypermissions.EasyPermissions
 class VideoPlayFragment : BaseBindingFragment<FragmentVideoPlayBinding>(), SurfaceHolder.Callback,
     View.OnClickListener {
 
+    companion object {
+        const val TAG = "VideoPlayFragment"
+        const val VIDEO_PATH = "VIDEO_PATH"
+    }
+
     private lateinit var path: String
     private var client: VioletVideoClient? = null
     private val readPermission = Manifest.permission.READ_EXTERNAL_STORAGE
@@ -53,18 +58,6 @@ class VideoPlayFragment : BaseBindingFragment<FragmentVideoPlayBinding>(), Surfa
     override fun onStop() {
         super.onStop()
         client?.stop()
-    }
-
-    companion object {
-       const val VIDEO_PATH = "VIDEO_PATH"
-
-        @JvmStatic
-        fun newInstance(path: String) =
-            VideoPlayFragment().apply {
-                arguments = Bundle().apply {
-                    putString(VIDEO_PATH, path)
-                }
-            }
     }
 
     override fun getLayoutId(): Int = R.layout.fragment_video_play
