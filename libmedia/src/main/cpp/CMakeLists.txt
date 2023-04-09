@@ -11,12 +11,15 @@ include_directories(
         media/egl
         media/eglexample
         media/common
-        media/recorder
-        media/recorder/video
-        media/recorder/audio
+        media/encoder
+        media/encoder/audio
+        media/encoder/video
         media/decoder
         media/decoder/audio
         media/decoder/video
+        media/recorder
+        media/recorder/video
+        media/recorder/audio
         media/render
         media/render/audio
         media/render/video
@@ -34,12 +37,15 @@ file(GLOB src-files
         ${CMAKE_SOURCE_DIR}/media/common/*cpp
         ${CMAKE_SOURCE_DIR}/media/egl/*cpp
         ${CMAKE_SOURCE_DIR}/media/eglexample/*cpp
-        ${CMAKE_SOURCE_DIR}/media/recorder/*cpp
-        ${CMAKE_SOURCE_DIR}/media/recorder/video/*cpp
-        ${CMAKE_SOURCE_DIR}/media/recorder/audio/*cpp
         ${CMAKE_SOURCE_DIR}/media/decoder/*cpp
         ${CMAKE_SOURCE_DIR}/media/decoder/audio/*cpp
         ${CMAKE_SOURCE_DIR}/media/decoder/video/*cpp
+        ${CMAKE_SOURCE_DIR}/media/encoder/*cpp
+        ${CMAKE_SOURCE_DIR}/media/encoder/audio/*cpp
+        ${CMAKE_SOURCE_DIR}/media/encoder/video/*cpp
+        ${CMAKE_SOURCE_DIR}/media/recorder/*cpp
+        ${CMAKE_SOURCE_DIR}/media/recorder/video/*cpp
+        ${CMAKE_SOURCE_DIR}/media/recorder/audio/*cpp
         ${CMAKE_SOURCE_DIR}/media/render/*cpp
         ${CMAKE_SOURCE_DIR}/media/render/audio/*cpp
         ${CMAKE_SOURCE_DIR}/media/render/video/*cpp

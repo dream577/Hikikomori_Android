@@ -183,7 +183,7 @@ Frame *VioletMediaPlayer::GetOneFrame(int type) {
 }
 
 void VioletMediaPlayer::OnDecodeOneFrame(Frame *frame) {
-    LOGCATE("VioletMediaPlayer::OnDecodeOneFrame MediaType=%d", frame->type)
+//    LOGCATE("VioletMediaPlayer::OnDecodeOneFrame MediaType=%d", frame->type)
     if (GetPlayerState() == STATE_STOP) return;
     if (frame->type == MEDIA_TYPE_VIDEO) {
         m_VideoFrameQueue->offer(frame);
