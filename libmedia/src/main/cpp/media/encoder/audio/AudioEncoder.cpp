@@ -13,6 +13,7 @@ AudioEncoder::Init(int bitRate, int channels, int sampleRate, int bitPerSample,
     mSampleRate = sampleRate;
     mBitPerSample = bitPerSample;
     mSampleFormat = sampleFormat;
+    m_AudioFrameQueue = new ThreadSafeQueue(100, MEDIA_TYPE_AUDIO);
     strcpy(mFilePath, aacFilePath);
 }
 
@@ -91,14 +92,14 @@ int AudioEncoder::StartEncode() {
         av_new_packet(mAVPacket, mFrameBufferSize);
 
         // 音频转码器
-//        mSwrContext = swr_alloc();
-//        av_opt_set_channel_layout(mSwrContext, "in_channel_layout", , 0);
-//        av_opt_set_channel_layout(mSwrContext, "out_channel_layout", AV_CH_LAYOUT_STEREO, 0);
-//        av_opt_set_int(mSwrContext, "in_sample_rate", mSampleRate, 0);
-//        av_opt_set_int(mSwrContext, "out_sample_rate", DEFAULT_SAMPLE_RATE, 0);
-//        av_opt_set_int(mSwrContext, "in_sample_fmt", mSampleFormat, 0);
-//        av_opt_set_int(mSwrContext, "out_sample_fmt", AV_SAMPLE_FMT_FLTP, 0);
-//        swr_init(mSwrContext);
+        mSwrContext = swr_alloc();
+        av_opt_set_channel_layout(mSwrContext, "in_channel_layout", , 0);
+        av_opt_set_channel_layout(mSwrContext, "out_channel_layout", AV_CH_LAYOUT_STEREO, 0);
+        av_opt_set_int(mSwrContext, "in_sample_rate", mSampleRate, 0);
+        av_opt_set_int(mSwrContext, "out_sample_rate", DEFAULT_SAMPLE_RATE, 0);
+        av_opt_set_int(mSwrContext, "in_sample_fmt", mSampleFormat, 0);
+        av_opt_set_int(mSwrContext, "out_sample_fmt", AV_SAMPLE_FMT_FLTP, 0);
+        swr_init(mSwrContext);
     } while (false);
     return 0;
 }
@@ -111,6 +112,7 @@ void AudioEncoder::EncodeFrame() {
 }
 
 void AudioEncoder::UnInit() {
+
     if (mSwrContext) {
         swr_free(&mSwrContext);
         mSwrContext = nullptr;

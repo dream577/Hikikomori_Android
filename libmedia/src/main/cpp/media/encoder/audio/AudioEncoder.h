@@ -42,6 +42,8 @@ private:
     int mFrameBufferSize;
     char mFilePath[1024] = {0};
 
+    ThreadSafeQueue *m_AudioFrameQueue = nullptr;
+
     bool isWriteHeadSuccess = false;
 
 public:

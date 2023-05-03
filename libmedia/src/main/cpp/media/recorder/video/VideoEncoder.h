@@ -1,8 +1,0 @@
-//
-// Created by 郝留凯 on 2023/3/5.
-//
-
-#ifndef HIKIKOMORI_VIDEOENCODER_H
-#define HIKIKOMORI_VIDEOENCODER_H
-
-#endif //HIKIKOMORI_VIDEOENCODER_H
