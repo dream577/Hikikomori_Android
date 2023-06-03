@@ -8,6 +8,10 @@
         <variable
             name="clickListener"
             type="View.OnClickListener" />
+
+        <variable
+            name="mViewModel"
+            type="com.violet.hikikomori.viewmodel.media.VideoPlayViewModel" />
     </data>
 
     <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -24,52 +28,62 @@
             android:layout_height="match_parent">
 
             <com.violet.libmedia.view.AutoFitSurfaceView
-                android:id="@+id/surface"
+                android:id="@+id/video_surface_view"
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
-                app:layout_constraintDimensionRatio="H, 16:9"
+                android:layout_height="230dp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <Button
-                android:id="@+id/play"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:onClick="@{clickListener}"
-                android:text="播放"
-                app:layout_constraintTop_toBottomOf="@+id/surface" />
+                android:orientation="vertical"
+                app:visibleOrGone="@{!mViewModel.isFullScreen()}"
+                app:layout_constraintTop_toBottomOf="@+id/video_surface_view">
 
-            <Button
-                android:id="@+id/pause"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:onClick="@{clickListener}"
-                android:text="暂停"
-                app:layout_constraintTop_toBottomOf="@+id/play" />
+                <Button
+                    android:id="@+id/play"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:onClick="@{clickListener}"
+                    android:text="播放" />
 
-            <Button
-                android:id="@+id/resume"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:onClick="@{clickListener}"
-                android:text="继续"
-                app:layout_constraintTop_toBottomOf="@+id/pause" />
+                <Button
+                    android:id="@+id/pause"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:onClick="@{clickListener}"
+                    android:text="暂停" />
 
-            <Button
-                android:id="@+id/stop"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:onClick="@{clickListener}"
-                android:text="停止"
-                app:layout_constraintTop_toBottomOf="@+id/resume" />
+                <Button
+                    android:id="@+id/resume"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:onClick="@{clickListener}"
+                    android:text="继续" />
 
-            <Button
-                android:id="@+id/seek"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:onClick="@{clickListener}"
-                android:text="定位到50秒"
-                app:layout_constraintTop_toBottomOf="@+id/stop" />
+                <Button
+                    android:id="@+id/stop"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:onClick="@{clickListener}"
+                    android:text="停止" />
+
+                <Button
+                    android:id="@+id/seek"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:onClick="@{clickListener}"
+                    android:text="定位到50秒" />
+
+                <Button
+                    android:id="@+id/full_screen"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:onClick="@{clickListener}"
+                    android:text="横屏/竖屏" />
+
+            </LinearLayout>
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </FrameLayout>

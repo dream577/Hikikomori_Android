@@ -86,8 +86,14 @@ abstract class FragmentPagerActivity : BaseActivity() {
 
 
     override fun onBackPressed() {
-        super.onBackPressed()
-        val backStackCount = supportFragmentManager.backStackEntryCount;
+        // 按下返回键时优先由栈顶的fragment进行处理
+        val fragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
+        if (fragment is BaseFragment) {
+            val handled = fragment.onBackPressed()
+            if (handled) return
+        }
+        // 如果返回事件栈顶的fragment没有处理，则返回
+        val backStackCount = supportFragmentManager.backStackEntryCount
         if (backStackCount > 1) {
             supportFragmentManager.popBackStack()
         } else {

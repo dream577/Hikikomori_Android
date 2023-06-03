@@ -33,4 +33,6 @@ abstract class BaseFragment : Fragment() {
     protected abstract fun initView()
 
     protected abstract fun subscribeToViewModel()
+
+    open fun onBackPressed(): Boolean = false
 }
