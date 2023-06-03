@@ -5,8 +5,6 @@ import android.view.SurfaceView;
 
 import androidx.annotation.NonNull;
 
-import com.violet.libmedia.OpenGLSampleClient;
-
 import org.jetbrains.annotations.NotNull;
 
 public class OpenGLSampleWrapper implements SurfaceHolder.Callback, Runnable {

@@ -93,13 +93,13 @@ int AudioEncoder::StartEncode() {
 
         // 音频转码器
         mSwrContext = swr_alloc();
-        av_opt_set_channel_layout(mSwrContext, "in_channel_layout", , 0);
-        av_opt_set_channel_layout(mSwrContext, "out_channel_layout", AV_CH_LAYOUT_STEREO, 0);
-        av_opt_set_int(mSwrContext, "in_sample_rate", mSampleRate, 0);
-        av_opt_set_int(mSwrContext, "out_sample_rate", DEFAULT_SAMPLE_RATE, 0);
-        av_opt_set_int(mSwrContext, "in_sample_fmt", mSampleFormat, 0);
-        av_opt_set_int(mSwrContext, "out_sample_fmt", AV_SAMPLE_FMT_FLTP, 0);
-        swr_init(mSwrContext);
+//        av_opt_set_channel_layout(mSwrContext, "in_channel_layout", , 0);
+//        av_opt_set_channel_layout(mSwrContext, "out_channel_layout", AV_CH_LAYOUT_STEREO, 0);
+//        av_opt_set_int(mSwrContext, "in_sample_rate", mSampleRate, 0);
+//        av_opt_set_int(mSwrContext, "out_sample_rate", DEFAULT_SAMPLE_RATE, 0);
+//        av_opt_set_int(mSwrContext, "in_sample_fmt", mSampleFormat, 0);
+//        av_opt_set_int(mSwrContext, "out_sample_fmt", AV_SAMPLE_FMT_FLTP, 0);
+//        swr_init(mSwrContext);
     } while (false);
     return 0;
 }

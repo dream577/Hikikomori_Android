@@ -1,4 +1,4 @@
-package com.violet.libmedia;
+package com.violet.libmedia.opengles;
 
 public class OpenGLSampleClient {
     static {
