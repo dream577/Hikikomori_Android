@@ -106,7 +106,7 @@ void VideoGLRender::onSurfaceCreated() {
     m_Program = GLUtils::CreateProgram(vShaderStr, fShaderStr);
 
     if (!m_Program) {
-        LOGCATE("VideoGLRender::OnSurfaceCreated create program fail");
+        LOGCATE("VideoGLRender::OnSurfaceCreated create program fail")
         return;
     }
 
@@ -274,29 +274,41 @@ void VideoGLRender::onDrawFrame() {
     Frame *frame = m_Callback->GetOneFrame(MEDIA_TYPE_VIDEO);
     if (frame == nullptr) return;
     auto *videoFrame = (VideoFrame *) frame;
-    //upload Y plane data
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, m_TextureId[0]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, videoFrame->width,
-                 videoFrame->height, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE,
-                 videoFrame->yuvBuffer[0]);
-    glBindTexture(GL_TEXTURE_2D, GL_NONE);
 
-    //update U plane data
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, m_TextureId[1]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, videoFrame->width >> 1,
-                 videoFrame->height >> 1, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE,
-                 videoFrame->yuvBuffer[1]);
-    glBindTexture(GL_TEXTURE_2D, GL_NONE);
+    switch (videoFrame->format) {
+        case VIDEO_FRAME_FORMAT_RGBA:
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, m_TextureId[0]);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, videoFrame->width, videoFrame->height, 0,
+                         GL_RGBA, GL_UNSIGNED_BYTE, videoFrame->yuvBuffer[0]);
+            glBindTexture(GL_TEXTURE_2D, GL_NONE);
+            break;
+        case VIDEO_FRAME_FORMAT_I420:
+            //upload Y plane data
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, m_TextureId[0]);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, videoFrame->width,
+                         videoFrame->height, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE,
+                         videoFrame->yuvBuffer[0]);
+            glBindTexture(GL_TEXTURE_2D, GL_NONE);
 
-    //update V plane data
-    glActiveTexture(GL_TEXTURE2);
-    glBindTexture(GL_TEXTURE_2D, m_TextureId[2]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, videoFrame->width >> 1,
-                 videoFrame->height >> 1, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE,
-                 videoFrame->yuvBuffer[2]);
-    glBindTexture(GL_TEXTURE_2D, GL_NONE);
+            //update U plane data
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, m_TextureId[1]);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, videoFrame->width >> 1,
+                         videoFrame->height >> 1, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE,
+                         videoFrame->yuvBuffer[1]);
+            glBindTexture(GL_TEXTURE_2D, GL_NONE);
+
+            //update V plane data
+            glActiveTexture(GL_TEXTURE2);
+            glBindTexture(GL_TEXTURE_2D, m_TextureId[2]);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, videoFrame->width >> 1,
+                         videoFrame->height >> 1, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE,
+                         videoFrame->yuvBuffer[2]);
+            glBindTexture(GL_TEXTURE_2D, GL_NONE);
+            break;
+    }
 
     // Use the program object
     glUseProgram(m_Program);
@@ -313,7 +325,7 @@ void VideoGLRender::onDrawFrame() {
         GLUtils::setInt(m_Program, samplerName, i);
     }
 
-    GLUtils::setInt(m_Program, "u_nImgType", 4);
+    GLUtils::setInt(m_Program, "u_nImgType", videoFrame->format);
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (const void *) 0);
     m_Surface->swapBuffers();

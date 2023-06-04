@@ -54,21 +54,33 @@ void CameraVideoRecorder::OnDrawPreviewFrame(uint8_t *data, int width, int heigh
                                              long timestamp) {
 //    LOGCATE("CameraVideoRecorder::OnDrawPreviewFrame")
     VideoFrame *frame = nullptr;
-    if (format == VIDEO_FRAME_FORMAT_I420) {
-        frame = new VideoFrame();
-        int yPlaneByteSize = width * height;
-        int uvPlaneByteSize = yPlaneByteSize / 2;
+    switch (format) {
+        case VIDEO_FRAME_FORMAT_RGBA:
+            frame = new VideoFrame();
 
-        frame->format = VIDEO_FRAME_FORMAT_I420;
-        frame->width = width;
-        frame->height = height;
-        frame->yuvBuffer[0] = data;
-        frame->yuvBuffer[1] = data + yPlaneByteSize;
-        frame->yuvBuffer[2] = data + yPlaneByteSize + uvPlaneByteSize / 2;
-        frame->planeSize[0] = width;
-        frame->planeSize[1] = width / 2;
-        frame->planeSize[2] = width / 2;
-        frame->pts = timestamp;
+            frame->format = VIDEO_FRAME_FORMAT_RGBA;
+            frame->width = width;
+            frame->height = height;
+            frame->yuvBuffer[0] = data;
+            frame->planeSize[0] = width * 4;
+            frame->pts = timestamp;
+            break;
+        case VIDEO_FRAME_FORMAT_I420:
+            frame = new VideoFrame();
+            int yPlaneByteSize = width * height;
+            int uvPlaneByteSize = yPlaneByteSize / 2;
+
+            frame->format = VIDEO_FRAME_FORMAT_I420;
+            frame->width = width;
+            frame->height = height;
+            frame->yuvBuffer[0] = data;
+            frame->yuvBuffer[1] = data + yPlaneByteSize;
+            frame->yuvBuffer[2] = data + yPlaneByteSize + uvPlaneByteSize / 2;
+            frame->planeSize[0] = width;
+            frame->planeSize[1] = width / 2;
+            frame->planeSize[2] = width / 2;
+            frame->pts = timestamp;
+            break;
     }
 
     mVideoFrameQueue->offer(frame);
