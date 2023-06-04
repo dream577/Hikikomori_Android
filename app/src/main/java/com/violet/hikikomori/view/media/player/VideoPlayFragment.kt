@@ -4,12 +4,10 @@ import android.Manifest
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.graphics.Color
-import android.os.Build
-import android.os.Bundle
+import android.os.*
 import android.util.DisplayMetrics
-import android.view.SurfaceHolder
-import android.view.View
-import android.view.WindowManager
+import android.view.*
+import android.widget.SeekBar
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.lifecycle.ViewModelProvider
 import com.violet.hikikomori.R
@@ -18,20 +16,49 @@ import com.violet.hikikomori.view.base.BaseBindingFragment
 import com.violet.hikikomori.viewmodel.media.VideoPlayViewModel
 import com.violet.libbasetools.util.KLog
 import com.violet.libmedia.VioletVideoClient
+import com.violet.libmedia.model.MediaEvent
 import pub.devrel.easypermissions.EasyPermissions
 
 class VideoPlayFragment : BaseBindingFragment<FragmentVideoPlayBinding>(), SurfaceHolder.Callback,
-    View.OnClickListener {
+    View.OnClickListener, View.OnTouchListener, VioletVideoClient.MediaEventCallback {
 
     companion object {
         const val TAG = "VideoPlayFragment"
         const val VIDEO_PATH = "VIDEO_PATH"
+        const val EVENT_VALUE = "VALUE"
+    }
+
+    private val mHandler: Handler = object : Handler(Looper.getMainLooper()) {
+        override fun handleMessage(msg: Message) {
+            val value = msg.data.getLong(EVENT_VALUE)
+            when (msg.what) {
+                MediaEvent.EVENT_DURATION -> {
+                    mBinding.panelBottom.sbProgress.max = (value / 1000).toInt()
+                }
+
+                MediaEvent.EVENT_PLAYING -> {
+                    if (!isSeeking) {
+                        mBinding.panelBottom.sbProgress.progress = (value / 1000).toInt()
+                    }
+                }
+
+                MediaEvent.EVENT_SEEK_FINISH -> {
+                    isSeeking = false
+                }
+            }
+        }
     }
 
     private lateinit var playVM: VideoPlayViewModel
     private lateinit var path: String
     private lateinit var client: VioletVideoClient
+
+    private lateinit var mGestureDetector: GestureDetector
+
     private val readPermission = Manifest.permission.READ_EXTERNAL_STORAGE
+
+    private var isPause = false
+    private var isSeeking = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,9 +74,42 @@ class VideoPlayFragment : BaseBindingFragment<FragmentVideoPlayBinding>(), Surfa
 
     override fun initView() {
         super.initView()
+
         toggleFullScreen(requireActivity().requestedOrientation == Configuration.ORIENTATION_LANDSCAPE)
-        mBinding.videoSurfaceView.holder.addCallback(this)
-        mBinding.clickListener = this
+
+        mBinding.apply {
+            videoSurfaceView.apply {
+                holder.addCallback(this@VideoPlayFragment)
+                setOnTouchListener(this@VideoPlayFragment)
+            }
+            clickListener = this@VideoPlayFragment
+            mBinding.panelBottom.sbProgress.keyProgressIncrement = 1
+            mBinding.panelBottom.sbProgress.setOnSeekBarChangeListener(object :
+                SeekBar.OnSeekBarChangeListener {
+                override fun onProgressChanged(
+                    seekBar: SeekBar?,
+                    progress: Int,
+                    fromUser: Boolean
+                ) {
+                }
+
+                override fun onStartTrackingTouch(seekBar: SeekBar?) {
+                    isSeeking = true
+                }
+
+                override fun onStopTrackingTouch(seekBar: SeekBar?) {
+                    val progress = seekBar?.progress
+                    KLog.d(TAG, "onStopTrackingTouch:${seekBar?.progress}")
+                    progress?.let { client.seekToPosition(it.toFloat()) }
+                }
+
+            })
+        }
+
+        mGestureDetector = GestureDetector(requireContext(), mGestureListener)
+        mGestureDetector.setOnDoubleTapListener(mGestureListener)
+        mGestureDetector.setIsLongpressEnabled(false)
+
     }
 
     override fun subscribeToViewModel() {
@@ -82,8 +142,12 @@ class VideoPlayFragment : BaseBindingFragment<FragmentVideoPlayBinding>(), Surfa
     override fun surfaceCreated(holder: SurfaceHolder) {
         KLog.d(TAG, "surfaceCreated time=" + System.currentTimeMillis())
         client = VioletVideoClient()
-        client.init(path)
-        client.onSurfaceCreated(holder.surface)
+        client.apply {
+            registerEventCallback(this@VideoPlayFragment)
+            init(path)
+            onSurfaceCreated(holder.surface)
+            play()
+        }
     }
 
     override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
@@ -98,17 +162,54 @@ class VideoPlayFragment : BaseBindingFragment<FragmentVideoPlayBinding>(), Surfa
 
     override fun onClick(v: View?) {
         when (v?.id) {
-            R.id.play -> client.play()
-            R.id.pause -> client.pause()
-            R.id.resume -> client.resume()
-            R.id.stop -> {
-                client.stop()
-            }
-            R.id.seek -> client.seekToPosition(50f)
             R.id.full_screen -> {
                 playVM.toggleFullScreen()
             }
         }
+    }
+
+    override fun onTouch(v: View?, event: MotionEvent?): Boolean {
+        if (event == null || v == null) return false
+        when (v.id) {
+            R.id.video_surface_view -> {
+                mGestureDetector.onTouchEvent(event)
+            }
+        }
+        return true
+    }
+
+    private val mGestureListener = object : GestureDetector.SimpleOnGestureListener() {
+        override fun onFling(
+            e1: MotionEvent,
+            e2: MotionEvent,
+            velocityX: Float,
+            velocityY: Float
+        ): Boolean {
+            return super.onFling(e1, e2, velocityX, velocityY)
+        }
+
+        override fun onSingleTapUp(e: MotionEvent): Boolean {
+            return super.onSingleTapUp(e)
+        }
+
+        override fun onDoubleTap(e: MotionEvent): Boolean {
+            isPause = if (isPause) {
+                client.resume()
+                false
+            } else {
+                client.pause()
+                true
+            }
+            return true
+        }
+    }
+
+    override fun onReceiveEvent(messageType: Int, value: Long) {
+        val msg = Message.obtain()
+        msg.what = messageType
+        val data = msg.data
+        data.putLong(EVENT_VALUE, value)
+        mHandler.sendMessage(msg)
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {

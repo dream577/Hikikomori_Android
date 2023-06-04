@@ -14,6 +14,7 @@
 #include "VideoDecoder.h"
 #include "MediaSync.h"
 #include "ThreadSafeQueue.h"
+#include "MediaEventCallback.h"
 
 class MediaPlayer {
 public:
@@ -41,10 +42,6 @@ public:
     }
 
 protected:
-    JavaVM *m_JavaVM = nullptr;
-
-    jobject m_JavaObj = nullptr;
-
     volatile PlayerState state = STATE_UNKNOWN;
 
     VideoDecoder *m_VideoDecoder;
@@ -52,6 +49,7 @@ protected:
     VideoRender *m_VideoRender;
     AudioRender *m_AudioRender;
     MediaSync *m_AVSync;
+    MediaEventCallback *m_EventCallback;
 
     mutex m_Mutex;
     condition_variable m_Cond;

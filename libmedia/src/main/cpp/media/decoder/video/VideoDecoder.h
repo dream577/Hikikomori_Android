@@ -24,8 +24,9 @@ private:
     virtual int unInit() override;
 
 public:
-    VideoDecoder(char *path, DecoderCallback *callback)
+    VideoDecoder(char *path, MediaEventCallback *eventCallback, DecoderCallback *callback)
             : FFBaseDecoder(path, AVMEDIA_TYPE_VIDEO, callback) {
+        m_EventCallback = eventCallback;
     }
 
     virtual ~VideoDecoder() {}

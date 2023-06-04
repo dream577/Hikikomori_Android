@@ -41,8 +41,10 @@ private:
 protected:
 
 public:
-    AudioDecoder(char *path, DecoderCallback *callback)
-            : FFBaseDecoder(path, AVMEDIA_TYPE_AUDIO, callback) {}
+    AudioDecoder(char *path, MediaEventCallback *eventCallback, DecoderCallback *callback)
+            : FFBaseDecoder(path, AVMEDIA_TYPE_AUDIO, callback) {
+        m_EventCallback = eventCallback;
+    }
 
     virtual ~AudioDecoder() {}
 

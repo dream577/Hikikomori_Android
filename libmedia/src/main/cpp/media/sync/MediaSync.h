@@ -24,17 +24,17 @@ public:
 
     ~MediaSync();
 
-    void audioSyncToSystemClock(long pts);
+    void AudioSyncToSystemClock(long pts);
 
-    void videoSyncToSystemClock(long pts);
+    void VideoSyncToSystemClock(long pts);
 
     void videoSynToAudioClock();
 
-    void syncTimeStampWhenResume();
+    void SyncTimeStampWhenResume();
 
-    void audioSeekToPositionSuccess();
+    void AudioSeekToPositionSuccess();
 
-    void videoSeekToPositionSuccess();
+    void VideoSeekToPositionSuccess();
 
 private:
     long m_CurrAudioTimeStamp = SYNC_INITIAL_TIMESTAMP;         // 当前音频帧的时间戳

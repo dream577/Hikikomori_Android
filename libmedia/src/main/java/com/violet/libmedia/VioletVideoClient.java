@@ -7,7 +7,19 @@ public class VioletVideoClient {
         System.loadLibrary("moonmedia");
     }
 
+    public static final String EVENT_VALUE = "value";
+
     private long mNativePlayerHandle = 0;
+
+    private MediaEventCallback callback;
+
+    public void registerEventCallback(MediaEventCallback callback) {
+        this.callback = callback;
+    }
+
+    public void unRegisterEventCallback(MediaEventCallback callback) {
+        this.callback = null;
+    }
 
     public static String GetFFmpegVersion() {
         return native_GetFFmpegVersion();
@@ -63,6 +75,12 @@ public class VioletVideoClient {
         native_onSurfaceDestroyed(mNativePlayerHandle);
     }
 
+    private void onReceiveMediaEvent(int type, long value) {
+        if (callback != null) {
+            callback.onReceiveEvent(type, value);
+        }
+    }
+
     private static native String native_GetFFmpegVersion();
 
     private native long native_Init(String url, int playerType, int renderType);
@@ -82,5 +100,9 @@ public class VioletVideoClient {
     private native void native_onSurfaceChanged(long playerHandle, int w, int h);
 
     private native void native_onSurfaceDestroyed(long playerHandle);
+
+    public interface MediaEventCallback {
+        void onReceiveEvent(int messageType, long value);
+    }
 
 }

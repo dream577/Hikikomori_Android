@@ -9,8 +9,7 @@
 int VioletMediaPlayer::Init(JNIEnv *jniEnv, jobject obj, char *url, int decodeType,
                             int renderType) {
     LOGCATE("VioletMediaPlayer::Init")
-    jniEnv->GetJavaVM(&m_JavaVM);
-    m_JavaObj = jniEnv->NewGlobalRef(obj);
+    m_EventCallback = new MediaEventCallback(jniEnv, obj);
 
     int result1 = initAudioPlayer(url);
     if (result1 != 0) {
@@ -37,12 +36,13 @@ int VioletMediaPlayer::UnInit() {
     LOGCATE("VioletMediaPlayer::UnInit")
     unInitAudioPlayer();
     unInitVideoPlayer();
+    delete m_EventCallback;
     return 0;
 }
 
 int VioletMediaPlayer::initAudioPlayer(char *url) {
     int result = -1;
-    m_AudioDecoder = new AudioDecoder(url, this);
+    m_AudioDecoder = new AudioDecoder(url, m_EventCallback, this);
     result = m_AudioDecoder->Init();
     if (result == 0) {
         m_AudioRender = new OpenSLAudioRender(this);
@@ -56,7 +56,7 @@ int VioletMediaPlayer::initAudioPlayer(char *url) {
 
 int VioletMediaPlayer::initVideoPlayer(char *url) {
     int result = -1;
-    m_VideoDecoder = new VideoDecoder(url, this);
+    m_VideoDecoder = new VideoDecoder(url, nullptr, this);
     result = m_VideoDecoder->Init();
     if (result == 0) {
         int mVideoWidth = m_VideoDecoder->getVideoWidth();
@@ -137,7 +137,7 @@ void VioletMediaPlayer::Resume() {
     LOGCATE("VioletMediaPlayer::Resume")
     if (GetPlayerState() != STATE_PAUSE) return;
     if (m_AVSync) {
-        m_AVSync->syncTimeStampWhenResume();
+        m_AVSync->SyncTimeStampWhenResume();
     }
     SetPlayerState(STATE_PLAYING);
 }
@@ -159,7 +159,6 @@ void VioletMediaPlayer::SeekToPosition(float position) {
             return;
         default:;
     }
-
     if (m_AudioDecoder) {
         m_AudioDecoder->SeekPosition(position);
     }
@@ -174,10 +173,10 @@ Frame *VioletMediaPlayer::GetOneFrame(int type) {
     if (GetPlayerState() == STATE_STOP) return frame;
     if (type == MEDIA_TYPE_VIDEO) {
         frame = m_VideoFrameQueue->poll();
-        if (frame) m_AVSync->videoSyncToSystemClock(frame->pts);
+        if (frame) m_AVSync->VideoSyncToSystemClock(frame->pts);
     } else {
         frame = m_AudioFrameQueue->poll();
-        if (frame) m_AVSync->audioSyncToSystemClock(frame->pts);
+        if (frame) m_AVSync->AudioSyncToSystemClock(frame->pts);
     }
     return frame;
 }
@@ -193,13 +192,14 @@ void VioletMediaPlayer::OnDecodeOneFrame(Frame *frame) {
 }
 
 void VioletMediaPlayer::OnSeekResult(int mediaType, bool result) {
+    m_EventCallback->PostMessage(EVENT_SEEK_FINISH, 0);
     if (mediaType == MEDIA_TYPE_VIDEO && result) {
         m_VideoFrameQueue->clearCache();
-        m_AVSync->videoSeekToPositionSuccess();
+        m_AVSync->VideoSeekToPositionSuccess();
     }
     if (mediaType == MEDIA_TYPE_AUDIO && result) {
         m_AudioFrameQueue->clearCache();
-        m_AVSync->audioSeekToPositionSuccess();
+        m_AVSync->AudioSeekToPositionSuccess();
     }
 }
 

@@ -34,47 +34,21 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
+            <include
+                android:id="@+id/panel_bottom"
+                layout="@layout/layout_bottom_control_panel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                app:layout_constraintBottom_toBottomOf="@+id/video_surface_view"
+                app:layout_constraintStart_toStartOf="parent" />
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                app:visibleOrGone="@{!mViewModel.isFullScreen()}"
-                app:layout_constraintTop_toBottomOf="@+id/video_surface_view">
-
-                <Button
-                    android:id="@+id/play"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:onClick="@{clickListener}"
-                    android:text="播放" />
-
-                <Button
-                    android:id="@+id/pause"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:onClick="@{clickListener}"
-                    android:text="暂停" />
-
-                <Button
-                    android:id="@+id/resume"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:onClick="@{clickListener}"
-                    android:text="继续" />
-
-                <Button
-                    android:id="@+id/stop"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:onClick="@{clickListener}"
-                    android:text="停止" />
-
-                <Button
-                    android:id="@+id/seek"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:onClick="@{clickListener}"
-                    android:text="定位到50秒" />
+                app:layout_constraintTop_toBottomOf="@+id/video_surface_view"
+                app:visibleOrGone="@{!mViewModel.isFullScreen()}">
 
                 <Button
                     android:id="@+id/full_screen"

@@ -4,6 +4,7 @@
 
 #include "FFBaseDecoder.h"
 #include "LogUtil.h"
+#include "MediaDef.h"
 
 FFBaseDecoder::~FFBaseDecoder() {
     LOGCATE("FFBaseDecoder::~FFBaseDecoder ")
@@ -78,6 +79,10 @@ int FFBaseDecoder::init() {
         }
         result = 0;
 
+        if (m_EventCallback) {
+            m_EventCallback->PostMessage(EVENT_DURATION, m_AVFormatContext->duration / 1000);
+        }
+
         m_AVPacket = av_packet_alloc();
         m_AVFrame = av_frame_alloc();
 
@@ -105,6 +110,9 @@ int FFBaseDecoder::unInit() {
         avformat_close_input(&m_AVFormatContext);
         avformat_free_context(m_AVFormatContext);
         m_AVFormatContext = nullptr;
+    }
+    if (m_EventCallback) {
+        m_EventCallback = nullptr;
     }
     LOGCATE("FFBaseDecoder::unInit finish");
     return 0;
@@ -136,7 +144,8 @@ int FFBaseDecoder::decodeLoopOnce() {
                 avcodec_flush_buffers(m_AVCodecContext);
             }
             m_Callback->OnSeekResult(m_MediaType, true);
-            LOGCATE("BaseDecoder::decodeLoopOnce success while seeking m_MediaType=%d",m_MediaType);
+            LOGCATE("BaseDecoder::decodeLoopOnce success while seeking m_MediaType=%d",
+                    m_MediaType);
         }
         m_SeekPosition = -1;   // 重置seek标志位
     }
@@ -155,6 +164,9 @@ int FFBaseDecoder::decodeLoopOnce() {
             while (avcodec_receive_frame(m_AVCodecContext, m_AVFrame) == 0) {
                 Frame *frame = onFrameAvailable();
                 m_Callback->OnDecodeOneFrame(frame);
+                if (m_EventCallback) {
+                    m_EventCallback->PostMessage(EVENT_PLAYING, frame->pts);
+                }
                 frameCount++;
             }
 //            LOGCATE("FFBaseDecoder::decodeLoopOnce frameCount=%d", frameCount);

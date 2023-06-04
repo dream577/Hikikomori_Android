@@ -8,7 +8,7 @@
 #define MAX_PATH_LENGTH 2048
 
 #include "MediaDef.h"
-#include "looper.h"
+#include "MediaEventCallback.h"
 
 enum DecoderMsg {
     MESSAGE_DECODER_INIT = 0,
@@ -38,6 +38,7 @@ private:
 
 protected:
     DecoderCallback *m_Callback = nullptr;
+    MediaEventCallback *m_EventCallback = nullptr;
 
     virtual int init() = 0;
 

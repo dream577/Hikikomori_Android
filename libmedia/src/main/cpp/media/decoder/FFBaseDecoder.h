@@ -12,7 +12,7 @@ extern "C" {
 #include "libavutil/time.h"
 #include "libavutil/opt.h"
 #include "libswresample/swresample.h"
-};
+}
 
 #include "Decoder.h"
 

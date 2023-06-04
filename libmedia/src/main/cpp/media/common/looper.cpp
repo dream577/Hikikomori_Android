@@ -112,7 +112,7 @@ void looper::loop() {
         sem_wait(&headwriteprotect);
         loopermessage *msg = head;
         if (msg == NULL) {
-            LOGV("no msg");
+//            LOGV("no msg");
             sem_post(&headwriteprotect);
             if (autoLoopEnable) {
                 handle(autoLoopMsg, nullptr);
@@ -135,7 +135,7 @@ void looper::loop() {
 }
 
 void looper::quit() {
-    LOGV("quit");
+    LOGV("m_UnInit");
     loopermessage *msg = new loopermessage();
     msg->what = 0;
     msg->obj = NULL;
@@ -150,7 +150,7 @@ void looper::quit() {
 }
 
 void looper::handle(int what, void *obj) {
-    LOGV("dropping msg %d %p", what, obj);
+//    LOGV("dropping msg %d %p", what, obj);
     if (what == ENABLE_AUTO_LOOP_MSG) {
         int *p = (int *) obj;
         if (p) {

@@ -26,6 +26,15 @@
 #define MAX_AUDIO_QUEUE_SIZE   5
 #define MAX_VIDEO_QUEUE_SIZE   5
 
+// 回调事件
+#define EVENT_DURATION         0
+#define EVENT_SHOW_LOADING     1
+#define EVENT_HIDE_LOADING     2
+#define EVENT_PLAYING          3
+#define EVENT_EXCEPTION        4
+#define EVENT_PAUSED           5
+#define EVENT_SEEK_FINISH      6
+
 enum PlayerState {
     STATE_ERROR = -1,
     STATE_UNKNOWN = 0,

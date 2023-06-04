@@ -4,7 +4,7 @@
 #include "MediaSync.h"
 #include "LogUtil.h"
 
-void MediaSync::audioSyncToSystemClock(long pts) {
+void MediaSync::AudioSyncToSystemClock(long pts) {
     m_CurrAudioTimeStamp = pts;
 
     if (m_AudioStartTime == SYNC_INITIAL_TIMESTAMP) {
@@ -18,10 +18,10 @@ void MediaSync::audioSyncToSystemClock(long pts) {
         av_usleep(sleepTime * 1000);
     }
     delay = elapsedTime - m_CurrAudioTimeStamp;
-    LOGCATE("MediaSync::audioSyncToSystemClock pts=%ld, 音频播放时长:%ld", pts, m_CurrAudioTimeStamp)
+    LOGCATE("MediaSync::AudioSyncToSystemClock pts=%ld, 音频播放时长:%ld", pts, m_CurrAudioTimeStamp)
 }
 
-void MediaSync::videoSyncToSystemClock(long pts) {
+void MediaSync::VideoSyncToSystemClock(long pts) {
     m_CurrVideoTimeStamp = pts;
 
     if (m_VideoStartTime == SYNC_INITIAL_TIMESTAMP) {
@@ -35,14 +35,14 @@ void MediaSync::videoSyncToSystemClock(long pts) {
         av_usleep(sleepTime * 1000);
     }
     delay = elapsedTime - m_CurrVideoTimeStamp;
-    LOGCATE("MediaSync::videoSyncToSystemClock pts=%ld, 视频播放时长:%ld", pts, m_CurrVideoTimeStamp)
+    LOGCATE("MediaSync::VideoSyncToSystemClock pts=%ld, 视频播放时长:%ld", pts, m_CurrVideoTimeStamp)
 }
 
 void MediaSync::videoSynToAudioClock() {
 
 }
 
-void MediaSync::syncTimeStampWhenResume() {
+void MediaSync::SyncTimeStampWhenResume() {
     m_AudioStartTime = GetSysCurrentTime() - m_CurrAudioTimeStamp;
     m_VideoStartTime = GetSysCurrentTime() - m_CurrVideoTimeStamp;
     if (m_AudioStartTime != SYNC_INITIAL_TIMESTAMP && m_VideoStartTime != SYNC_INITIAL_TIMESTAMP) {
@@ -50,11 +50,11 @@ void MediaSync::syncTimeStampWhenResume() {
     }
 }
 
-void MediaSync::audioSeekToPositionSuccess() {
+void MediaSync::AudioSeekToPositionSuccess() {
     m_AudioStartTime = SYNC_INITIAL_TIMESTAMP;
 }
 
-void MediaSync::videoSeekToPositionSuccess() {
+void MediaSync::VideoSeekToPositionSuccess() {
     m_VideoStartTime = SYNC_INITIAL_TIMESTAMP;
 }
 
