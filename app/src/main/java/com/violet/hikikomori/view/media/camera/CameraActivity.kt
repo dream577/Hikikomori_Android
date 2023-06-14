@@ -5,6 +5,7 @@ import android.content.Intent
 import android.view.View
 import android.view.WindowManager
 import com.violet.hikikomori.view.base.FragmentPagerActivity
+import com.violet.hikikomori.view.media.opengl.GLExampleFragment
 
 class CameraActivity : FragmentPagerActivity() {
 
@@ -19,7 +20,8 @@ class CameraActivity : FragmentPagerActivity() {
     override fun initView() {
         super.initView()
         updateMediaUI()
-        enterRecordFragment()
+//        enterRecordFragment()
+        pagerManager.enterFragment(GLExampleFragment.TAG)
     }
 
     private fun enterRecordFragment() {
@@ -40,5 +42,6 @@ class CameraActivity : FragmentPagerActivity() {
 
     override fun registerFragment() {
         registerFragment(CameraRecordFragment.TAG, CameraRecordFragment::class.java)
+        registerFragment(GLExampleFragment.TAG, GLExampleFragment::class.java)
     }
 }
