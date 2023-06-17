@@ -26,7 +26,7 @@ private:
     GLuint m_TextureId[3];
 
     GLuint m_VaoId;
-    GLuint m_VboIds[3];
+    GLuint m_VboIds[2];
 
     VioletEGLSurface *m_Surface;
 

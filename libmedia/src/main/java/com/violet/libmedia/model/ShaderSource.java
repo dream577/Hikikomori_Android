@@ -4,17 +4,21 @@ public class ShaderSource {
     public static final String TRIANGLE_VERTEX_SHADER
             = "#version 300 es\n"
             + "layout(location = 0) in vec4 aPosition;\n"
+            + "layout(location = 1) in vec4 aColor;\n"
             + "uniform mat4 u_MVPMatrix;\n"
+            + "out vec4 vColor;\n"
             + "void main() {\n"
             + "  gl_Position = u_MVPMatrix * aPosition;\n"
+            + "  vColor = aColor;\n"
             + "}\n";
 
     public static final String TRIANGLE_FRAGMENT_SHADER
             = "#version 300 es\n"
             + "precision mediump float;\n"
+            + "in vec4 vColor;\n"
             + "out vec4 fragColor;\n"
             + "void main() {\n"
-            + "    fragColor = vec4(1.0, 1.0, 0.0, 1.0);\n"
+            + "    fragColor = vColor;\n"
             + "}\n";
 
     public static final String IMAGE_VERTEX_SHADER

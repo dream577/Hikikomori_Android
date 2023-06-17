@@ -3,12 +3,9 @@ package com.violet.libmedia.render.imagerender
 import android.opengl.GLES30
 import android.opengl.Matrix
 import android.view.Surface
-import com.violet.libbasetools.util.KLog
 import com.violet.libmedia.model.ShaderSource
 import com.violet.libmedia.util.BufferUtil
 import com.violet.libmedia.util.GLUtils
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
 import java.nio.FloatBuffer
 import java.nio.ShortBuffer
 
@@ -17,15 +14,21 @@ class TriangleSampleRender : GLRender {
         const val TAG = "TriangleSampleRender"
 
         private const val MARTIX = "u_MVPMatrix"
-        private const val COLOR = "u_Color"
 
+        /*
+         * 顶点属性数组，每一行代表一个顶点
+         * 其中每一行中的0---2代表顶点坐标属性， 3---6代表顶点颜色属性
+         */
         val VERTEX_COORD = floatArrayOf(
-            -0.5f, 0.5f,  0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+            -0.5f,  0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
             -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
-            0.5f,  -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-            0.5f,  0.5f,  0.0f, 1.0f, 1.0f, 0.0f, 1.0f,
+             0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f,
+             0.5f,  0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f,
         )
 
+        /*
+         * 图元索引数组
+         */
         val INDICES_COORD = shortArrayOf(
             0, 1, 2,
             0, 2, 3
@@ -34,19 +37,14 @@ class TriangleSampleRender : GLRender {
         val MATRIX_COORD = FloatArray(16)
     }
 
-    private var vertexBuffer: FloatBuffer
-    private var indicesBuffer: ShortBuffer
+    private val vertexBuffer = BufferUtil.createBuffer(VERTEX_COORD)
+    private val indicesBuffer = BufferUtil.createBuffer(INDICES_COORD)
 
     private val m_VboIds = IntArray(2)
     private val m_VaoIds = IntArray(1)
     private var program: Int = GLES30.GL_NONE
 
-    private var matrixLocation : Int = 0
-
-    init {
-        vertexBuffer = BufferUtil.createBuffer(VERTEX_COORD)
-        indicesBuffer = BufferUtil.createBuffer(INDICES_COORD)
-    }
+    private var matrixLocation: Int = 0
 
     override fun onSurfaceCreated(surface: Surface) {
         program = GLUtils.createProgram(
@@ -70,9 +68,16 @@ class TriangleSampleRender : GLRender {
         GLES30.glGenVertexArrays(1, m_VaoIds, 0)
         GLES30.glBindVertexArray(m_VaoIds[0])
 
+        // 指定每一个顶点的坐标属性
         GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, m_VboIds[0])
         GLES30.glEnableVertexAttribArray(0)
         GLES30.glVertexAttribPointer(0, 3, GLES30.GL_FLOAT, false, 7 * 4, 0)
+        GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, GLES30.GL_NONE)
+
+        // 指定每一个顶点的颜色属性
+        GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, m_VboIds[0])
+        GLES30.glEnableVertexAttribArray(1)
+        GLES30.glVertexAttribPointer(1,4, GLES30.GL_FLOAT, false, 7 * 4, 12)
         GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, GLES30.GL_NONE)
 
         GLES30.glBindBuffer(GLES30.GL_ELEMENT_ARRAY_BUFFER, m_VboIds[1])
@@ -81,15 +86,15 @@ class TriangleSampleRender : GLRender {
 
     override fun onSurfaceChanged(width: Int, height: Int) {
         val aspectRatio = height.toFloat() / width
-        Matrix.orthoM(MATRIX_COORD, 0, -1f,1f, -aspectRatio, aspectRatio, -1f,1f)
+        Matrix.orthoM(MATRIX_COORD, 0, -1f, 1f, -aspectRatio, aspectRatio, -1f, 1f)
     }
 
     override fun onDrawFrame() {
         GLES30.glUseProgram(program)
-        GLES30.glUniformMatrix4fv(matrixLocation,  1,false, MATRIX_COORD, 0)
+        GLES30.glUniformMatrix4fv(matrixLocation, 1, false, MATRIX_COORD, 0)
 
         GLES30.glBindVertexArray(m_VaoIds[0])
-        GLES30.glDrawElements(GLES30.GL_TRIANGLES, INDICES_COORD.size, GLES30.GL_UNSIGNED_SHORT,0)
+        GLES30.glDrawElements(GLES30.GL_TRIANGLES, INDICES_COORD.size, GLES30.GL_UNSIGNED_SHORT, 0)
         GLES30.glBindVertexArray(GLES30.GL_NONE)
     }
 

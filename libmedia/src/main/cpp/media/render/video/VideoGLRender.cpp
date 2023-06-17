@@ -79,10 +79,10 @@ static char fShaderStr[] =
 GLushort indices[] = {0, 1, 2, 0, 2, 3};
 
 GLfloat verticesCoords[] = {
-        -1.0f, 1.0f, 0.0f,  // Position 0
-        -1.0f, -1.0f, 0.0f,  // Position 1
-        1.0f, -1.0f, 0.0f,  // Position 2
-        1.0f, 1.0f, 0.0f,  // Position 3
+        -1.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+        -1.0f, -1.0f, 0.0f, 0.0f, 1.0f,
+        1.0f, -1.0f, 0.0f, 1.0f, 1.0f,
+        1.0f, 1.0f, 0.0f, 1.0f, 0.0f
 };
 
 GLfloat textureCoords[] = {
@@ -122,14 +122,14 @@ void VideoGLRender::onSurfaceCreated() {
     }
 
     // Generate VBO Ids and load the VBOs with data
-    glGenBuffers(3, m_VboIds);
+    glGenBuffers(2, m_VboIds);
     glBindBuffer(GL_ARRAY_BUFFER, m_VboIds[0]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(verticesCoords), verticesCoords, GL_STATIC_DRAW);
 
-    glBindBuffer(GL_ARRAY_BUFFER, m_VboIds[1]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(textureCoords), textureCoords, GL_STATIC_DRAW);
+//    glBindBuffer(GL_ARRAY_BUFFER, m_VboIds[1]);
+//    glBufferData(GL_ARRAY_BUFFER, sizeof(textureCoords), textureCoords, GL_STATIC_DRAW);
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_VboIds[2]);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_VboIds[1]);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
     // Generate VAO Id
@@ -138,15 +138,15 @@ void VideoGLRender::onSurfaceCreated() {
 
     glBindBuffer(GL_ARRAY_BUFFER, m_VboIds[0]);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (const void *) 0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (const void *) 0);
     glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
 
-    glBindBuffer(GL_ARRAY_BUFFER, m_VboIds[1]);
+    glBindBuffer(GL_ARRAY_BUFFER, m_VboIds[0]);
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (const void *) 0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (const void *) (3 * (sizeof(GLfloat))));
     glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_VboIds[2]);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_VboIds[1]);
 
     glBindVertexArray(GL_NONE);
 }
@@ -336,7 +336,7 @@ void VideoGLRender::onDrawFrame() {
 void VideoGLRender::onSurfaceDestroyed() {
     LOGCATE("VideoGLRender::onSurfaceDestroyed")
     glDeleteVertexArrays(1, &m_VaoId);
-    glDeleteBuffers(3, m_VboIds);
+    glDeleteBuffers(2, m_VboIds);
     glDeleteTextures(3, m_TextureId);
     if (m_Program != GL_NONE) {
         glDeleteProgram(m_Program);
