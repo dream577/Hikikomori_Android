@@ -5,6 +5,7 @@ import android.opengl.Matrix
 import android.view.Surface
 import com.violet.libbasetools.util.KLog
 import com.violet.libmedia.model.ShaderSource
+import com.violet.libmedia.util.BufferUtil
 import com.violet.libmedia.util.GLUtils
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -43,19 +44,8 @@ class TriangleSampleRender : GLRender {
     private var matrixLocation : Int = 0
 
     init {
-        val buffer = ByteBuffer.allocateDirect(VERTEX_COORD.size * 4)
-        buffer.order(ByteOrder.nativeOrder())
-        vertexBuffer = buffer.asFloatBuffer()
-        vertexBuffer.put(VERTEX_COORD)
-        buffer.position(0)
-        vertexBuffer.position(0)
-
-        val buffer1 = ByteBuffer.allocateDirect(INDICES_COORD.size * 2)
-        buffer1.order(ByteOrder.nativeOrder())
-        indicesBuffer = buffer1.asShortBuffer()
-        indicesBuffer.put(INDICES_COORD)
-        buffer1.position(0)
-        indicesBuffer.position(0)
+        vertexBuffer = BufferUtil.createBuffer(VERTEX_COORD)
+        indicesBuffer = BufferUtil.createBuffer(INDICES_COORD)
     }
 
     override fun onSurfaceCreated(surface: Surface) {
@@ -72,7 +62,7 @@ class TriangleSampleRender : GLRender {
         GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, m_VboIds[0])
         GLES30.glBufferData(GLES30.GL_ARRAY_BUFFER, VERTEX_COORD.size * 4, vertexBuffer, GLES30.GL_STATIC_DRAW)
 
-        // 缓冲区2用来保存图元索引数据
+        // 缓冲区1用来保存图元索引数据
         GLES30.glBindBuffer(GLES30.GL_ELEMENT_ARRAY_BUFFER, m_VboIds[1])
         GLES30.glBufferData(GLES30.GL_ELEMENT_ARRAY_BUFFER, INDICES_COORD.size * 2, indicesBuffer, GLES30.GL_STATIC_DRAW)
 
@@ -84,11 +74,6 @@ class TriangleSampleRender : GLRender {
         GLES30.glEnableVertexAttribArray(0)
         GLES30.glVertexAttribPointer(0, 3, GLES30.GL_FLOAT, false, 7 * 4, 0)
         GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, GLES30.GL_NONE)
-
-//        GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, m_VboIds[1])
-//        GLES30.glEnableVertexAttribArray(1)
-//        GLES30.glVertexAttribPointer(1, 3, GLES30.GL_FLOAT, false, 3 * 4, 0)
-//        GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, GLES30.GL_NONE)
 
         GLES30.glBindBuffer(GLES30.GL_ELEMENT_ARRAY_BUFFER, m_VboIds[1])
         GLES30.glBindVertexArray(GLES30.GL_NONE)

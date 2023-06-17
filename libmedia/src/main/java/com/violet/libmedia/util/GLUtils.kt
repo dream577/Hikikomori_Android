@@ -2,11 +2,15 @@ package com.violet.libmedia.util
 
 import android.opengl.GLES30
 import com.violet.libbasetools.util.KLog
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
+import java.nio.FloatBuffer
+import java.nio.ShortBuffer
 
 object GLUtils {
     const val TAG = "GLUtils"
 
-    fun loadShader(type: Int, shaderSource: String): Int {
+    private fun loadShader(type: Int, shaderSource: String): Int {
         val array = IntArray(1)
         // 1.创建一个着色器
         val shader = GLES30.glCreateShader(type)

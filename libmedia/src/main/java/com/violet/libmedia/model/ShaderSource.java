@@ -15,7 +15,7 @@ public class ShaderSource {
             + "out vec4 fragColor;\n"
             + "void main() {\n"
             + "    fragColor = vec4(1.0, 1.0, 0.0, 1.0);\n"
-            + "}";
+            + "}\n";
 
     public static final String IMAGE_VERTEX_SHADER
             = "#version 300 es\n"
