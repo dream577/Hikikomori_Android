@@ -1,44 +1,54 @@
 package com.violet.libmedia.util
 
-import java.util.concurrent.LinkedTransferQueue
+import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.TimeUnit
 
 open class VThread(name: String) : Thread(name) {
-    private val queue = LinkedTransferQueue<Int>()
-    private val stop = false
+    private val queue = LinkedBlockingQueue<Int>()
     private val stopFlag = -10000
-    private var loopMsg = -1
 
-    override fun run() {
+    @Volatile
+    private var stop = false
+
+    private var loopMsg = -1  // 循环消息
+
+    final override fun run() {
         super.run()
 
-        while (!stop) {
-            if (queue.isEmpty() && loopMsg != -1) {
-                handleMessage(loopMsg)
-            } else {
-                val msg = queue.poll(10, TimeUnit.MILLISECONDS) ?: continue
-                if (msg == stopFlag) {
-                    break
+        try {
+            while (!stop) {
+                if (queue.isEmpty() && loopMsg != -1) {   // 消息队列为空且已指定循环事件
+                    handleMessage(loopMsg)
+                } else {
+                    val msg = queue.poll(100, TimeUnit.MILLISECONDS) ?: continue
+                    if (msg == stopFlag) { // 收到停止事件
+                        stop = true
+                        queue.clear()
+                        return
+                    }
+                    handleMessage(msg)
                 }
-                handleMessage(msg)
             }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
-    fun startLoop(message: Int) {
+    protected fun startLoop(message: Int) {
         loopMsg = message
         putMessage(message)
     }
 
-    fun quit() {
+    protected fun quit() {
         putMessage(stopFlag)
     }
 
-    fun putMessage(message: Int) {
+    protected fun putMessage(message: Int) {
+        if (stop) return
         queue.put(message)
     }
 
-    open fun handleMessage(msg: Int) {
+    protected open fun handleMessage(msg: Int) {
 
     }
 }

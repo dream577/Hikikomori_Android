@@ -3,12 +3,16 @@ package com.violet.libmedia.render.imagerender
 import android.opengl.GLES30
 import android.view.Surface
 import com.violet.libmedia.core.EglCore
-import com.violet.libmedia.model.RenderMessage
 import com.violet.libmedia.util.VThread
 
 class GLRenderWindow(name: String) : VThread(name), GLRender {
     companion object {
         const val TAG = "GLRenderWindow"
+
+        const val ON_SURFACE_CREATED = 1
+        const val ON_SURFACE_CHANGED = 2
+        const val ON_DRAW_FRAME = 3
+        const val ON_SURFACE_DESTROYED = 4
     }
 
     private val mCore: EglCore = EglCore()
@@ -30,14 +34,14 @@ class GLRenderWindow(name: String) : VThread(name), GLRender {
 
     override fun onSurfaceCreated(surface: Surface) {
         this.mSurface = surface
-        putMessage(RenderMessage.ON_SURFACE_CREATED)
-        startLoop(RenderMessage.ON_DRAW_FRAME)
+        putMessage(ON_SURFACE_CREATED)
+        startLoop(ON_DRAW_FRAME)
     }
 
     override fun onSurfaceChanged(width: Int, height: Int) {
         this.windowWidth = width
         this.windowHeight = height
-        putMessage(RenderMessage.ON_SURFACE_CHANGED)
+        putMessage(ON_SURFACE_CHANGED)
     }
 
     override fun onDrawFrame() {
@@ -48,7 +52,7 @@ class GLRenderWindow(name: String) : VThread(name), GLRender {
     }
 
     override fun onSurfaceDestroyed(surface: Surface) {
-        putMessage(RenderMessage.ON_SURFACE_DESTROYED)
+        putMessage(ON_SURFACE_DESTROYED)
         quit()
     }
 
@@ -95,16 +99,16 @@ class GLRenderWindow(name: String) : VThread(name), GLRender {
     override fun handleMessage(msg: Int) {
         super.handleMessage(msg)
         when (msg) {
-            RenderMessage.ON_SURFACE_CREATED -> {
+            ON_SURFACE_CREATED -> {
                 onSurfaceCreated()
             }
-            RenderMessage.ON_SURFACE_CHANGED -> {
+            ON_SURFACE_CHANGED -> {
                 onSurfaceChanged()
             }
-            RenderMessage.ON_DRAW_FRAME -> {
+            ON_DRAW_FRAME -> {
                 onDrawFrame()
             }
-            RenderMessage.ON_SURFACE_DESTROYED -> {
+            ON_SURFACE_DESTROYED -> {
                 onSurfaceDestroyed()
             }
         }

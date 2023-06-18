@@ -1,11 +1,7 @@
-package com.violet.libmedia.util
+package com.violet.libmedia.core
 
 import android.opengl.GLES30
 import com.violet.libbasetools.util.KLog
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
-import java.nio.FloatBuffer
-import java.nio.ShortBuffer
 
 object GLUtils {
     const val TAG = "GLUtils"

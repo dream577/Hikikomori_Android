@@ -5,9 +5,7 @@ import android.opengl.Matrix
 import android.view.Surface
 import com.violet.libmedia.model.ShaderSource
 import com.violet.libmedia.util.BufferUtil
-import com.violet.libmedia.util.GLUtils
-import java.nio.FloatBuffer
-import java.nio.ShortBuffer
+import com.violet.libmedia.core.GLUtils
 
 class TriangleSampleRender : GLRender {
     companion object {
