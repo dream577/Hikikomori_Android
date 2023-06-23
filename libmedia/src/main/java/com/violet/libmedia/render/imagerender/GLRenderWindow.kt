@@ -3,6 +3,8 @@ package com.violet.libmedia.render.imagerender
 import android.opengl.GLES30
 import android.view.Surface
 import com.violet.libmedia.core.EglCore
+import com.violet.libmedia.model.MediaFrame
+import com.violet.libmedia.util.RecycledPool.Element
 import com.violet.libmedia.util.VThread
 
 class GLRenderWindow(name: String) : VThread(name), GLRender {
@@ -15,9 +17,11 @@ class GLRenderWindow(name: String) : VThread(name), GLRender {
         const val ON_SURFACE_DESTROYED = 4
     }
 
+    private var mRenderCallback: RenderCallback? = null
+
     private val mCore: EglCore = EglCore()
     private lateinit var mSurface: Surface
-    private val mRenders: List<GLRender>
+    private val mRenders: ArrayList<GLRender> = ArrayList()
 
     private var windowWidth = 0
     private var windowHeight = 0
@@ -26,10 +30,17 @@ class GLRenderWindow(name: String) : VThread(name), GLRender {
 
     constructor() : this(TAG)
 
-    init {
-        mRenders = arrayListOf(
-            TriangleSampleRender()
-        )
+    constructor(callback: RenderCallback) : this() {
+        mRenderCallback = callback
+    }
+
+    fun startRender() {
+        start()
+    }
+
+    fun stopRender() {
+        putMessage(ON_SURFACE_DESTROYED)
+        quit()
     }
 
     override fun onSurfaceCreated(surface: Surface) {
@@ -44,20 +55,20 @@ class GLRenderWindow(name: String) : VThread(name), GLRender {
         putMessage(ON_SURFACE_CHANGED)
     }
 
-    override fun onDrawFrame() {
+    override fun onDrawFrame(frame: MediaFrame) {
         for (render in mRenders) {
-            render.onDrawFrame()
+            render.onDrawFrame(frame)
         }
         mCore.swapBuffers()
     }
 
     override fun onSurfaceDestroyed(surface: Surface) {
         putMessage(ON_SURFACE_DESTROYED)
-        quit()
     }
 
     private fun onSurfaceCreated() {
         mCore.init(mSurface)
+        mRenders.add(ImageGLRender())
         for (render in mRenders) {
             render.onSurfaceCreated(mSurface)
         }
@@ -106,7 +117,15 @@ class GLRenderWindow(name: String) : VThread(name), GLRender {
                 onSurfaceChanged()
             }
             ON_DRAW_FRAME -> {
-                onDrawFrame()
+                val element = mRenderCallback?.requestRenderFrame(true) ?: return
+                val frame = element.value
+                if (frame.width != imageWidth || frame.height != imageHeight) {
+                    imageWidth = frame.width
+                    imageHeight = frame.height
+                    onSurfaceChanged()
+                }
+                onDrawFrame(frame)
+                element.recycle()
             }
             ON_SURFACE_DESTROYED -> {
                 onSurfaceDestroyed()

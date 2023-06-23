@@ -6,6 +6,8 @@ import android.view.Surface
 import com.violet.libmedia.util.ShaderSource
 import com.violet.libmedia.util.BufferUtil
 import com.violet.libmedia.core.GLUtils
+import com.violet.libmedia.model.MediaFrame
+import com.violet.libmedia.util.RecycledPool.Element
 
 class TriangleSampleRender : GLRender {
     companion object {
@@ -87,7 +89,7 @@ class TriangleSampleRender : GLRender {
         Matrix.orthoM(MATRIX_COORD, 0, -1f, 1f, -aspectRatio, aspectRatio, -1f, 1f)
     }
 
-    override fun onDrawFrame() {
+    override fun onDrawFrame(frame: MediaFrame) {
         GLES30.glUseProgram(program)
         GLES30.glUniformMatrix4fv(matrixLocation, 1, false, MATRIX_COORD, 0)
 

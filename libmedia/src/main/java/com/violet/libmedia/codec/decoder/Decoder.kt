@@ -2,13 +2,14 @@ package com.violet.libmedia.codec.decoder
 
 import com.violet.libmedia.demuxer.Demuxer
 import com.violet.libmedia.model.MediaFrame
+import com.violet.libmedia.util.RecycledPool.Element
 
 interface Decoder {
 
     /**
      * 开始解码
      */
-    fun start(path: String)
+    fun startDecoder(path: String)
 
 
     fun prepareDemuxer(): Demuxer
@@ -27,7 +28,7 @@ interface Decoder {
     /**
      * 从解码器输出一帧数据, 输出为空代表失败
      */
-    fun outputOneFrame(): MediaFrame?
+    fun outputOneFrame(): Element<MediaFrame>?
 
     /**
      * 释放解码器

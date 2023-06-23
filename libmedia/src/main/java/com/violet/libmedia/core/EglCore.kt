@@ -6,6 +6,7 @@ import android.opengl.EGLConfig
 import android.opengl.EGLExt
 import android.view.Surface
 import com.violet.libbasetools.util.KLog
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.microedition.khronos.egl.EGLContext
 
 class EglCore {
@@ -13,6 +14,7 @@ class EglCore {
         private const val TAG = "EglCore"
     }
 
+    private var hasInitialized = AtomicBoolean(false)
     private var mEGLContext = EGL14.EGL_NO_CONTEXT
     private var mEGLDisplay = EGL14.EGL_NO_DISPLAY
     private var mEGLSurface = EGL14.EGL_NO_SURFACE
@@ -89,10 +91,12 @@ class EglCore {
             // 6.指定EGLContext为当前上下文
             result = EGL14.eglMakeCurrent(mEGLDisplay, mEGLSurface, mEGLSurface, mEGLContext)
         } while (false)
+        hasInitialized.set(result)
         return result
     }
 
     fun swapBuffers() {
+        if (!hasInitialized.get()) return
         EGL14.eglSwapBuffers(mEGLDisplay, mEGLSurface)
     }
 
@@ -115,5 +119,6 @@ class EglCore {
             EGL14.eglTerminate(mEGLDisplay)
             mEGLDisplay = EGL14.EGL_NO_DISPLAY
         }
+        hasInitialized.set(false)
     }
 }

@@ -9,7 +9,6 @@ import com.violet.hikikomori.R
 import com.violet.hikikomori.databinding.FragmentGlExampleBinding
 import com.violet.hikikomori.view.base.BaseBindingFragment
 import com.violet.libmedia.MediaPlayer
-import com.violet.libmedia.render.imagerender.GLRenderWindow
 
 class GLExampleFragment : BaseBindingFragment<FragmentGlExampleBinding>(), SurfaceHolder.Callback {
 
@@ -17,34 +16,40 @@ class GLExampleFragment : BaseBindingFragment<FragmentGlExampleBinding>(), Surfa
         const val TAG = "GLExampleFragment"
     }
 
-    private lateinit var window: GLRenderWindow
+    private lateinit var player: MediaPlayer
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        window = GLRenderWindow()
+        player = MediaPlayer()
         val view = super.onCreateView(inflater, container, savedInstanceState)
         mBinding.exampleSurfaceView.holder.addCallback(this)
         return view
     }
 
     override fun surfaceCreated(holder: SurfaceHolder) {
-//        window.start()
-//        window.onSurfaceCreated(holder.surface)
-        val player = MediaPlayer(holder.surface)
-        player.play("/storage/emulated/0/视频/[Airota][Fate stay night Heaven's Feel III.spring song][Movie][BDRip 1080p AVC AAC][CHS].mp4")
+        player.onSurfaceCreated(holder.surface)
     }
 
     override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
-//        window.onSurfaceChanged(width, height)
+        player.onSurfaceChanged(width, height)
     }
 
-
     override fun surfaceDestroyed(holder: SurfaceHolder) {
-//        window.onSurfaceDestroyed(holder.surface)
+        player.onSurfaceDestroyed(holder.surface)
     }
 
     override fun getLayoutId(): Int = R.layout.fragment_gl_example
+
+    override fun onResume() {
+        super.onResume()
+        player.play("/storage/emulated/0/视频/[Airota][Fate stay night Heaven's Feel III.spring song][Movie][BDRip 1080p AVC AAC][CHS].mp4")
+    }
+
+    override fun onPause() {
+        super.onPause()
+        player.stop()
+    }
 }

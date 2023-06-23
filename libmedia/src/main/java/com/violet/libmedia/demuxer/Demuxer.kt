@@ -12,4 +12,6 @@ interface Demuxer {
     fun readSampleData(buffer: ByteBuffer): Int
 
     fun getSampleTime(): Long
+
+    fun release()
 }

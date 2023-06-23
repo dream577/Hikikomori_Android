@@ -47,7 +47,7 @@ class MediaDemuxer(val isVideo: Boolean) : Demuxer {
     }
 
 
-    private fun release() {
+    override fun release() {
         mediaExtractor.release()
     }
 

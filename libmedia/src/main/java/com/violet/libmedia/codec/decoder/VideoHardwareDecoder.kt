@@ -21,6 +21,8 @@ class VideoHardwareDecoder(surface: Surface?) : HardwareDecoder() {
         this.surface = surface
     }
 
+    constructor() : this(null)
+
     override fun prepareDemuxer(): Demuxer {
         val demuxer = MediaDemuxer(true)
         demuxer.configDemuxer("/storage/emulated/0/视频/[Airota][Fate stay night Heaven's Feel III.spring song][Movie][BDRip 1080p AVC AAC][CHS].mp4")
@@ -59,7 +61,7 @@ class VideoHardwareDecoder(surface: Surface?) : HardwareDecoder() {
                  * U U U U
                  */
                 capacity = stride * height + stride * height / 4 + stride * height / 4
-                planeArray = intArrayOf(stride, stride / 2, stride / 2)
+                planeArray = intArrayOf(stride, stride, 0)
                 ImageFormat.IMAGE_FORMAT_YV12
             }
             MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420SemiPlanar -> { // NV12
@@ -71,8 +73,8 @@ class VideoHardwareDecoder(surface: Surface?) : HardwareDecoder() {
                  * U V U V
                  * U V U V
                  */
-                capacity = stride * height + stride * height / 4 + stride * height / 4
-                planeArray = intArrayOf(stride, stride / 2, stride / 2)
+                capacity = stride * height + stride * height / 2
+                planeArray = intArrayOf(stride, stride, 0)
                 ImageFormat.IMAGE_FORMAT_NV12
             }
             MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420PackedSemiPlanar -> {  //NV21
@@ -84,8 +86,8 @@ class VideoHardwareDecoder(surface: Surface?) : HardwareDecoder() {
                  * V U V U
                  * V U V U
                  */
-                capacity = stride * height + stride * height / 4 + stride * height / 4
-                planeArray = intArrayOf(stride, stride / 2, stride / 2)
+                capacity = stride * height + stride * height / 2
+                planeArray = intArrayOf(stride, stride, 0)
                 ImageFormat.IMAGE_FORMAT_NV21
             }
             else -> {

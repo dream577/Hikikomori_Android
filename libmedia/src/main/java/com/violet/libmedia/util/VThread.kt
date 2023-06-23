@@ -45,7 +45,7 @@ open class VThread(name: String) : Thread(name) {
 
     protected fun putMessage(message: Int) {
         if (stop) return
-        queue.put(message)
+        queue.offer(message)
     }
 
     protected open fun handleMessage(msg: Int) {

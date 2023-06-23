@@ -7,9 +7,11 @@ import com.violet.libbasetools.util.KLog
 import com.violet.libmedia.demuxer.Demuxer
 import com.violet.libmedia.model.MediaFrame
 import com.violet.libmedia.util.RecycledPool
+import com.violet.libmedia.util.RecycledPool.Element
 import com.violet.libmedia.util.VThread
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
 
 abstract class HardwareDecoder : VThread(TAG), Decoder {
     companion object {
@@ -22,6 +24,7 @@ abstract class HardwareDecoder : VThread(TAG), Decoder {
         const val OUTPUT_FRAME_QUEUE_SIZE = 10
     }
 
+    private val isStop = AtomicBoolean(false)
     private lateinit var mediaCodec: MediaCodec
     private lateinit var demuxer: Demuxer
     private lateinit var path: String
@@ -35,17 +38,14 @@ abstract class HardwareDecoder : VThread(TAG), Decoder {
     protected var configured = false
 
     private var recycledPool: RecycledPool<MediaFrame>? = null
-    private var outputFrameQueue: LinkedBlockingQueue<MediaFrame>? = null
+    private var outputFrameQueue: LinkedBlockingQueue<Element<MediaFrame>>? = null
 
-    final override fun start(path: String) {
+    final override fun startDecoder(path: String) {
         this.path = path
+        isStop.set(false)
         start()
         putMessage(MSG_INIT)
         startLoop(MSG_DECODE)
-    }
-
-    final override fun start() {
-        super.start()
     }
 
     final override fun configureCodec(): Boolean {
@@ -73,86 +73,102 @@ abstract class HardwareDecoder : VThread(TAG), Decoder {
     override fun isConfigured(): Boolean = configured
 
     private fun loop() {
+        if (isStop.get()) return
         val codec = this.mediaCodec
         val info = this.mBufferInfo
         val demuxer = this.demuxer
-        do {
-            val inputIndex = codec.dequeueInputBuffer(0)
-            if (inputIndex >= 0) {
-                val buffer = codec.getInputBuffer(inputIndex)
-                val size = demuxer.readSampleData(buffer!!)
-                val pts = demuxer.getSampleTime()
-                KLog.d(TAG, "input[size:$size, pts:$pts]")
-
-                if (size < 0) {
-                    codec.queueInputBuffer(
-                        inputIndex, 0, size, pts,
-                        MediaCodec.BUFFER_FLAG_END_OF_STREAM
-                    )
-                } else {
-                    codec.queueInputBuffer(inputIndex, 0, size, pts, 0)
-                }
-            }
-
-            var outputIndex: Int
+        try {
             do {
-                outputIndex = codec.dequeueOutputBuffer(info, 1000 * 50) // 阻塞50毫秒
-                when (outputIndex) {
-                    MediaCodec.INFO_TRY_AGAIN_LATER -> {
+                val inputIndex = codec.dequeueInputBuffer(0)
+                if (inputIndex >= 0) {
+                    val buffer = codec.getInputBuffer(inputIndex)
+                    val size = demuxer.readSampleData(buffer!!)
+                    val pts = demuxer.getSampleTime()
 
-                    }
-                    MediaCodec.INFO_OUTPUT_FORMAT_CHANGED -> {
-                        if (recycledPool == null) {
-                            recycledPool = RecycledPool(OUTPUT_FRAME_QUEUE_SIZE)
-                        }
-                        if (outputFrameQueue == null) {
-                            outputFrameQueue = LinkedBlockingQueue(OUTPUT_FRAME_QUEUE_SIZE);
-                        }
-                        val format = codec.outputFormat
-                        onOutputFormatChanged(format, recycledPool!!)
-
-                        format.getInteger(MediaFormat.KEY_COLOR_FORMAT)
-                    }
-                    MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED -> {}
-                    else -> {
-                        val pool = this.recycledPool!!
-                        val queue = this.outputFrameQueue!!
-
-                        val srcBuffer = codec.getOutputBuffer(outputIndex)
-                        val frame = pool.take().value
-                        if (srcBuffer != null) {
-                            frame.buffer.put(srcBuffer)
-                        }
-                        frame.pts = info.presentationTimeUs
-
-                        queue.offer(frame)
-                        codec.releaseOutputBuffer(outputIndex, false)
+                    if (size < 0) {
+                        codec.queueInputBuffer(
+                            inputIndex, 0, size, pts,
+                            MediaCodec.BUFFER_FLAG_END_OF_STREAM
+                        )
+                    } else {
+                        codec.queueInputBuffer(inputIndex, 0, size, pts, 0)
                     }
                 }
 
-            } while (outputIndex >= 0)
-        } while (false)
+                var outputIndex: Int
+                do {
+                    outputIndex = codec.dequeueOutputBuffer(
+                        info,
+                        50
+                    ) // 阻塞50微秒，阻塞时间过长会导致解复用 -> 输入解码器 -> 解码器输出整个过程变慢
+                    when (outputIndex) {
+                        MediaCodec.INFO_TRY_AGAIN_LATER -> {
+
+                        }
+                        MediaCodec.INFO_OUTPUT_FORMAT_CHANGED -> {
+                            if (recycledPool == null) {
+                                recycledPool = RecycledPool(OUTPUT_FRAME_QUEUE_SIZE)
+                            }
+                            if (outputFrameQueue == null) {
+                                outputFrameQueue = LinkedBlockingQueue(OUTPUT_FRAME_QUEUE_SIZE);
+                            }
+                            val format = codec.outputFormat
+                            onOutputFormatChanged(format, recycledPool!!)
+
+                            format.getInteger(MediaFormat.KEY_COLOR_FORMAT)
+                        }
+                        MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED -> {}
+                        else -> {
+                            val pool = this.recycledPool!!
+                            val queue = this.outputFrameQueue!!
+
+                            val srcBuffer = codec.getOutputBuffer(outputIndex)
+                            val element = pool.take()
+                            val frame = element.value
+                            if (srcBuffer != null) {
+                                frame.buffer.put(srcBuffer)
+                            }
+                            frame.pts = info.presentationTimeUs
+
+                            queue.offer(element)
+                            codec.releaseOutputBuffer(outputIndex, false)
+                        }
+                    }
+
+                } while (outputIndex >= 0 && configured && !isStop.get())
+            } while (false)
+        } catch (e: Exception) {
+            isStop.set(true)
+            realRelease()
+        }
     }
 
     abstract fun onOutputFormatChanged(format: MediaFormat, pool: RecycledPool<MediaFrame>)
 
-    override fun outputOneFrame(): MediaFrame? {
+    override fun outputOneFrame(): Element<MediaFrame>? {
         return outputFrameQueue?.poll(50, TimeUnit.MILLISECONDS)
     }
 
     override fun release() {
+        isStop.set(true)
         putMessage(MSG_UNINIT)
         quit()
     }
 
     private fun realRelease() {
         val codec = this.mediaCodec
-        codec.apply {
-            stop()
-            release()
+        try {
+            codec.apply {
+                stop()
+                release()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        } finally {
+            demuxer.release()
+            outputFrameQueue?.clear()
+            recycledPool?.clear()
         }
-        outputFrameQueue?.clear()
-        recycledPool?.clear()
     }
 
     override fun handleMessage(msg: Int) {
