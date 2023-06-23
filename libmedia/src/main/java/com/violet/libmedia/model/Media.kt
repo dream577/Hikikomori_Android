@@ -5,7 +5,6 @@ import java.nio.ByteBuffer
 class MediaFrame(
     var dts: Long,
     var pts: Long,
-    var format: ImageFormat,
     var buffer: ByteBuffer,
     var planeSize: IntArray,
 
@@ -13,11 +12,13 @@ class MediaFrame(
     var isKeyFrame: Boolean,
     var width: Int,
     var height: Int,
+    var format: ImageFormat,
 
     // audio
     var channels: Int,
     var sampleRate: Int,
     var bitRate: Int,
+    var audioFormat: Int,
 
     var isVideo: Boolean
 ) {
@@ -25,6 +26,7 @@ class MediaFrame(
 }
 
 enum class ImageFormat(val format: Int) {
+    IMAGE_FORMAT_NONE(0x00),
     IMAGE_FORMAT_RGBA(0x01),
     IMAGE_FORMAT_NV21(0x02),
     IMAGE_FORMAT_NV12(0x03),

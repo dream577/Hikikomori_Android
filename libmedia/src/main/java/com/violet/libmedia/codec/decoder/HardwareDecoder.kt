@@ -52,7 +52,8 @@ abstract class HardwareDecoder : VThread(TAG), Decoder {
         val result = false
         do {
             try {
-                demuxer = prepareDemuxer()
+                demuxer = createDemuxer()
+                demuxer.configDemuxer(path)
                 val format = demuxer.getMediaFormat()
                 val mineType = format.getString(MediaFormat.KEY_MIME) ?: break
                 mediaCodec = MediaCodec.createDecoderByType(mineType)
@@ -85,6 +86,7 @@ abstract class HardwareDecoder : VThread(TAG), Decoder {
                     val size = demuxer.readSampleData(buffer!!)
                     val pts = demuxer.getSampleTime()
 
+//                    KLog.d(TAG, "frame[size=$size pts=$pts]")
                     if (size < 0) {
                         codec.queueInputBuffer(
                             inputIndex, 0, size, pts,
@@ -97,10 +99,7 @@ abstract class HardwareDecoder : VThread(TAG), Decoder {
 
                 var outputIndex: Int
                 do {
-                    outputIndex = codec.dequeueOutputBuffer(
-                        info,
-                        50
-                    ) // 阻塞50微秒，阻塞时间过长会导致解复用 -> 输入解码器 -> 解码器输出整个过程变慢
+                    outputIndex = codec.dequeueOutputBuffer(info, 100) // 阻塞100微秒，阻塞时间过长会导致解复用 -> 输入解码器 -> 解码器输出整个过程变慢
                     when (outputIndex) {
                         MediaCodec.INFO_TRY_AGAIN_LATER -> {
 
@@ -113,9 +112,8 @@ abstract class HardwareDecoder : VThread(TAG), Decoder {
                                 outputFrameQueue = LinkedBlockingQueue(OUTPUT_FRAME_QUEUE_SIZE);
                             }
                             val format = codec.outputFormat
+                            KLog.d(TAG, format)
                             onOutputFormatChanged(format, recycledPool!!)
-
-                            format.getInteger(MediaFormat.KEY_COLOR_FORMAT)
                         }
                         MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED -> {}
                         else -> {
@@ -125,10 +123,13 @@ abstract class HardwareDecoder : VThread(TAG), Decoder {
                             val srcBuffer = codec.getOutputBuffer(outputIndex)
                             val element = pool.take()
                             val frame = element.value
+                            val size = info.size
+                            frame.pts = info.presentationTimeUs
+//                            KLog.d(TAG, "output[pts=${frame.pts} size=${size}]")
+
                             if (srcBuffer != null) {
                                 frame.buffer.put(srcBuffer)
                             }
-                            frame.pts = info.presentationTimeUs
 
                             queue.offer(element)
                             codec.releaseOutputBuffer(outputIndex, false)
@@ -138,6 +139,7 @@ abstract class HardwareDecoder : VThread(TAG), Decoder {
                 } while (outputIndex >= 0 && configured && !isStop.get())
             } while (false)
         } catch (e: Exception) {
+            e.printStackTrace()
             isStop.set(true)
             realRelease()
         }

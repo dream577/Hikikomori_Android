@@ -2,9 +2,10 @@ package com.violet.libmedia.demuxer
 
 import android.media.MediaExtractor
 import android.media.MediaFormat
+import com.violet.libbasetools.util.KLog
 import java.nio.ByteBuffer
 
-class MediaDemuxer(val isVideo: Boolean) : Demuxer {
+class MediaDemuxer(private val isVideo: Boolean) : Demuxer {
     companion object {
         const val TAG = "MediaDemuxer"
     }
@@ -23,6 +24,7 @@ class MediaDemuxer(val isVideo: Boolean) : Demuxer {
             val mine = mediaFormat?.getString(MediaFormat.KEY_MIME)
             if (isVideo && mine?.startsWith("video/") == true || !isVideo && mine?.startsWith("audio/") == true) {
                 mediaExtractor.selectTrack(index)
+                KLog.d(TAG, mediaFormat!!)
                 result = true
                 break
             }

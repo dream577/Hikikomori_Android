@@ -1,9 +1,10 @@
-package com.violet.libmedia.codec.decoder
+package com.violet.libmedia.codec.decoder.video
 
 import android.media.MediaCodecInfo
 import android.media.MediaFormat
 import android.view.Surface
 import com.violet.libbasetools.util.KLog
+import com.violet.libmedia.codec.decoder.HardwareDecoder
 import com.violet.libmedia.demuxer.Demuxer
 import com.violet.libmedia.demuxer.MediaDemuxer
 import com.violet.libmedia.model.ImageFormat
@@ -23,10 +24,8 @@ class VideoHardwareDecoder(surface: Surface?) : HardwareDecoder() {
 
     constructor() : this(null)
 
-    override fun prepareDemuxer(): Demuxer {
-        val demuxer = MediaDemuxer(true)
-        demuxer.configDemuxer("/storage/emulated/0/视频/[Airota][Fate stay night Heaven's Feel III.spring song][Movie][BDRip 1080p AVC AAC][CHS].mp4")
-        return demuxer
+    override fun createDemuxer(): Demuxer {
+        return MediaDemuxer(true)
     }
 
     override fun onOutputFormatChanged(format: MediaFormat, pool: RecycledPool<MediaFrame>) {
@@ -38,7 +37,7 @@ class VideoHardwareDecoder(surface: Surface?) : HardwareDecoder() {
         val capacity: Int
         val planeArray: IntArray
         val imageFormat: ImageFormat = when (colorFormat) {
-            MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Planar -> {  // YV21、I420、YUV420SP
+            MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Planar -> {  // YV21、I420
                 /*
                  * Y Y Y Y
                  * Y Y Y Y
@@ -98,22 +97,13 @@ class VideoHardwareDecoder(surface: Surface?) : HardwareDecoder() {
             }
         }
 
-        KLog.d(HardwareDecoder.TAG, "VideoOutputFormat[format:$format")
+        KLog.d(TAG, "VideoOutputFormat[format:$format")
 
         pool.initRecycledPool {
             MediaFrame(
-                0,
-                0,
-                imageFormat,
-                ByteBuffer.allocateDirect(capacity),
-                planeArray,
-                false,
-                width,
-                height,
-                0,
-                0,
-                0,
-                true
+                0, 0, ByteBuffer.allocateDirect(capacity),
+                planeArray, false, width, height, imageFormat,
+                0, 0, 0, 0, true
             )
         }
     }

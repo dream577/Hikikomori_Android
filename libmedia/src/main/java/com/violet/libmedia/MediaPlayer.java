@@ -9,10 +9,11 @@ import android.view.Surface;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.violet.libmedia.codec.decoder.AudioHardwareDecoder;
+import com.violet.libmedia.codec.decoder.audio.AudioHardwareDecoder;
 import com.violet.libmedia.codec.decoder.Decoder;
-import com.violet.libmedia.codec.decoder.VideoHardwareDecoder;
+import com.violet.libmedia.codec.decoder.video.VideoHardwareDecoder;
 import com.violet.libmedia.model.MediaFrame;
+import com.violet.libmedia.render.audiorender.AudioRender;
 import com.violet.libmedia.render.imagerender.GLRenderWindow;
 import com.violet.libmedia.render.imagerender.RenderCallback;
 import com.violet.libmedia.util.RecycledPool;
@@ -35,12 +36,14 @@ public class MediaPlayer implements RenderCallback {
     private final Decoder mAudioDecoder;
 
     private final GLRenderWindow mRenderWindow;
+    private final AudioRender mAudioRender;
 
     public MediaPlayer() {
         mThread.start();
         mVideoDecoder = new VideoHardwareDecoder();
         mAudioDecoder = new AudioHardwareDecoder();
         mRenderWindow = new GLRenderWindow(this);
+        mAudioRender = new AudioRender(this);
 
         mHandler = new Handler(mThread.getLooper()) {
             @Override
@@ -56,13 +59,15 @@ public class MediaPlayer implements RenderCallback {
                 String path = msg.getData().getString(MEDIA_SOURCE);
                 mVideoDecoder.startDecoder(path);
                 mRenderWindow.startRender();
-
-//                mAudioDecoder.start(path);
+                mAudioDecoder.startDecoder(path);
+                mAudioRender.startRender();
                 break;
             case EVENT_STOP_PLAY:
                 mRenderWindow.stopRender();
                 mVideoDecoder.release();
-//                mAudioDecoder.release();
+                mAudioRender.stopRender();
+                mAudioDecoder.release();
+                break;
         }
     }
 

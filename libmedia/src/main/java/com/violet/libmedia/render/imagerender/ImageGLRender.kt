@@ -14,19 +14,18 @@ import com.violet.libmedia.util.ShaderSource
 import java.nio.FloatBuffer
 import java.nio.ShortBuffer
 
-
 class ImageGLRender : GLRender {
     companion object {
         const val TAG = "ImageGLRender"
 
-        val vertexCoords = floatArrayOf(
+        private val vertexCoords = floatArrayOf(
             -1.0f,  1.0f, 0.0f, 0.0f, 0.0f,
             -1.0f, -1.0f, 0.0f, 0.0f, 1.0f,
              1.0f, -1.0f, 0.0f, 1.0f, 1.0f,
              1.0f,  1.0f, 0.0f, 1.0f, 0.0f
         )
 
-        val indices = shortArrayOf(0, 1, 2, 0, 2, 3)
+        private val indices = shortArrayOf(0, 1, 2, 0, 2, 3)
     }
 
     private var program: Int = 0
@@ -124,52 +123,16 @@ class ImageGLRender : GLRender {
 
     override fun onDrawFrame(frame: MediaFrame) {
         when (frame.format) {
-            ImageFormat.IMAGE_FORMAT_RGBA -> {
-                GLES30.glActiveTexture(GLES30.GL_TEXTURE0)
-                GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, m_TextureIds[0])
-                GLES30.glTexImage2D(GLES30.GL_TEXTURE_2D, 0, GLES30.GL_RGBA, frame.width, frame.height,
-                    0, GLES30.GL_RGBA, GLES30.GL_UNSIGNED_BYTE, frame.buffer)
-                GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, GLES30.GL_NONE)
-            }
             ImageFormat.IMAGE_FORMAT_YV21 -> {
             }
             ImageFormat.IMAGE_FORMAT_YV12 -> {
             }
             ImageFormat.IMAGE_FORMAT_NV12, ImageFormat.IMAGE_FORMAT_NV21 -> {
-                val buffer = frame.buffer
-                val uvIndex = frame.width * frame.height
-
-                //update Y plane data
-                buffer.apply {
-                    position(0)
-                    limit(uvIndex)
-                }
-//                KLog.d(TAG, "[capacity=${buffer.capacity()} position=${buffer.position()}  limit=${buffer.limit()}]")
-                GLES30.glActiveTexture(GLES30.GL_TEXTURE0)
-                GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, m_TextureIds[0])
-                GLES30.glTexImage2D(
-                    GLES30.GL_TEXTURE_2D, 0, GLES30.GL_LUMINANCE, frame.width, frame.height,
-                    0, GLES30.GL_LUMINANCE, GLES30.GL_UNSIGNED_BYTE, buffer.slice()
-                )
-                GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, GLES30.GL_NONE)
-
-                //update UV plane data
-                buffer.apply {
-                    position(uvIndex)
-                    limit(buffer.capacity())
-                }
-//                KLog.d(TAG, "[capacity=${buffer.capacity()} position=${buffer.position()}  limit=${buffer.limit()}]")
-                GLES30.glActiveTexture(GLES30.GL_TEXTURE1)
-                GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, m_TextureIds[1])
-                GLES30.glTexImage2D(
-                    GLES30.GL_TEXTURE_2D, 0, GLES30.GL_LUMINANCE_ALPHA, frame.width / 2,
-                    frame.height / 2, 0, GLES30.GL_LUMINANCE_ALPHA, GLES30.GL_UNSIGNED_BYTE,
-                    frame.buffer.slice()
-                )
-                GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, GL_NONE)
+                drawNV12orNV21(frame)
             }
-
-            else -> {}
+            else -> {
+                drawRGBA(frame)
+            }
         }
 
         GLES30.glUseProgram(program)
@@ -190,6 +153,46 @@ class ImageGLRender : GLRender {
         GLES30.glBindVertexArray(GLES30.GL_NONE)
 
         frame.buffer.clear()
+    }
+
+    private fun drawNV12orNV21(frame: MediaFrame) {
+        val buffer = frame.buffer
+        val uvIndex = frame.width * frame.height
+
+        //update Y plane data
+        buffer.apply {
+            position(0)
+            limit(uvIndex)
+        }
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0)
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, m_TextureIds[0])
+        GLES30.glTexImage2D(
+            GLES30.GL_TEXTURE_2D, 0, GLES30.GL_LUMINANCE, frame.width, frame.height,
+            0, GLES30.GL_LUMINANCE, GLES30.GL_UNSIGNED_BYTE, buffer.slice()
+        )
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, GLES30.GL_NONE)
+
+        //update UV plane data
+        buffer.apply {
+            position(uvIndex)
+            limit(buffer.capacity())
+        }
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE1)
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, m_TextureIds[1])
+        GLES30.glTexImage2D(
+            GLES30.GL_TEXTURE_2D, 0, GLES30.GL_LUMINANCE_ALPHA, frame.width / 2,
+            frame.height / 2, 0, GLES30.GL_LUMINANCE_ALPHA, GLES30.GL_UNSIGNED_BYTE,
+            frame.buffer.slice()
+        )
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, GL_NONE)
+    }
+
+    private fun drawRGBA(frame: MediaFrame) {
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0)
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, m_TextureIds[0])
+        GLES30.glTexImage2D(GLES30.GL_TEXTURE_2D, 0, GLES30.GL_RGBA, frame.width, frame.height,
+            0, GLES30.GL_RGBA, GLES30.GL_UNSIGNED_BYTE, frame.buffer)
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, GLES30.GL_NONE)
     }
 
     override fun onSurfaceDestroyed(surface: Surface) {
