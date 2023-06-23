@@ -1,4 +1,4 @@
-package com.violet.libmedia.model;
+package com.violet.libmedia.util;
 
 public class ShaderSource {
     public static final String TRIANGLE_VERTEX_SHADER

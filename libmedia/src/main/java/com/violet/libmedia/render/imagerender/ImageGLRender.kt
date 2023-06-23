@@ -2,12 +2,10 @@ package com.violet.libmedia.render.imagerender
 
 import android.opengl.GLES30
 import android.view.Surface
-import com.violet.libmedia.model.ImageFrame
-import com.violet.libmedia.model.ShaderSource
-import com.violet.libmedia.util.BufferUtil
 import com.violet.libmedia.core.GLUtils
+import com.violet.libmedia.util.ShaderSource
+import com.violet.libmedia.util.BufferUtil
 import java.nio.ByteBuffer
-import java.nio.ByteOrder
 import java.nio.FloatBuffer
 import java.nio.ShortBuffer
 

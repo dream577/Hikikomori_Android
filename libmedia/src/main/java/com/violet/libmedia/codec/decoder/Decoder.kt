@@ -1,13 +1,17 @@
 package com.violet.libmedia.codec.decoder
 
-import com.violet.libmedia.model.Frame
+import com.violet.libmedia.demuxer.Demuxer
+import com.violet.libmedia.model.MediaFrame
 
 interface Decoder {
 
     /**
      * 开始解码
      */
-    fun start()
+    fun start(path: String)
+
+
+    fun prepareDemuxer(): Demuxer
 
     /**
      * 配置解码器, 请实现配置解码器的方法
@@ -21,15 +25,9 @@ interface Decoder {
     fun isConfigured(): Boolean
 
     /**
-     * 向解码器添加一帧数据
-     * @return 输入成功/失败
-     */
-    fun inputOneFrame(frame: Frame): Boolean
-
-    /**
      * 从解码器输出一帧数据, 输出为空代表失败
      */
-    fun outputOneFrame(): Frame?
+    fun outputOneFrame(): MediaFrame?
 
     /**
      * 释放解码器

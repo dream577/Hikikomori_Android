@@ -3,7 +3,7 @@ package com.violet.libmedia.render.imagerender
 import android.opengl.GLES30
 import android.opengl.Matrix
 import android.view.Surface
-import com.violet.libmedia.model.ShaderSource
+import com.violet.libmedia.util.ShaderSource
 import com.violet.libmedia.util.BufferUtil
 import com.violet.libmedia.core.GLUtils
 

@@ -1,7 +1,10 @@
 package com.violet.libmedia.codec.decoder
 
 import android.media.MediaFormat
-import com.violet.libmedia.model.AudioDecoderConfig
+import com.violet.libmedia.demuxer.Demuxer
+import com.violet.libmedia.demuxer.MediaDemuxer
+import com.violet.libmedia.model.MediaFrame
+import com.violet.libmedia.util.RecycledPool
 
 class AudioHardwareDecoder : HardwareDecoder() {
 
@@ -9,22 +12,13 @@ class AudioHardwareDecoder : HardwareDecoder() {
         const val TAG = "AudioHardwareDecoder"
     }
 
-    var config: AudioDecoderConfig? = null
-
-    fun changeCodecConfig(config: AudioDecoderConfig) {
-        this.config = config
+    override fun onOutputFormatChanged(format: MediaFormat, pool: RecycledPool<MediaFrame>) {
     }
 
-    override fun getMediaFormat(): MediaFormat {
-        var mime = ""
-        var sampleRate = 0
-        var audioChannels = 0
-        config?.let {
-            mime = it.audioMineType
-            sampleRate = it.sampleRate
-            audioChannels = it.audioChannels
-        }
-        return MediaFormat.createAudioFormat(mime, sampleRate, audioChannels)
+    override fun prepareDemuxer(): Demuxer {
+        val demuxer = MediaDemuxer(false)
+        demuxer.configDemuxer("/storage/emulated/0/视频/[Airota][Fate stay night Heaven's Feel III.spring song][Movie][BDRip 1080p AVC AAC][CHS].mp4")
+        return demuxer
     }
 
 }

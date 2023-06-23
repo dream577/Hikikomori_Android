@@ -23,7 +23,6 @@ void main()
         0.0, -0.344, 1.770,
         1.403, -0.714, 0.0) * yuv;
         outColor = vec4(rgb, 1.0);
-
     }
     else if (u_nImgType == 3)//NV12
     {

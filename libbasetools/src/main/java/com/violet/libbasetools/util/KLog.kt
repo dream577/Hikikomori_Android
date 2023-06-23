@@ -10,7 +10,7 @@ object KLog {
     init {
         val formatStrategy: FormatStrategy = PrettyFormatStrategy.newBuilder()
             .showThreadInfo(true)
-            // .methodCount(0)          // (Optional) How many method line to show. Default 2
+            .methodCount(1)          // (Optional) How many method line to show. Default 2
             .methodOffset(7)        // (Optional) Hides internal method calls up to offset. Default 5
             // .logStrategy(customLog)  // (Optional) Changes the log strategy to print out. Default LogCat
             .tag("PRETTY_MOON_LOG")     // (Optional) Global tag for every log. Default PRETTY_LOGGER

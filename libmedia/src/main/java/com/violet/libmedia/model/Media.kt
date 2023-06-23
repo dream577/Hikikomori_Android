@@ -2,93 +2,34 @@ package com.violet.libmedia.model
 
 import java.nio.ByteBuffer
 
-class VideoDecoderConfig(
-    var videoMineType: String,
-    var width: Int,
-    var height: Int,
-) {
-    fun isConfigChanged(newConfig: VideoDecoderConfig): Boolean {
-        return this.videoMineType == newConfig.videoMineType
-                && this.width == newConfig.width
-                && this.height == newConfig.height
-    }
-}
-
-class AudioDecoderConfig(
-    var audioMineType: String,
-    var sampleRate: Int,
-    var audioChannels: Int,
-    var duration: Long
-) {
-    fun isConfigChanged(newConfig: AudioDecoderConfig): Boolean {
-        return this.audioMineType == newConfig.audioMineType
-                && this.sampleRate == newConfig.sampleRate
-                && this.audioChannels == newConfig.audioChannels
-                && this.duration == newConfig.duration
-    }
-}
-
-open class Frame(
+class MediaFrame(
     var dts: Long,
     var pts: Long,
-    var format: Int,
-    var buffer: ByteBuffer
-) {
-    override fun toString(): String {
-        return "Frame(dts=$dts, pts=$pts, format=$format, buffer=$buffer)"
-    }
-}
+    var format: ImageFormat,
+    var buffer: ByteBuffer,
+    var planeSize: IntArray,
 
-class ImageFrame(
-    dts: Long,
-    pts: Long,
-    format: Int,
-    buffer: ByteBuffer,
+    // video
     var isKeyFrame: Boolean,
     var width: Int,
     var height: Int,
-    var planeSize: IntArray
-) : Frame(dts, pts, format, buffer) {
-    constructor(size: Int) : this(
-        0, 0, 0, ByteBuffer.allocate(size), false,
-        0, 0, IntArray(0)
-    )
 
-    constructor(buffer: ByteBuffer) : this(
-        0, 0, 0, buffer, false,
-        0, 0, IntArray(0)
-    )
+    // audio
+    var channels: Int,
+    var sampleRate: Int,
+    var bitRate: Int,
 
-    override fun toString(): String {
-        return "ImageFrame(dts=$dts, pts=$pts, format=$format, isKeyFrame=$isKeyFrame, width=$width, height=$height})"
-    }
-
+    var isVideo: Boolean
+) {
+    fun isVideoFrame(): Boolean = isVideo
 }
 
-class AudioFrame(
-    dts: Long,
-    pts: Long,
-    format: Int,
-    buffer: ByteBuffer,
-    var size: Int,
-    var channels: Int,
-    var sampleRate: Int
-) : Frame(dts, pts, format, buffer) {
-    constructor(size: Int) : this(
-        0, 0, 0, ByteBuffer.allocate(size),
-        0, 0, 0
-    )
-
-    constructor(buffer: ByteBuffer) : this(
-        0, 0, 0, buffer,
-        0, 0, 0
-    )
-
-    override fun toString(): String {
-        return "AudioFrame(dts=$dts, pts=$pts, format=$format, size=$size, channels=$channels, sampleRate=$sampleRate)"
-    }
-
-
+enum class ImageFormat(val format: Int) {
+    IMAGE_FORMAT_RGBA(0x01),
+    IMAGE_FORMAT_NV21(0x02),
+    IMAGE_FORMAT_NV12(0x03),
+    IMAGE_FORMAT_YV21(0x04),
+    IMAGE_FORMAT_YV12(0x05), ;
 }
 
 object MediaEvent {
