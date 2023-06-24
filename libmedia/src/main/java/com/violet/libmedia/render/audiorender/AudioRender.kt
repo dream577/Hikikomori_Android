@@ -3,6 +3,7 @@ package com.violet.libmedia.render.audiorender
 import android.media.AudioFormat
 import android.media.AudioManager
 import android.media.AudioTrack
+import com.violet.libbasetools.util.KLog
 import com.violet.libmedia.model.MediaFrame
 import com.violet.libmedia.render.RenderCallback
 import com.violet.libmedia.util.VThread
@@ -42,14 +43,20 @@ class AudioRender(name: String) : VThread(name) {
 
     private fun configAudioTrack(frame: MediaFrame) {
         try {
+            val channelConfig = if (frame.channels == 2) {
+                AudioFormat.CHANNEL_OUT_STEREO
+            } else {
+                AudioFormat.CHANNEL_OUT_MONO
+            }
+            val audioFormat = AudioFormat.ENCODING_PCM_16BIT
             val minBufferSize = AudioTrack.getMinBufferSize(
                 frame.sampleRate,
-                AudioFormat.CHANNEL_OUT_STEREO,
-                AudioFormat.ENCODING_PCM_16BIT
+                channelConfig,
+                audioFormat
             )
             audioTrack = AudioTrack(
-                AudioManager.STREAM_MUSIC, frame.sampleRate, AudioFormat.CHANNEL_OUT_STEREO,
-                AudioFormat.ENCODING_PCM_16BIT, minBufferSize, AudioTrack.MODE_STREAM
+                AudioManager.STREAM_MUSIC, frame.sampleRate, channelConfig,
+                audioFormat, minBufferSize, AudioTrack.MODE_STREAM
             )
             audioTrack.play()
             isConfigured.set(true)
@@ -65,7 +72,7 @@ class AudioRender(name: String) : VThread(name) {
         buffer.limit(frame.planeSize[0])
 
         audioTrack.write(buffer, frame.planeSize[0], AudioTrack.WRITE_BLOCKING)
-
+//        KLog.d(TAG, "[pts=${frame.pts}]")
         buffer.clear()
     }
 

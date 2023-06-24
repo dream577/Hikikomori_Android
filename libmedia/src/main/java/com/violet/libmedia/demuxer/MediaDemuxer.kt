@@ -13,6 +13,9 @@ class MediaDemuxer(private val isVideo: Boolean) : Demuxer {
     private val mediaExtractor: MediaExtractor = MediaExtractor()
     private var mediaFormat: MediaFormat? = null
 
+    private var currentSize: Int = 0
+    private var currentPts: Long = 0
+
     override fun configDemuxer(path: String): Boolean {
         var result = false
         mediaExtractor.setDataSource(path)
@@ -38,14 +41,16 @@ class MediaDemuxer(private val isVideo: Boolean) : Demuxer {
     }
 
     override fun readSampleData(buffer: ByteBuffer): Int {
-        // 读取数据以及时间戳等
-        val size = mediaExtractor.readSampleData(buffer, 0)
+        currentSize = mediaExtractor.readSampleData(buffer, 0)
+        currentPts = mediaExtractor.sampleTime
+
         mediaExtractor.advance()
-        return size
+        // 读取数据
+        return currentSize
     }
 
     override fun getSampleTime(): Long {
-        return mediaExtractor.sampleTime
+        return currentPts
     }
 
 

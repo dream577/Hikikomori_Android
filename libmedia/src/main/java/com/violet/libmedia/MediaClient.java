@@ -16,6 +16,7 @@ import com.violet.libmedia.model.MediaFrame;
 import com.violet.libmedia.render.RenderCallback;
 import com.violet.libmedia.render.audiorender.AudioRender;
 import com.violet.libmedia.render.imagerender.GLRenderWindow;
+import com.violet.libmedia.render.sync.MediaSync;
 import com.violet.libmedia.util.RecycledPool;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -26,6 +27,7 @@ public class MediaClient implements RenderCallback {
 
     private static final int EVENT_START_PLAY = 0;
     private static final int EVENT_STOP_PLAY = 2;
+    private static final int EVENT_DESTROY = 3;
 
     private final AtomicBoolean isStop = new AtomicBoolean(false);
 
@@ -38,12 +40,15 @@ public class MediaClient implements RenderCallback {
     private final GLRenderWindow mRenderWindow;
     private final AudioRender mAudioRender;
 
+    private final MediaSync mMediaSync;
+
     public MediaClient() {
         mThread.start();
         mVideoDecoder = new VideoHardwareDecoder();
         mAudioDecoder = new AudioHardwareDecoder();
         mRenderWindow = new GLRenderWindow(this);
         mAudioRender = new AudioRender(this);
+        mMediaSync = new MediaSync();
 
         mHandler = new Handler(mThread.getLooper()) {
             @Override
@@ -68,6 +73,9 @@ public class MediaClient implements RenderCallback {
                 mAudioRender.stopRender();
                 mAudioDecoder.release();
                 break;
+            case EVENT_DESTROY:
+                mThread.quitSafely();
+                break;
         }
     }
 
@@ -85,6 +93,11 @@ public class MediaClient implements RenderCallback {
         mHandler.sendEmptyMessage(EVENT_STOP_PLAY);
     }
 
+    public void destroy() {
+        stop();
+        mHandler.sendEmptyMessage(EVENT_DESTROY);
+    }
+
     @Nullable
     @Override
     public RecycledPool.Element<MediaFrame> requestRenderFrame(boolean isVideo) {
@@ -96,6 +109,9 @@ public class MediaClient implements RenderCallback {
                 element = mAudioDecoder.outputOneFrame();
             }
         } while (element == null && !isStop.get());
+        if (element != null) {
+            mMediaSync.syncMediaFrame(element.getValue());
+        }
         return element;
     }
 

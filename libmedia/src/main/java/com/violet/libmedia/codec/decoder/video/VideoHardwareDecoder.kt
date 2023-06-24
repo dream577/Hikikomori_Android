@@ -97,7 +97,7 @@ class VideoHardwareDecoder(surface: Surface?) : HardwareDecoder() {
             }
         }
 
-        KLog.d(TAG, "VideoOutputFormat[format:$format")
+        KLog.d(TAG, "VideoOutputFormat[$format")
 
         pool.initRecycledPool {
             MediaFrame(

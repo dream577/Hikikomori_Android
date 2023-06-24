@@ -50,6 +50,6 @@ class GLExampleFragment : BaseBindingFragment<FragmentGlExampleBinding>(), Surfa
 
     override fun onPause() {
         super.onPause()
-        player.stop()
+        player.destroy()
     }
 }

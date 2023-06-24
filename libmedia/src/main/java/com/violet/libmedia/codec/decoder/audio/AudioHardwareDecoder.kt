@@ -1,6 +1,7 @@
 package com.violet.libmedia.codec.decoder.audio
 
 import android.media.MediaFormat
+import com.violet.libbasetools.util.KLog
 import com.violet.libmedia.codec.decoder.HardwareDecoder
 import com.violet.libmedia.demuxer.Demuxer
 import com.violet.libmedia.demuxer.MediaDemuxer
@@ -25,13 +26,15 @@ class AudioHardwareDecoder : HardwareDecoder() {
         val sampleRate = format.getInteger(MediaFormat.KEY_SAMPLE_RATE)
         val channels = format.getInteger(MediaFormat.KEY_CHANNEL_COUNT)
 
+        KLog.d(TAG, "AudioOutputFormat[$format")
+
         val planeSize = intArrayOf(AAC_PACKET_SIZE, 0, 0)
 
         pool.initRecycledPool {
             MediaFrame(
                 0, 0, ByteBuffer.allocateDirect(AAC_PACKET_SIZE),
                 planeSize, false, 0, 0, ImageFormat.IMAGE_FORMAT_NONE,
-                channels, sampleRate, 0, 0, true
+                channels, sampleRate, 0, 0, false
             )
         }
     }

@@ -2,6 +2,7 @@ package com.violet.libmedia.render.imagerender
 
 import android.opengl.GLES30
 import android.view.Surface
+import com.violet.libbasetools.util.KLog
 import com.violet.libmedia.core.EglCore
 import com.violet.libmedia.model.MediaFrame
 import com.violet.libmedia.render.RenderCallback
@@ -56,6 +57,7 @@ class GLRenderWindow(name: String) : VThread(name), GLRender {
     }
 
     override fun onDrawFrame(frame: MediaFrame) {
+//        KLog.d(TAG, "[pts=${frame.pts}]")
         for (render in mRenders) {
             render.onDrawFrame(frame)
         }
