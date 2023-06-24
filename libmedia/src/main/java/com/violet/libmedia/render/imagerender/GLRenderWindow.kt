@@ -4,7 +4,7 @@ import android.opengl.GLES30
 import android.view.Surface
 import com.violet.libmedia.core.EglCore
 import com.violet.libmedia.model.MediaFrame
-import com.violet.libmedia.util.RecycledPool.Element
+import com.violet.libmedia.render.RenderCallback
 import com.violet.libmedia.util.VThread
 
 class GLRenderWindow(name: String) : VThread(name), GLRender {

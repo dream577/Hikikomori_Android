@@ -8,7 +8,7 @@ import android.view.ViewGroup
 import com.violet.hikikomori.R
 import com.violet.hikikomori.databinding.FragmentGlExampleBinding
 import com.violet.hikikomori.view.base.BaseBindingFragment
-import com.violet.libmedia.MediaPlayer
+import com.violet.libmedia.MediaClient
 
 class GLExampleFragment : BaseBindingFragment<FragmentGlExampleBinding>(), SurfaceHolder.Callback {
 
@@ -16,14 +16,14 @@ class GLExampleFragment : BaseBindingFragment<FragmentGlExampleBinding>(), Surfa
         const val TAG = "GLExampleFragment"
     }
 
-    private lateinit var player: MediaPlayer
+    private lateinit var player: MediaClient
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        player = MediaPlayer()
+        player = MediaClient()
         val view = super.onCreateView(inflater, container, savedInstanceState)
         mBinding.exampleSurfaceView.holder.addCallback(this)
         return view

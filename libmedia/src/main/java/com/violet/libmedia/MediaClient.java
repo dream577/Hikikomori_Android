@@ -9,18 +9,18 @@ import android.view.Surface;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.violet.libmedia.codec.decoder.audio.AudioHardwareDecoder;
 import com.violet.libmedia.codec.decoder.Decoder;
+import com.violet.libmedia.codec.decoder.audio.AudioHardwareDecoder;
 import com.violet.libmedia.codec.decoder.video.VideoHardwareDecoder;
 import com.violet.libmedia.model.MediaFrame;
+import com.violet.libmedia.render.RenderCallback;
 import com.violet.libmedia.render.audiorender.AudioRender;
 import com.violet.libmedia.render.imagerender.GLRenderWindow;
-import com.violet.libmedia.render.imagerender.RenderCallback;
 import com.violet.libmedia.util.RecycledPool;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class MediaPlayer implements RenderCallback {
+public class MediaClient implements RenderCallback {
     private static final String TAG = "MediaPlayer";
     private static final String MEDIA_SOURCE = "source";
 
@@ -38,7 +38,7 @@ public class MediaPlayer implements RenderCallback {
     private final GLRenderWindow mRenderWindow;
     private final AudioRender mAudioRender;
 
-    public MediaPlayer() {
+    public MediaClient() {
         mThread.start();
         mVideoDecoder = new VideoHardwareDecoder();
         mAudioDecoder = new AudioHardwareDecoder();
@@ -48,7 +48,7 @@ public class MediaPlayer implements RenderCallback {
         mHandler = new Handler(mThread.getLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
-                MediaPlayer.this.handleMessage(msg);
+                MediaClient.this.handleMessage(msg);
             }
         };
     }

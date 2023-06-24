@@ -79,49 +79,56 @@ abstract class HardwareDecoder : VThread(TAG), Decoder {
         val info = this.mBufferInfo
         val demuxer = this.demuxer
         try {
-            do {
-                val inputIndex = codec.dequeueInputBuffer(0)
-                if (inputIndex >= 0) {
-                    val buffer = codec.getInputBuffer(inputIndex)
-                    val size = demuxer.readSampleData(buffer!!)
-                    val pts = demuxer.getSampleTime()
+            val inputIndex = codec.dequeueInputBuffer(0)
+            if (inputIndex >= 0) {
+                val buffer = codec.getInputBuffer(inputIndex)
+                val size = demuxer.readSampleData(buffer!!)
+                val pts = demuxer.getSampleTime()
 
 //                    KLog.d(TAG, "frame[size=$size pts=$pts]")
-                    if (size < 0) {
-                        codec.queueInputBuffer(
-                            inputIndex, 0, size, pts,
-                            MediaCodec.BUFFER_FLAG_END_OF_STREAM
-                        )
-                    } else {
-                        codec.queueInputBuffer(inputIndex, 0, size, pts, 0)
-                    }
+                if (size < 0) {
+                    codec.queueInputBuffer(
+                        inputIndex, 0, size, pts,
+                        MediaCodec.BUFFER_FLAG_END_OF_STREAM
+                    )
+                } else {
+                    codec.queueInputBuffer(inputIndex, 0, size, pts, 0)
                 }
+            }
 
-                var outputIndex: Int
-                do {
-                    outputIndex = codec.dequeueOutputBuffer(info, 100) // 阻塞100微秒，阻塞时间过长会导致解复用 -> 输入解码器 -> 解码器输出整个过程变慢
-                    when (outputIndex) {
-                        MediaCodec.INFO_TRY_AGAIN_LATER -> {
+            var outputIndex: Int
+            do {
+                outputIndex = codec.dequeueOutputBuffer(
+                    info,
+                    100
+                ) // 阻塞100微秒，阻塞时间过长会导致解复用 -> 输入解码器 -> 解码器输出整个过程变慢
+                when (outputIndex) {
+                    MediaCodec.INFO_TRY_AGAIN_LATER -> {
 
+                    }
+                    MediaCodec.INFO_OUTPUT_FORMAT_CHANGED -> {
+                        if (recycledPool == null) {
+                            recycledPool = RecycledPool(OUTPUT_FRAME_QUEUE_SIZE)
                         }
-                        MediaCodec.INFO_OUTPUT_FORMAT_CHANGED -> {
-                            if (recycledPool == null) {
-                                recycledPool = RecycledPool(OUTPUT_FRAME_QUEUE_SIZE)
-                            }
-                            if (outputFrameQueue == null) {
-                                outputFrameQueue = LinkedBlockingQueue(OUTPUT_FRAME_QUEUE_SIZE);
-                            }
-                            val format = codec.outputFormat
-                            KLog.d(TAG, format)
-                            onOutputFormatChanged(format, recycledPool!!)
+                        if (outputFrameQueue == null) {
+                            outputFrameQueue = LinkedBlockingQueue(OUTPUT_FRAME_QUEUE_SIZE);
                         }
-                        MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED -> {}
-                        else -> {
-                            val pool = this.recycledPool!!
-                            val queue = this.outputFrameQueue!!
+                        val format = codec.outputFormat
+                        KLog.d(TAG, format)
+                        onOutputFormatChanged(format, recycledPool!!)
+                    }
+                    MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED -> {
 
-                            val srcBuffer = codec.getOutputBuffer(outputIndex)
-                            val element = pool.take()
+                    }
+                    else -> {
+                        val pool = this.recycledPool!!
+                        val queue = this.outputFrameQueue!!
+
+                        val srcBuffer = codec.getOutputBuffer(outputIndex)
+
+                        var element: Element<MediaFrame>? = null
+                        while (element == null && !isStop.get()) {
+                            element = pool.take(50, TimeUnit.MILLISECONDS) ?: continue
                             val frame = element.value
                             val size = info.size
                             frame.pts = info.presentationTimeUs
@@ -130,14 +137,13 @@ abstract class HardwareDecoder : VThread(TAG), Decoder {
                             if (srcBuffer != null) {
                                 frame.buffer.put(srcBuffer)
                             }
-
                             queue.offer(element)
-                            codec.releaseOutputBuffer(outputIndex, false)
                         }
+                        codec.releaseOutputBuffer(outputIndex, false)
                     }
+                }
 
-                } while (outputIndex >= 0 && configured && !isStop.get())
-            } while (false)
+            } while (outputIndex >= 0 && configured && !isStop.get())
         } catch (e: Exception) {
             e.printStackTrace()
             isStop.set(true)

@@ -4,7 +4,7 @@ import android.media.AudioFormat
 import android.media.AudioManager
 import android.media.AudioTrack
 import com.violet.libmedia.model.MediaFrame
-import com.violet.libmedia.render.imagerender.RenderCallback
+import com.violet.libmedia.render.RenderCallback
 import com.violet.libmedia.util.VThread
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -64,7 +64,7 @@ class AudioRender(name: String) : VThread(name) {
         buffer.position(0)
         buffer.limit(frame.planeSize[0])
 
-        audioTrack.write(buffer, frame.planeSize[0], AudioTrack.WRITE_NON_BLOCKING)
+        audioTrack.write(buffer, frame.planeSize[0], AudioTrack.WRITE_BLOCKING)
 
         buffer.clear()
     }
@@ -72,6 +72,7 @@ class AudioRender(name: String) : VThread(name) {
     private fun unInit() {
         audioTrack.stop()
         audioTrack.release()
+        isConfigured.set(false)
     }
 
     override fun handleMessage(msg: Int) {

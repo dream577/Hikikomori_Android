@@ -9,7 +9,6 @@ import com.violet.libmedia.core.GLUtils
 import com.violet.libmedia.model.ImageFormat
 import com.violet.libmedia.model.MediaFrame
 import com.violet.libmedia.util.BufferUtil
-import com.violet.libmedia.util.RecycledPool.Element
 import com.violet.libmedia.util.ShaderSource
 import java.nio.FloatBuffer
 import java.nio.ShortBuffer
@@ -124,6 +123,7 @@ class ImageGLRender : GLRender {
     override fun onDrawFrame(frame: MediaFrame) {
         when (frame.format) {
             ImageFormat.IMAGE_FORMAT_YV21 -> {
+                drawYV21(frame) // YUV420SP / YV21 / I420
             }
             ImageFormat.IMAGE_FORMAT_YV12 -> {
             }
@@ -153,6 +153,45 @@ class ImageGLRender : GLRender {
         GLES30.glBindVertexArray(GLES30.GL_NONE)
 
         frame.buffer.clear()
+    }
+
+    private fun drawYV21(frame: MediaFrame) {
+        val buffer = frame.buffer
+        val uIndex = frame.width * frame.height
+        val vIndex = uIndex * 5 / 4
+
+        // update Y plane data
+        buffer.apply {
+            position(0)
+            limit(uIndex)
+        }
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0)
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, m_TextureIds[0])
+        GLES30.glTexImage2D(GLES30.GL_TEXTURE_2D, 0, GLES30.GL_LUMINANCE, frame.width, frame.height,
+        0, GLES30.GL_LUMINANCE, GLES30.GL_UNSIGNED_BYTE, buffer.slice())
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, GLES30.GL_NONE)
+
+        // update U plane data
+        buffer.apply {
+            position(uIndex)
+            limit(vIndex)
+        }
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE1)
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, m_TextureIds[1])
+        GLES30.glTexImage2D(GLES30.GL_TEXTURE_2D, 0, GLES30.GL_LUMINANCE, frame.width / 2, frame.height / 2,
+            0, GLES30.GL_LUMINANCE, GLES30.GL_UNSIGNED_BYTE, buffer.slice())
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, GLES30.GL_NONE)
+
+        // update V plane data
+        buffer.apply {
+            position(vIndex)
+            limit(buffer.capacity())
+        }
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE2)
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, m_TextureIds[2])
+        GLES30.glTexImage2D(GLES30.GL_TEXTURE_2D, 0, GLES30.GL_LUMINANCE, frame.width / 2, frame.height / 2,
+            0, GLES30.GL_LUMINANCE, GLES30.GL_UNSIGNED_BYTE, buffer.slice())
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, GLES30.GL_NONE)
     }
 
     private fun drawNV12orNV21(frame: MediaFrame) {
