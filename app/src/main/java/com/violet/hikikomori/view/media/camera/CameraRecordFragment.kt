@@ -19,7 +19,7 @@ import com.violet.hikikomori.view.base.BaseBindingFragment
 import com.violet.libbasetools.util.KLog
 import com.violet.libmedia.MediaContext
 import com.violet.libmedia.recoder.video.camera.CameraFrameCallback
-import com.violet.libmedia.recoder.video.camera.VioletCameraRecordClient
+import com.violet.libmedia.recoder.video.camera.CameraRecordClient
 import com.violet.libmedia.recoder.video.camera.util.ImageUtils
 import com.violet.libmedia.recoder.video.camera.util.getPreviewOutputSize
 import kotlinx.coroutines.Dispatchers
@@ -63,12 +63,13 @@ class CameraRecordFragment : BaseBindingFragment<FragmentCameraRecordBinding>(),
     private val mPreviewThread = HandlerThread("CameraThread")
     private var mCameraHandler: Handler? = null
 
-    private lateinit var mCameraRecordClient: VioletCameraRecordClient
+    private lateinit var mCameraRecordClient: CameraRecordClient
 
 
     override fun initData() {
         super.initData()
-        mCameraRecordClient = VioletCameraRecordClient()
+        mCameraRecordClient =
+            CameraRecordClient()
     }
 
     override fun initView() {

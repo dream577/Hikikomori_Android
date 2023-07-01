@@ -9,22 +9,22 @@ import androidx.annotation.NonNull;
 
 import com.violet.libmedia.recoder.video.camera.CameraFrameCallback;
 import com.violet.libmedia.recoder.video.camera.VioletCamera;
-import com.violet.libmedia.recoder.video.camera.VioletCameraRecordClient;
+import com.violet.libmedia.recoder.video.camera.CameraRecordClient;
 
 import org.jetbrains.annotations.NotNull;
 
-public class VioletCameraRecorder implements SurfaceHolder.Callback, CameraFrameCallback {
-    private final VioletCameraRecordClient mCameraRecordClient;
+public class CameraRecorder implements SurfaceHolder.Callback, CameraFrameCallback {
+    private final CameraRecordClient mCameraRecordClient;
     private final VioletCamera mCameraClient;
 
     private final SurfaceView mSurfaceView;
 
-    public VioletCameraRecorder(@NotNull SurfaceView surfaceView) {
+    public CameraRecorder(@NotNull SurfaceView surfaceView) {
         Context context = surfaceView.getContext();
         mSurfaceView = surfaceView;
         mSurfaceView.getHolder().addCallback(this);
         mCameraClient = new VioletCamera(context, this);
-        mCameraRecordClient = new VioletCameraRecordClient();
+        mCameraRecordClient = new CameraRecordClient();
     }
 
     @Override

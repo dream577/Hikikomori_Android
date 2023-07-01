@@ -10,7 +10,7 @@ import com.violet.libmedia.model.MediaFrame
 import com.violet.libmedia.util.RecycledPool
 import java.nio.ByteBuffer
 
-class AudioHardwareDecoder : HardwareDecoder() {
+class AudioHwDecoder : HardwareDecoder() {
 
     companion object {
         const val TAG = "AudioHardwareDecoder"

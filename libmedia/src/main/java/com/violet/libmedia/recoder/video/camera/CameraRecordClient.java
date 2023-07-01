@@ -2,7 +2,7 @@ package com.violet.libmedia.recoder.video.camera;
 
 import android.view.Surface;
 
-public class VioletCameraRecordClient {
+public class CameraRecordClient {
     static {
         System.loadLibrary("moonmedia");
     }

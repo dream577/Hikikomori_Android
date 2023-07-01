@@ -10,8 +10,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.violet.libmedia.codec.decoder.Decoder;
-import com.violet.libmedia.codec.decoder.audio.AudioHardwareDecoder;
-import com.violet.libmedia.codec.decoder.video.VideoHardwareDecoder;
+import com.violet.libmedia.codec.decoder.audio.AudioHwDecoder;
+import com.violet.libmedia.codec.decoder.video.VideoHwDecoder;
 import com.violet.libmedia.model.MediaFrame;
 import com.violet.libmedia.render.RenderCallback;
 import com.violet.libmedia.render.audiorender.AudioRender;
@@ -44,8 +44,8 @@ public class MediaClient implements RenderCallback {
 
     public MediaClient() {
         mThread.start();
-        mVideoDecoder = new VideoHardwareDecoder();
-        mAudioDecoder = new AudioHardwareDecoder();
+        mVideoDecoder = new VideoHwDecoder();
+        mAudioDecoder = new AudioHwDecoder();
         mRenderWindow = new GLRenderWindow(this);
         mAudioRender = new AudioRender(this);
         mMediaSync = new MediaSync();

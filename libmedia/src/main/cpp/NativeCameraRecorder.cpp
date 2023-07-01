@@ -8,14 +8,14 @@
 
 extern "C"
 JNIEXPORT jlong JNICALL
-Java_com_violet_libmedia_recoder_video_camera_VioletCameraRecordClient_native_1Init(JNIEnv *env,
-                                                                                    jobject thiz) {
+Java_com_violet_libmedia_recoder_video_camera_CameraRecordClient_native_1Init(JNIEnv *env,
+                                                                              jobject thiz) {
     CameraVideoRecorder *recorder = new CameraVideoRecorder();
     return reinterpret_cast<jlong>(recorder);
 }
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_violet_libmedia_recoder_video_camera_VioletCameraRecordClient_native_1startRecord(
+Java_com_violet_libmedia_recoder_video_camera_CameraRecordClient_native_1startRecord(
         JNIEnv *env, jobject thiz, jlong record_handler, jstring path) {
     if (record_handler != 0) {
         CameraVideoRecorder *recorder = reinterpret_cast<CameraVideoRecorder *>(record_handler);
@@ -24,7 +24,7 @@ Java_com_violet_libmedia_recoder_video_camera_VioletCameraRecordClient_native_1s
 }
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_violet_libmedia_recoder_video_camera_VioletCameraRecordClient_native_1stopRecord(
+Java_com_violet_libmedia_recoder_video_camera_CameraRecordClient_native_1stopRecord(
         JNIEnv *env, jobject thiz, jlong record_handler) {
     if (record_handler != 0) {
         CameraVideoRecorder *recorder = reinterpret_cast<CameraVideoRecorder *>(record_handler);
@@ -33,7 +33,7 @@ Java_com_violet_libmedia_recoder_video_camera_VioletCameraRecordClient_native_1s
 }
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_violet_libmedia_recoder_video_camera_VioletCameraRecordClient_native_1rendPreviewVideoFrame(
+Java_com_violet_libmedia_recoder_video_camera_CameraRecordClient_native_1rendPreviewVideoFrame(
         JNIEnv *env, jobject thiz, jlong record_handler, jbyteArray data, jint width, jint height,
         jint format, jlong timestamp) {
     if (record_handler != 0) {
@@ -47,7 +47,7 @@ Java_com_violet_libmedia_recoder_video_camera_VioletCameraRecordClient_native_1r
 }
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_violet_libmedia_recoder_video_camera_VioletCameraRecordClient_native_1onSurfaceCreated(
+Java_com_violet_libmedia_recoder_video_camera_CameraRecordClient_native_1onSurfaceCreated(
         JNIEnv *env, jobject thiz, jlong record_handler, jobject surface) {
     if (record_handler != 0) {
         CameraVideoRecorder *recorder = reinterpret_cast<CameraVideoRecorder *>(record_handler);
@@ -57,7 +57,7 @@ Java_com_violet_libmedia_recoder_video_camera_VioletCameraRecordClient_native_1o
 }
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_violet_libmedia_recoder_video_camera_VioletCameraRecordClient_native_1onSurfaceChanged(
+Java_com_violet_libmedia_recoder_video_camera_CameraRecordClient_native_1onSurfaceChanged(
         JNIEnv *env, jobject thiz, jlong record_handler, jint width, jint height) {
     if (record_handler != 0) {
         CameraVideoRecorder *recorder = reinterpret_cast<CameraVideoRecorder *>(record_handler);
@@ -67,7 +67,7 @@ Java_com_violet_libmedia_recoder_video_camera_VioletCameraRecordClient_native_1o
 }
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_violet_libmedia_recoder_video_camera_VioletCameraRecordClient_native_1onSurfaceDestroyed(
+Java_com_violet_libmedia_recoder_video_camera_CameraRecordClient_native_1onSurfaceDestroyed(
         JNIEnv *env, jobject thiz, jlong record_handler) {
     if (record_handler != 0) {
         CameraVideoRecorder *recorder = reinterpret_cast<CameraVideoRecorder *>(record_handler);
@@ -78,7 +78,7 @@ Java_com_violet_libmedia_recoder_video_camera_VioletCameraRecordClient_native_1o
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_violet_libmedia_recoder_video_camera_VioletCameraRecordClient_native_1SetTransformMatrix(
+Java_com_violet_libmedia_recoder_video_camera_CameraRecordClient_native_1SetTransformMatrix(
         JNIEnv *env, jobject thiz, jlong record_handle, jfloat translate_x, jfloat translate_y,
         jfloat scale_x, jfloat scale_y, jint degree, jint mirror) {
     if (record_handle != 0) {

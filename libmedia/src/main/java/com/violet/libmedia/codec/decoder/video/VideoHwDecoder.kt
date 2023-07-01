@@ -12,7 +12,7 @@ import com.violet.libmedia.model.MediaFrame
 import com.violet.libmedia.util.RecycledPool
 import java.nio.ByteBuffer
 
-class VideoHardwareDecoder(surface: Surface?) : HardwareDecoder() {
+class VideoHwDecoder(surface: Surface?) : HardwareDecoder() {
 
     companion object {
         const val TAG = "VideoHardwareDecoder"
