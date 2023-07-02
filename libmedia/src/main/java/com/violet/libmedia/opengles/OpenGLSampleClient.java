@@ -2,6 +2,7 @@ package com.violet.libmedia.opengles;
 
 public class OpenGLSampleClient {
     static {
+        System.loadLibrary("x264");
         System.loadLibrary("moonmedia");
     }
 

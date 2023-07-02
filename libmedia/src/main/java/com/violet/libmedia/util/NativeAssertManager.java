@@ -5,6 +5,7 @@ import android.content.res.AssetManager;
 
 public class NativeAssertManager {
     static {
+        System.loadLibrary("x264");
         System.loadLibrary("moonmedia");
     }
 

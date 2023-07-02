@@ -29,7 +29,7 @@ protected:
 
     AVCodecContext *m_AVCodecContext = nullptr;       // 编解码器上下文
 
-    AVCodec *m_AVCodec = nullptr;                     // 解码器
+    const AVCodec *m_AVCodec = nullptr;                     // 解码器
 
     AVPacket *m_AVPacket = nullptr;                   // 编码的数据包
 

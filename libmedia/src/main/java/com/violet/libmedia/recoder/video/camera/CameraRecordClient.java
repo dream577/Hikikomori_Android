@@ -4,6 +4,7 @@ import android.view.Surface;
 
 public class CameraRecordClient {
     static {
+        System.loadLibrary("x264");
         System.loadLibrary("moonmedia");
     }
 
