@@ -1,16 +1,35 @@
 //
-// Created by 郝留凯 on 2023/6/4.
+// Created by 郝留凯 on 2023/7/2.
 //
 
-#ifndef HIKIKOMORI_MEDIAEVENTCALLBACK_H
-#define HIKIKOMORI_MEDIAEVENTCALLBACK_H
+#ifndef HIKIKOMORI_CALLBACK_H
+#define HIKIKOMORI_CALLBACK_H
 
+#include "MediaDef.h"
 #include "looper.h"
 #include "LogUtil.h"
+
 #include <jni.h>
+#include <stdlib.h>
 
 #define INIT_CALLBACK    10000000
 #define UNINIT_CALLBACK  10000001
+
+class RenderCallback {
+public:
+    virtual Frame *GetOneFrame(int type) = 0;
+};
+
+class DecoderCallback {
+public:
+    virtual void OnDecodeOneFrame(Frame *frame) = 0;
+
+    virtual void OnSeekResult(int mediaType, bool result) = 0;
+
+    virtual int GetPlayerState() = 0;
+
+    virtual void SetPlayerState(PlayerState state) = 0;
+};
 
 class MediaEventCallback : looper {
 public:
@@ -90,7 +109,6 @@ private:
             globalEnv->CallVoidMethod(m_JavaObj, mid, type, value);
         }
     }
-
 };
 
-#endif //HIKIKOMORI_MEDIAEVENTCALLBACK_H
+#endif //HIKIKOMORI_CALLBACK_H

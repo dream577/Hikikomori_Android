@@ -3,9 +3,7 @@
 //
 
 #include "GLUtils.h"
-#include "VideoGLRender.h"
-#include "LogUtil.h"
-#include <gtc/matrix_transform.hpp>
+#include "ImageGLRender.h"
 
 static char vShaderStr[] =
         "#version 300 es\n"
@@ -92,21 +90,12 @@ GLfloat textureCoords[] = {
         1.0f, 0.0f         // TexCoord 3
 };
 
-int VideoGLRender::init() {
-
-    return 0;
-}
-
-void VideoGLRender::onSurfaceCreated() {
-    LOGCATE("VideoGLRender::onSurfaceCreated");
-
-    m_Surface = new VioletEGLSurface();
-    m_Surface->createWindowSurface(m_NativeWindow);
-    m_Surface->makeCurrent();
+void ImageGLRender::OnSurfaceCreated(JNIEnv *jniEnv, jobject surface) {
+    LOGCATE("ImageGLRender::onSurfaceCreated");
     m_Program = GLUtils::CreateProgram(vShaderStr, fShaderStr);
 
     if (!m_Program) {
-        LOGCATE("VideoGLRender::OnSurfaceCreated create program fail")
+        LOGCATE("ImageGLRender::OnSurfaceCreated create program fail")
         return;
     }
 
@@ -143,7 +132,8 @@ void VideoGLRender::onSurfaceCreated() {
 
     glBindBuffer(GL_ARRAY_BUFFER, m_VboIds[0]);
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (const void *) (3 * (sizeof(GLfloat))));
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat),
+                          (const void *) (3 * (sizeof(GLfloat))));
     glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_VboIds[1]);
@@ -151,34 +141,13 @@ void VideoGLRender::onSurfaceCreated() {
     glBindVertexArray(GL_NONE);
 }
 
-void VideoGLRender::onSurfaceChanged() {
-    LOGCATE("VideoGLRender::onSurfaceChanged [w,h]=%d, %d", mWindowWidth, mWindowHeight);
-    int x, y;
-
-    if (mVideoWidth == -1) mVideoWidth = mWindowWidth;
-    if (mVideoHeight == -1) mVideoHeight = mWindowHeight;
-
-    if (mWindowWidth < mWindowHeight * mVideoWidth / mVideoHeight) {
-        mRenderWidth = mWindowWidth;
-        mRenderHeight = mWindowWidth * mVideoHeight / mVideoWidth;
-    } else {
-        mRenderWidth = mWindowHeight * mVideoWidth / mVideoHeight;
-        mRenderHeight = mWindowHeight;
-    }
-
-    LOGCATE("VideoGLRender::onSurfaceChanged window[w,h]=[%d, %d],DstSize[w, h]=[%d, %d]",
-            mWindowWidth, mWindowHeight, mRenderWidth, mRenderHeight);
-
-    x = (mWindowWidth - mRenderWidth) / 2;
-    y = (mWindowHeight - mRenderHeight) / 2;
-
-    // 自适应画面居中
-    glViewport(x, y, mRenderWidth, mRenderHeight);
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+void ImageGLRender::OnSurfaceChanged(int width, int height) {
 }
 
-void VideoGLRender::updateMVPMatrix(int angleX, int angleY, float scaleX, float scaleY) {
-    LOGCATE("VideoGLRender::updateMVPMatrix [%d,%d,%f,%f]", angleX, angleY, scaleX, scaleY);
+void ImageGLRender::UpdateMVPMatrix(int angleX, int angleY, float scaleX, float scaleY) {
+    LOGCATE("ImageGLRender::updateMVPMatrix [%d,%d,%f,%f]", angleX, angleY, scaleX, scaleY)
+
+
     angleX = angleX % 360;
     angleY = angleY % 360;
 
@@ -207,10 +176,19 @@ void VideoGLRender::updateMVPMatrix(int angleX, int angleY, float scaleX, float 
     m_MVPMatrix = Projection * View * Model;
 }
 
-void VideoGLRender::updateMVPMatrix() {
-    LOGCATE("VideoGLRender::updateMVPMatrix [angleX=%d,angleY=%d,scaleX=%f,scaleY=%f,degree=%d,mirror=%d]",
+void ImageGLRender::UpdateMVPMatrix(float translateX, float translateY, float scaleX,
+                                    float scaleY, int degree, int mirror) {
+    LOGCATE("ImageGLRender::updateMVPMatrix [angleX=%d,angleY=%d,scaleX=%f,scaleY=%f,degree=%d,mirror=%d]",
             m_transformMatrix.angleX, m_transformMatrix.angleY, m_transformMatrix.scaleX,
             m_transformMatrix.scaleY, m_transformMatrix.degree, m_transformMatrix.mirror)
+
+    m_transformMatrix.translateX = translateX;
+    m_transformMatrix.translateY = translateY;
+    m_transformMatrix.scaleX = scaleX;
+    m_transformMatrix.scaleY = scaleY;
+    m_transformMatrix.degree = degree;
+    m_transformMatrix.mirror = mirror;
+
     //转化为弧度角
     float radiansX = static_cast<float>(MATH_PI / 180.0f * m_transformMatrix.angleX);
     float radiansY = static_cast<float>(MATH_PI / 180.0f * m_transformMatrix.angleY);
@@ -261,7 +239,7 @@ void VideoGLRender::updateMVPMatrix() {
                            glm::vec3(m_transformMatrix.translateX, m_transformMatrix.translateY,
                                      0.0f));
 
-    LOGCATE("VideoGLRender::updateMVPMatrix rotate %d,%.2f,%0.5f,%0.5f,%0.5f,%0.5f,",
+    LOGCATE("ImageGLRender::updateMVPMatrix rotate %d,%.2f,%0.5f,%0.5f,%0.5f,%0.5f,",
             m_transformMatrix.degree, fRotate,
             m_transformMatrix.translateX, m_transformMatrix.translateY,
             fFactorX * m_transformMatrix.scaleX, fFactorY * m_transformMatrix.scaleY);
@@ -269,10 +247,8 @@ void VideoGLRender::updateMVPMatrix() {
     m_MVPMatrix = Projection * View * Model;
 }
 
-void VideoGLRender::onDrawFrame() {
-//    LOGCATE("VideoGLRender::onDrawFrame");
-    Frame *frame = m_Callback->GetOneFrame(MEDIA_TYPE_VIDEO);
-    if (frame == nullptr) return;
+void ImageGLRender::OnDrawFrame(Frame *frame) {
+//    LOGCATE("ImageGLRender::onDrawFrame");
     auto *videoFrame = (VideoFrame *) frame;
 
     switch (videoFrame->format) {
@@ -312,9 +288,7 @@ void VideoGLRender::onDrawFrame() {
 
     // Use the program object
     glUseProgram(m_Program);
-
     glBindVertexArray(m_VaoId);
-
     GLUtils::setMat4(m_Program, "u_MVPMatrix", m_MVPMatrix);
 
     for (int i = 0; i < TEXTURE_NUM; ++i) {
@@ -328,31 +302,17 @@ void VideoGLRender::onDrawFrame() {
     GLUtils::setInt(m_Program, "u_nImgType", videoFrame->format);
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (const void *) 0);
-    m_Surface->swapBuffers();
-
     delete frame;
 }
 
-void VideoGLRender::onSurfaceDestroyed() {
-    LOGCATE("VideoGLRender::onSurfaceDestroyed")
+void ImageGLRender::OnSurfaceDestroyed() {
+    LOGCATE("ImageGLRender::onSurfaceDestroyed")
     glDeleteVertexArrays(1, &m_VaoId);
     glDeleteBuffers(2, m_VboIds);
     glDeleteTextures(3, m_TextureId);
     if (m_Program != GL_NONE) {
         glDeleteProgram(m_Program);
     }
-    if (m_Surface) {
-        m_Surface->releaseEglSurface();
-        delete m_Surface;
-        m_Surface = nullptr;
-    }
-}
-
-int VideoGLRender::unInit() {
-    LOGCATE("VideoGLRender::unInit start")
-    VideoRender::unInit();
-    LOGCATE("VideoGLRender::unInit finish")
-    return 0;
 }
 
 

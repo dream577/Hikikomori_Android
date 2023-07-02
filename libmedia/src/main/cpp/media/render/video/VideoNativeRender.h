@@ -15,42 +15,50 @@ extern "C" {
 #include "libswscale/swscale.h"
 };
 
-#include "VideoRender.h"
+#include "Callback.h"
 
 using namespace std;
 
-class VideoNativeRender : public VideoRender {
+class VideoNativeRender {
 public:
-    VideoNativeRender(AVPixelFormat avPixelFormat, RenderCallback *callback)
-            : VideoRender(callback) {
+    VideoNativeRender(ANativeWindow *nativeWindow, AVPixelFormat avPixelFormat, RenderCallback *callback) {
+        m_NativeWindow = nativeWindow;
         m_PixelFormat = avPixelFormat;
+        m_Callback = callback;
     }
 
     virtual ~VideoNativeRender() {
     }
 
-    int init() override;
+    int init();
 
-    int unInit() override;
+    int unInit();
 
 protected:
-    virtual void onDrawFrame() override;
+    virtual void onDrawFrame();
 
-    virtual void onSurfaceCreated() override;
+    virtual void onSurfaceCreated();
 
-    virtual void onSurfaceChanged() override;
+    virtual void onSurfaceChanged(int width, int height);
 
-    virtual void onSurfaceDestroyed() override;
+    virtual void onSurfaceDestroyed();
 
-    virtual void updateMVPMatrix() override;
+    virtual void updateMVPMatrix();
 
 private:
+    int mImageWidth, mImageHeight;     // 图片宽高
+    int mWindowWidth, mWindowHeight;   // 渲染窗口宽高
+    int mRenderWidth, mRenderHeight;
+
+    ANativeWindow *m_NativeWindow = nullptr;
     ANativeWindow_Buffer m_NativeWindowBuffer;
     AVPixelFormat m_PixelFormat;
     AVFrame *m_RGBAFrame = nullptr;
     uint8_t *m_FrameBuffer = nullptr;
     int m_BufferSize = 0;
     SwsContext *m_SwsContext = nullptr;
+
+    RenderCallback *m_Callback = nullptr;
 };
 
 

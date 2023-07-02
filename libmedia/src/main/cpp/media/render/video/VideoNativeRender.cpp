@@ -10,17 +10,20 @@ void VideoNativeRender::onSurfaceCreated() {
 
 }
 
-void VideoNativeRender::onSurfaceChanged() {
+void VideoNativeRender::onSurfaceChanged(int width, int height) {
     if (m_NativeWindow == nullptr) return;
-    if (mWindowWidth < mWindowHeight * mVideoWidth / mVideoHeight) {
+    mWindowWidth = width;
+    mWindowHeight = height;
+
+    if (mWindowWidth < mWindowHeight * mImageWidth / mImageHeight) {
         mRenderWidth = mWindowWidth;
-        mRenderHeight = mWindowWidth * mVideoHeight / mVideoWidth;
+        mRenderHeight = mWindowWidth * mImageHeight / mImageWidth;
     } else {
-        mRenderWidth = mWindowHeight * mVideoWidth / mVideoHeight;
+        mRenderWidth = mWindowHeight * mImageWidth / mImageHeight;
         mRenderHeight = mWindowHeight;
     }
     LOGCATE("VideoNativeRender::onSurfaceChanged m_NativeWindow=%p, video[w,h]=[%d, %d]",
-            m_NativeWindow, mVideoWidth, mVideoHeight)
+            m_NativeWindow, mImageWidth, mImageHeight)
 
     LOGCATE("VideoNativeRender::onSurfaceChanged window[w,h]=[%d, %d],DstSize[w, h]=[%d, %d]",
             mWindowWidth, mWindowHeight, mRenderWidth, mRenderHeight);
@@ -36,7 +39,7 @@ void VideoNativeRender::onSurfaceChanged() {
                          m_FrameBuffer, AV_PIX_FMT_RGBA, mRenderWidth,
                          mRenderHeight, 1);
 
-    m_SwsContext = sws_getCachedContext(m_SwsContext, mVideoWidth, mVideoHeight,
+    m_SwsContext = sws_getCachedContext(m_SwsContext, mImageWidth, mImageHeight,
                                         m_PixelFormat, mRenderWidth, mRenderHeight,
                                         AV_PIX_FMT_RGBA, SWS_BICUBIC, nullptr,
                                         nullptr, nullptr);
@@ -50,7 +53,7 @@ void VideoNativeRender::onDrawFrame() {
     ANativeWindow_lock(m_NativeWindow, &m_NativeWindowBuffer, nullptr);
 
     sws_scale(m_SwsContext, videoFrame->yuvBuffer, videoFrame->planeSize,
-              0, mVideoHeight, m_RGBAFrame->data, m_RGBAFrame->linesize);
+              0, mImageHeight, m_RGBAFrame->data, m_RGBAFrame->linesize);
 
     auto *dstBuffer = static_cast<uint8_t *>(m_NativeWindowBuffer.bits);
 
@@ -66,7 +69,6 @@ void VideoNativeRender::onDrawFrame() {
 
 void VideoNativeRender::onSurfaceDestroyed() {
     LOGCATE("VideoNativeRender::onSurfaceDestroyed start")
-    UnInit();
 }
 
 int VideoNativeRender::init() {
@@ -87,7 +89,6 @@ int VideoNativeRender::unInit() {
         av_frame_free(&m_RGBAFrame);
         m_RGBAFrame = nullptr;
     }
-    VideoRender::unInit();
     LOGCATE("VideoNativeRender::unInit finish")
     return 0;
 }

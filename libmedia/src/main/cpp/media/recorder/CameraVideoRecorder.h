@@ -5,13 +5,14 @@
 #ifndef HIKIKOMORI_CAMERAVIDEORECORDER_H
 #define HIKIKOMORI_CAMERAVIDEORECORDER_H
 
-#include "VideoGLRender.h"
+#include "Callback.h"
+#include "GLRenderWindow.h"
 #include "ThreadSafeQueue.h"
 
 class CameraVideoRecorder : public RenderCallback {
 private:
 
-    VideoGLRender *mVideoRender;
+    GLRenderWindow *mRenderWindow;
 
     ThreadSafeQueue *mVideoFrameQueue;
 
@@ -32,8 +33,8 @@ public:
 
     Frame *GetOneFrame(int type) override;
 
-    VideoGLRender *GetVideoRender() {
-        return mVideoRender;
+    GLRenderWindow *GetVideoRender() {
+        return mRenderWindow;
     }
 
 };

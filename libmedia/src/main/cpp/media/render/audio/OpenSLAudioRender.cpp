@@ -38,7 +38,6 @@ int OpenSLAudioRender::init() {
 
 int OpenSLAudioRender::unInit() {
     LOGCATE("OpenSLRender::unInit start");
-    AudioRender::UnInit();
     if (m_AudioPlayerObj) {
         (*m_AudioPlayerPlay)->SetPlayState(m_AudioPlayerPlay, SL_PLAYSTATE_STOPPED);
         m_AudioPlayerPlay = nullptr;

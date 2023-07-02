@@ -6,6 +6,14 @@
 #define HIKIKOMORI_VIOLETMEDIAPLAYER_H
 
 #include "MediaPlayer.h"
+#include "MediaDef.h"
+#include "GLRenderWindow.h"
+#include "VideoNativeRender.h"
+#include "OpenSLAudioRender.h"
+#include "AudioDecoder.h"
+#include "VideoDecoder.h"
+#include "MediaSync.h"
+#include "ThreadSafeQueue.h"
 
 class VioletMediaPlayer : public MediaPlayer, public DecoderCallback, public RenderCallback {
 
@@ -15,6 +23,12 @@ public:
     virtual ~VioletMediaPlayer() {}
 
     virtual int Init(JNIEnv *jniEnv, jobject obj, char *url, int decodeType, int renderType) override;
+
+    virtual void OnSurfaceCreated(JNIEnv *jniEnv, jobject surface) override;
+
+    virtual void OnSurfaceChanged(int width, int height) override;
+
+    virtual void OnSurfaceDestroyed() override;
 
     virtual int UnInit() override;
 
@@ -39,6 +53,21 @@ public:
     virtual void SetPlayerState(PlayerState state) override;
 
 private:
+    volatile PlayerState state = STATE_UNKNOWN;
+
+    VideoDecoder *m_VideoDecoder;
+    AudioDecoder *m_AudioDecoder;
+    GLRenderWindow *m_ImageRenderWindow;
+    OpenSLAudioRender *m_AudioRender;
+    MediaSync *m_AVSync;
+    MediaEventCallback *m_EventCallback;
+
+    mutex m_Mutex;
+    condition_variable m_Cond;
+
+    ThreadSafeQueue *m_VideoFrameQueue;
+    ThreadSafeQueue *m_AudioFrameQueue;
+
     int initAudioPlayer(char *url);
 
     int initVideoPlayer(char *url);

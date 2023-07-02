@@ -7,10 +7,10 @@
 
 CameraVideoRecorder::CameraVideoRecorder() {
     LOGCATE("CameraVideoRecorder::CameraVideoRecorder");
-    mVideoRender = new VideoGLRender(this);
+    mRenderWindow = new GLRenderWindow(this);
     mVideoFrameQueue = new ThreadSafeQueue(MAX_AUDIO_QUEUE_SIZE, MEDIA_TYPE_VIDEO);
     mAudioFrameQueue = new ThreadSafeQueue(MAX_AUDIO_QUEUE_SIZE, MEDIA_TYPE_AUDIO);
-    mVideoRender->StartRenderLoop();
+    mRenderWindow->StartRender();
 }
 
 void CameraVideoRecorder::UnInit() {
@@ -23,10 +23,10 @@ void CameraVideoRecorder::UnInit() {
         mVideoFrameQueue->abort();
     }
 
-    if (mVideoRender) {
-        mVideoRender->UnInit();
-        delete mVideoRender;
-        mVideoRender = nullptr;
+    if (mRenderWindow) {
+        mRenderWindow->Destroy();
+        delete mRenderWindow;
+        mRenderWindow = nullptr;
     }
 
     if (mAudioFrameQueue) {

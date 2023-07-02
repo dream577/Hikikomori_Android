@@ -8,7 +8,7 @@
 #define MAX_PATH_LENGTH 2048
 
 #include "MediaDef.h"
-#include "MediaEventCallback.h"
+#include "Callback.h"
 
 enum DecoderMsg {
     MESSAGE_DECODER_INIT = 0,
@@ -16,17 +16,6 @@ enum DecoderMsg {
     MESSAGE_DECODER_LOOP,
     MESSAGE_DECODER_UNINIT,
     MESSAGE_DECODER_SEEK
-};
-
-class DecoderCallback {
-public:
-    virtual void OnDecodeOneFrame(Frame *frame) = 0;
-
-    virtual void OnSeekResult(int mediaType, bool result) = 0;
-
-    virtual int GetPlayerState() = 0;
-
-    virtual void SetPlayerState(PlayerState state) = 0;
 };
 
 class Decoder : public looper {

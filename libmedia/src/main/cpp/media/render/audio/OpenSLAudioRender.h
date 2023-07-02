@@ -10,7 +10,8 @@
 #include <SLES/OpenSLES_Android.h>
 #include <queue>
 #include <string>
-#include "AudioRender.h"
+
+#include "Callback.h"
 #include "looper.h"
 
 using namespace std;
@@ -23,9 +24,10 @@ enum AudioRenderMessage {
     MESSAGE_AUDIO_RENDER_UNINIT
 };
 
-class OpenSLAudioRender : public AudioRender, public looper {
+class OpenSLAudioRender : public looper {
 private:
     int mLoopMsg = MESSAGE_AUDIO_RENDER_LOOP;
+    RenderCallback *m_Callback;
     volatile bool stop = false;
 
     int result = -1;
@@ -41,9 +43,9 @@ private:
 
     static void audioPlayerCallback(SLAndroidSimpleBufferQueueItf bufferQueue, void *context);
 
-    virtual void playAudioFrame();
+    void playAudioFrame();
 
-    virtual void onPlayFrame() override;
+    void onPlayFrame();
 
     SLObjectItf m_EngineObj;
     SLEngineItf m_EngineEngine;
@@ -61,17 +63,20 @@ protected:
     virtual void handle(int what, void *data) override;
 
 public:
-    OpenSLAudioRender(RenderCallback *callback) : AudioRender(callback) {
+    OpenSLAudioRender(RenderCallback *callback) {
+        this->m_Callback = callback;
         sem_init(&runBlock, 0, 0);
     }
 
-    virtual ~OpenSLAudioRender() {}
+    ~OpenSLAudioRender() {
+        m_Callback = nullptr;
+    }
 
-    virtual int Init() override;
+    int Init();
 
-    virtual int UnInit() override;
+    int UnInit();
 
-    virtual void StartRenderLoop() override;
+    void StartRenderLoop();
 };
 
 

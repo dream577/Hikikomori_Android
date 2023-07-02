@@ -117,4 +117,27 @@ public:
     }
 };
 
+struct TransformMatrix {
+    int degree;
+    int mirror;
+    float translateX;
+    float translateY;
+    float scaleX;
+    float scaleY;
+    int angleX;
+    int angleY;
+
+    TransformMatrix() : translateX(0), translateY(0), scaleX(1.0), scaleY(1.0),
+                        degree(0), mirror(0), angleX(0), angleY(0) {}
+
+    void Reset() {
+        translateX = 0;
+        translateY = 0;
+        scaleX = 1.0;
+        scaleY = 1.0;
+        degree = 0;
+        mirror = 0;
+    }
+};
+
 #endif //HIKIKOMORI_MEDIADEF_H

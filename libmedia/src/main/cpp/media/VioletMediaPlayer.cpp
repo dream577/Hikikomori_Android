@@ -32,6 +32,24 @@ int VioletMediaPlayer::Init(JNIEnv *jniEnv, jobject obj, char *url, int decodeTy
     return result1 | result2;
 }
 
+void VioletMediaPlayer::OnSurfaceCreated(JNIEnv *jniEnv, jobject surface) {
+    if (m_ImageRenderWindow != nullptr) {
+        m_ImageRenderWindow->OnSurfaceCreated(jniEnv, surface);
+    }
+}
+
+void VioletMediaPlayer::OnSurfaceChanged(int width, int height) {
+    if (m_ImageRenderWindow != nullptr) {
+        m_ImageRenderWindow->OnSurfaceChanged(width, height);
+    }
+}
+
+void VioletMediaPlayer::OnSurfaceDestroyed() {
+    if (m_ImageRenderWindow != nullptr) {
+        m_ImageRenderWindow->OnSurfaceDestroyed();
+    }
+}
+
 int VioletMediaPlayer::UnInit() {
     LOGCATE("VioletMediaPlayer::UnInit")
     unInitAudioPlayer();
@@ -59,12 +77,7 @@ int VioletMediaPlayer::initVideoPlayer(char *url) {
     m_VideoDecoder = new VideoDecoder(url, nullptr, this);
     result = m_VideoDecoder->Init();
     if (result == 0) {
-        int mVideoWidth = m_VideoDecoder->getVideoWidth();
-        int mVideoHeight = m_VideoDecoder->getVideoHeight();
-        m_VideoRender = new VideoGLRender(this);
-//        m_VideoRender = new VideoNativeRender(m_VideoDecoder->GetAVCodecContext()->pix_fmt, this);
-        m_VideoRender->SetVideoSize(mVideoWidth, mVideoHeight);
-
+        m_ImageRenderWindow = new GLRenderWindow(this);
         m_VideoFrameQueue = new ThreadSafeQueue(MAX_VIDEO_QUEUE_SIZE, MEDIA_TYPE_VIDEO);
     }
     return result;
@@ -101,10 +114,10 @@ void VioletMediaPlayer::unInitVideoPlayer() {
         delete m_VideoDecoder;
         m_VideoDecoder = nullptr;
     }
-    if (m_VideoRender) {
-        m_VideoRender->UnInit();
-        delete m_VideoRender;
-        m_VideoRender = nullptr;
+    if (m_ImageRenderWindow) {
+        m_ImageRenderWindow->Destroy();
+        delete m_ImageRenderWindow;
+        m_ImageRenderWindow = nullptr;
     }
     if (m_VideoFrameQueue) {
         delete m_VideoFrameQueue;
@@ -122,7 +135,7 @@ void VioletMediaPlayer::Play() {
     }
     if (m_VideoDecoder) {
         m_VideoDecoder->StartDecodeLoop();
-        m_VideoRender->StartRenderLoop();
+        m_ImageRenderWindow->StartRender();
     }
 
 }
@@ -167,7 +180,6 @@ void VioletMediaPlayer::SeekToPosition(float position) {
     }
 }
 
-
 Frame *VioletMediaPlayer::GetOneFrame(int type) {
     Frame *frame = nullptr;
     if (GetPlayerState() == STATE_STOP) return frame;
@@ -209,7 +221,7 @@ int VioletMediaPlayer::GetPlayerState() {
 
 void VioletMediaPlayer::SetPlayerState(PlayerState state) {
     unique_lock<mutex> lock(m_Mutex);
-    MediaPlayer::state = state;
+    this->state = state;
     m_Cond.notify_all();
 }
 
