@@ -20,12 +20,8 @@ class CameraActivity : FragmentPagerActivity() {
     override fun initView() {
         super.initView()
         updateMediaUI()
-//        enterRecordFragment()
-        pagerManager.enterFragment(GLExampleFragment.TAG)
-    }
-
-    private fun enterRecordFragment() {
         pagerManager.enterFragment(CameraRecordFragment.TAG)
+//        pagerManager.enterFragment(GLExampleFragment.TAG)
     }
 
     private fun updateMediaUI() {

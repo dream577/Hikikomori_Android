@@ -9,39 +9,28 @@ extern "C" {
 #include "libavformat/avformat.h"
 #include "libavutil/avutil.h"
 #include "libavutil/time.h"
-};
+}
+
+#include "MediaDef.h"
 
 #include <stdint.h>
+#include <math.h>
 
-#define SYNC_DELAY_THRESHOLD 100    //100ms
-
-#define SYNC_INITIAL_TIMESTAMP      -1
+#define MIN_SYNC_THRESHOLD       10
+#define MAX_SYNC_THRESHOLD       100
+#define SYNC_FRAMEDUP_THRESHOLD  40
 
 class MediaSync {
 
 public:
-    MediaSync() {};
+    void SyncAudio(Frame *frame);
 
-    ~MediaSync();
-
-    void AudioSyncToSystemClock(long pts);
-
-    void VideoSyncToSystemClock(long pts);
-
-    void videoSynToAudioClock();
-
-    void SyncTimeStampWhenResume();
-
-    void AudioSeekToPositionSuccess();
-
-    void VideoSeekToPositionSuccess();
+    void SyncVideo(Frame *frame);
 
 private:
-    long m_CurrAudioTimeStamp = SYNC_INITIAL_TIMESTAMP;         // 当前音频帧的时间戳
-    long m_AudioStartTime = SYNC_INITIAL_TIMESTAMP;             // 音频开始播放时的时间戳
+    long m_CurrAudioPts = 0; // 当前音频帧的时间戳
 
-    long m_CurrVideoTimeStamp = SYNC_INITIAL_TIMESTAMP;         // 当前视频帧的时间戳
-    long m_VideoStartTime = SYNC_INITIAL_TIMESTAMP;             // 视频始播放时的时间戳
+    long m_LastVideoPts = 0; // 上一帧视频的时间戳
 };
 
 

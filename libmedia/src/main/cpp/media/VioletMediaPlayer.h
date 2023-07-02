@@ -22,7 +22,8 @@ public:
 
     virtual ~VioletMediaPlayer() {}
 
-    virtual int Init(JNIEnv *jniEnv, jobject obj, char *url, int decodeType, int renderType) override;
+    virtual int
+    Init(JNIEnv *jniEnv, jobject obj, char *url, int decodeType, int renderType) override;
 
     virtual void OnSurfaceCreated(JNIEnv *jniEnv, jobject surface) override;
 
@@ -41,6 +42,7 @@ public:
     virtual void Stop() override;
 
     virtual void SeekToPosition(float position) override;
+
 
     virtual Frame *GetOneFrame(int type) override;
 
@@ -67,10 +69,6 @@ private:
 
     ThreadSafeQueue *m_VideoFrameQueue;
     ThreadSafeQueue *m_AudioFrameQueue;
-
-    int initAudioPlayer(char *url);
-
-    int initVideoPlayer(char *url);
 
     void unInitAudioPlayer();
 

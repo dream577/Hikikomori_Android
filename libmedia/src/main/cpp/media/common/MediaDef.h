@@ -50,6 +50,8 @@ public:
     int type;
     int format;
 
+    bool seekFlag  = false;
+
     Frame() {};
 
     Frame(long dts, long pts, int type, int format) {

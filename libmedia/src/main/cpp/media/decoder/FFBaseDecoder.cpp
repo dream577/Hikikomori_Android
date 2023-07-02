@@ -57,6 +57,7 @@ int FFBaseDecoder::init() {
             LOGCATE("FFBaseDecoder::init avcodec_find_decoder fail.")
             break;
         }
+        LOGCATE("FFBaseDecoder::init avcodec_find_decoder name:%s", m_AVCodec->name)
 
         // 7. 创建解码器上下文
         m_AVCodecContext = avcodec_alloc_context3(m_AVCodec);
@@ -129,7 +130,8 @@ void FFBaseDecoder::decodeLoop() {
 }
 
 int FFBaseDecoder::decodeLoopOnce() {
-    LOGCATE("FFBaseDecoder::decodeLoopOnce m_MediaType=%d", m_MediaType);
+//    LOGCATE("FFBaseDecoder::decodeLoopOnce m_MediaType=%d", m_MediaType)
+    bool firstFrameAfterSeek = false;
     if (m_SeekPosition > 0) {
         int64_t seek_target = static_cast<int64_t>(m_SeekPosition * 1000000);
         int64_t seek_min = INT64_MIN;
@@ -145,7 +147,8 @@ int FFBaseDecoder::decodeLoopOnce() {
             }
             m_Callback->OnSeekResult(m_MediaType, true);
             LOGCATE("BaseDecoder::decodeLoopOnce success while seeking m_MediaType=%d",
-                    m_MediaType);
+                    m_MediaType)
+            firstFrameAfterSeek = true;
         }
         m_SeekPosition = -1;   // 重置seek标志位
     }
@@ -163,6 +166,10 @@ int FFBaseDecoder::decodeLoopOnce() {
             int frameCount = 0;
             while (avcodec_receive_frame(m_AVCodecContext, m_AVFrame) == 0) {
                 Frame *frame = onFrameAvailable();
+                if (frame && firstFrameAfterSeek) {
+                    frame->seekFlag = true;
+                    firstFrameAfterSeek = false;
+                }
                 m_Callback->OnDecodeOneFrame(frame);
                 if (m_EventCallback) {
                     m_EventCallback->PostMessage(EVENT_PLAYING, frame->pts);

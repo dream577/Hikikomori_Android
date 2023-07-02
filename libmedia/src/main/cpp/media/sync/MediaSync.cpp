@@ -4,62 +4,33 @@
 #include "MediaSync.h"
 #include "LogUtil.h"
 
-void MediaSync::AudioSyncToSystemClock(long pts) {
-    m_CurrAudioTimeStamp = pts;
+void MediaSync::SyncAudio(Frame *frame) {
+    m_CurrAudioPts = frame->pts;
+}
 
-    if (m_AudioStartTime == SYNC_INITIAL_TIMESTAMP) {
-        m_VideoStartTime = GetSysCurrentTime() - pts;
+void MediaSync::SyncVideo(Frame *frame) {
+    long currentVideoPts = frame->pts;
+    if (frame->seekFlag) {
+        m_LastVideoPts = currentVideoPts;
     }
-    long elapsedTime = GetSysCurrentTime() - m_AudioStartTime;
-    long delay = 0;
-    if (m_CurrAudioTimeStamp > elapsedTime) {
-        auto sleepTime = m_CurrAudioTimeStamp - elapsedTime;
-        sleepTime = sleepTime > SYNC_DELAY_THRESHOLD ? SYNC_DELAY_THRESHOLD : sleepTime;
-        av_usleep(sleepTime * 1000);
+
+    long delay = currentVideoPts - m_LastVideoPts;
+    long diff = currentVideoPts - m_CurrAudioPts;
+
+    long sync_threshold = fmax(MIN_SYNC_THRESHOLD, fmin(MAX_SYNC_THRESHOLD, delay));
+
+    if (diff <= -sync_threshold) {
+        // 视频比音频慢，加快
+        delay = fmax(0, delay + diff);
+    } else if (diff >= sync_threshold && delay > SYNC_FRAMEDUP_THRESHOLD) {
+        // 视频比音频快，差距较大，一步到位
+        delay += diff;
+    } else if (diff >= sync_threshold) {
+        // 视频比音频快，差距较小，逐渐缩小
+        delay *= 2;
     }
-    delay = elapsedTime - m_CurrAudioTimeStamp;
-    LOGCATE("MediaSync::AudioSyncToSystemClock pts=%ld, 音频播放时长:%ld", pts, m_CurrAudioTimeStamp)
-}
-
-void MediaSync::VideoSyncToSystemClock(long pts) {
-    m_CurrVideoTimeStamp = pts;
-
-    if (m_VideoStartTime == SYNC_INITIAL_TIMESTAMP) {
-        m_VideoStartTime = GetSysCurrentTime() - pts;
-    }
-    long elapsedTime = GetSysCurrentTime() - m_VideoStartTime;
-    long delay = 0;
-    if (m_CurrVideoTimeStamp > elapsedTime) {
-        auto sleepTime = m_CurrVideoTimeStamp - elapsedTime;
-        sleepTime = sleepTime > SYNC_DELAY_THRESHOLD ? SYNC_DELAY_THRESHOLD : sleepTime;
-        av_usleep(sleepTime * 1000);
-    }
-    delay = elapsedTime - m_CurrVideoTimeStamp;
-    LOGCATE("MediaSync::VideoSyncToSystemClock pts=%ld, 视频播放时长:%ld", pts, m_CurrVideoTimeStamp)
-}
-
-void MediaSync::videoSynToAudioClock() {
-
-}
-
-void MediaSync::SyncTimeStampWhenResume() {
-    m_AudioStartTime = GetSysCurrentTime() - m_CurrAudioTimeStamp;
-    m_VideoStartTime = GetSysCurrentTime() - m_CurrVideoTimeStamp;
-    if (m_AudioStartTime != SYNC_INITIAL_TIMESTAMP && m_VideoStartTime != SYNC_INITIAL_TIMESTAMP) {
-        m_VideoStartTime = m_AudioStartTime;
-    }
-}
-
-void MediaSync::AudioSeekToPositionSuccess() {
-    m_AudioStartTime = SYNC_INITIAL_TIMESTAMP;
-}
-
-void MediaSync::VideoSeekToPositionSuccess() {
-    m_VideoStartTime = SYNC_INITIAL_TIMESTAMP;
-}
-
-MediaSync::~MediaSync() {
-    LOGCATE("MediaSync::~MediaSync")
+    av_usleep(delay * 1000);
+    m_LastVideoPts = frame->pts;
 }
 
 
