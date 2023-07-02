@@ -1,5 +1,6 @@
 package com.violet.hikikomori.view.media.camera
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.ImageFormat
 import android.graphics.SurfaceTexture
@@ -93,6 +94,7 @@ class CameraRecordFragment : BaseBindingFragment<FragmentCameraRecordBinding>(),
                 requireContext().getSystemService(Context.CAMERA_SERVICE) as CameraManager
             var isSupportCameraId = false
             mSupportCameraIds = mCameraManager.cameraIdList
+            KLog.d(TAG, "supportCameraId:${mSupportCameraIds.contentToString()}")
             for (cameraId in mSupportCameraIds) {
                 if (TextUtils.equals(cameraId, mCameraId)) {
                     isSupportCameraId = true
@@ -114,6 +116,7 @@ class CameraRecordFragment : BaseBindingFragment<FragmentCameraRecordBinding>(),
             val config =
                 mCharacteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP) ?: break
             mSupportPreviewSize = listOf(*config.getOutputSizes(SurfaceTexture::class.java))
+            KLog.d(TAG, "support size:${mSupportPreviewSize}")
             mSupportCaptureSize = listOf(*config.getOutputSizes(ImageFormat.YUV_420_888))
 
             val display = mBinding.cameraRecordView.display
@@ -142,6 +145,7 @@ class CameraRecordFragment : BaseBindingFragment<FragmentCameraRecordBinding>(),
         cont.resume(result)
     }
 
+    @SuppressLint("MissingPermission")
     private suspend fun openCamera(): CameraDevice = suspendCancellableCoroutine { cont ->
         mPreviewThread.start()
         mCameraHandler = Handler(mPreviewThread.looper)

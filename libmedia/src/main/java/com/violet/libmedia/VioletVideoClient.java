@@ -65,7 +65,7 @@ public class VioletVideoClient {
     }
 
     public void onSurfaceCreated(Surface surface) {
-        native_pnSurfaceCreated(mNativePlayerHandle, surface);
+        native_onSurfaceCreated(mNativePlayerHandle, surface);
     }
 
     public void onSurfaceChanged(int w, int h) {
@@ -96,7 +96,7 @@ public class VioletVideoClient {
 
     private native void native_seekToPosition(long playerHandle, float position);
 
-    private native void native_pnSurfaceCreated(long playerHandle, Object surface);
+    private native void native_onSurfaceCreated(long playerHandle, Object surface);
 
     private native void native_onSurfaceChanged(long playerHandle, int w, int h);
 

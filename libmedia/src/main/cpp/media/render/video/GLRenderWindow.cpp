@@ -59,31 +59,42 @@ void GLRenderWindow::onSurfaceCreated() {
 void GLRenderWindow::onSurfaceChanged() {
     LOGCATE("GLRenderWindow::onSurfaceChanged [w,h]=%d, %d", mWindowWidth, mWindowHeight);
     int x, y;
-    int width, height;
+    int rWidth, rHeight;
+    int iWidth, iHeight;
+    int wWidth, wHeight;
 
     if (mImageWidth == -1) mImageWidth = mWindowWidth;
     if (mImageHeight == -1) mImageHeight = mWindowHeight;
-
-    if (mWindowWidth < mWindowHeight * mImageWidth / mImageHeight) {
-        width = mWindowWidth;
-        height = mWindowWidth * mImageHeight / mImageWidth;
+    if ((mDegree / 90) % 2 != 0 && mDegree % 90 == 0) {
+        iWidth = mImageHeight;
+        iHeight = mImageWidth;
     } else {
-        width = mWindowHeight * mImageWidth / mImageHeight;
-        height = mWindowHeight;
+        iWidth = mImageWidth;
+        iHeight = mImageHeight;
+    }
+    wWidth = mWindowWidth;
+    wHeight = mWindowHeight;
+
+    if (wWidth < wHeight * iWidth / iHeight) {
+        rWidth = wWidth;
+        rHeight = wWidth * iHeight / iWidth;
+    } else {
+        rWidth = wHeight * iWidth / iHeight;
+        rHeight = wHeight;
     }
 
-    LOGCATE("ImageGLRender::onSurfaceChanged window[w,h]=[%d, %d],DstSize[w, h]=[%d, %d]",
-            mWindowWidth, mWindowHeight, width, height);
+    LOGCATE("GLRenderWindow::onSurfaceChanged window[w,h]=[%d, %d], image[w, h]=[%d, %d], real[w, h]=[%d, %d]",
+            mWindowWidth, mWindowHeight, mImageWidth, mImageHeight, rWidth, rHeight);
 
-    x = (mWindowWidth - width) / 2;
-    y = (mWindowHeight - height) / 2;
+    x = (mWindowWidth - rWidth) / 2;
+    y = (mWindowHeight - rHeight) / 2;
 
     // 自适应画面居中
-    glViewport(x, y, width, height);
+    glViewport(x, y, rWidth, rHeight);
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
     if (glRender) {
-        glRender->OnSurfaceChanged(width, height);
+        glRender->OnSurfaceChanged(rWidth, rHeight);
     }
 }
 

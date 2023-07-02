@@ -93,7 +93,7 @@ Java_com_violet_libmedia_VioletVideoClient_native_1seekToPosition(JNIEnv *env, j
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_violet_libmedia_VioletVideoClient_native_1pnSurfaceCreated(JNIEnv *env, jobject thiz,
+Java_com_violet_libmedia_VioletVideoClient_native_1onSurfaceCreated(JNIEnv *env, jobject thiz,
                                                                     jlong player_handle,
                                                                     jobject surfaceObj) {
     if (player_handle != 0) {
