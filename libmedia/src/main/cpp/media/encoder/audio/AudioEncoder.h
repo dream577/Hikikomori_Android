@@ -18,21 +18,18 @@ extern "C" {
 
 #include "ThreadSafeQueue.h"
 
-#define DEFAULT_SAMPLE_RATE    44100
-#define DEFAULT_CHANNEL_LAYOUT AV_CH_LAYOUT_STEREO
-
 class AudioEncoder {
 private:
-    AVFormatContext *mAVFormatContext = nullptr;
-    AVCodecContext *mAVCodecContext = nullptr;
-    SwrContext *mSwrContext = nullptr;
+    AVFormatContext *m_AVFormatContext = nullptr;
+    AVCodecContext *m_AVCodecContext = nullptr;
+    SwrContext *m_SwrContext = nullptr;
 
-    AVStream *mAVStream = nullptr;
-    AVCodec *mAVCodec = nullptr;
-    AVPacket *mAVPacket = nullptr;
-    AVFrame *mSrcFrame = nullptr;
-    AVFrame *mSwrFrame = nullptr;
-    uint8_t *mFrameBuffer = nullptr;
+    AVStream *m_AVStream = nullptr;
+    const AVCodec *m_AVCodec = nullptr;
+    AVPacket *m_AVPacket = nullptr;
+    AVFrame *m_SrcFrame = nullptr;
+    AVFrame *m_SwrFrame = nullptr;
+    uint8_t *m_FrameBuffer = nullptr;
 
     int mBitRate;
     int mChannels;
@@ -41,6 +38,7 @@ private:
     int mSampleFormat;
     int mFrameBufferSize;
     char mFilePath[1024] = {0};
+    char mFileName[512] = {0};
 
     ThreadSafeQueue *m_AudioFrameQueue = nullptr;
 
@@ -48,7 +46,8 @@ private:
 
 public:
 
-    void Init(int bitRate, int channels, int sampleRate, int bitPerSample, int sampleFormat,const char *aacFilePath);
+    void Init(int bitRate, int channels, int sampleRate, int bitPerSample, int sampleFormat,
+              const char *aacFilePath);
 
     int StartEncode();
 

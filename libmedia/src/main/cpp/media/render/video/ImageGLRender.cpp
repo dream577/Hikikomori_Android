@@ -284,6 +284,10 @@ void ImageGLRender::OnDrawFrame(Frame *frame) {
                          videoFrame->yuvBuffer[2]);
             glBindTexture(GL_TEXTURE_2D, GL_NONE);
             break;
+        case VIDEO_FRAME_FORMAT_NV12:
+            break;
+        case VIDEO_FRAME_FORMAT_NV21:
+            break;
     }
 
     // Use the program object
