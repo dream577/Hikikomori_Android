@@ -9,51 +9,45 @@ include_directories(
         include
         glm
         utils
-        media
-        media/egl
-        media/eglexample
-        media/common
-        media/encoder
-        media/encoder/audio
-        media/encoder/video
-        media/decoder
-        media/decoder/audio
-        media/decoder/video
-        media/recorder
-        media/render
-        media/render/audio
-        media/render/video
-        media/input
-        media/output
-        media/queue
-        media/sync
-        media/util
+        component
+        egl
+        egl/eglexample
+        component/base
+        component/encoder
+        component/encoder/audio
+        component/encoder/video
+        component/decoder
+        component/decoder/audio
+        component/decoder/video
+        component/recorder
+        component/render
+        component/render/audio
+        component/render/video
+        component/sync
 )
 
 link_directories(${jniLibs}/${ANDROID_ABI})
 
 file(GLOB src-files
         ${CMAKE_SOURCE_DIR}/*cpp
+        ${CMAKE_SOURCE_DIR}/egl/*cpp
+        ${CMAKE_SOURCE_DIR}/egl/eglexample/*cpp
+        ${CMAKE_SOURCE_DIR}/client/*cpp
+        ${CMAKE_SOURCE_DIR}/client/recorder/*cpp
+        ${CMAKE_SOURCE_DIR}/client/player/*cpp
+        ${CMAKE_SOURCE_DIR}/component/base/*cpp
+        ${CMAKE_SOURCE_DIR}/component/decoder/*cpp
+        ${CMAKE_SOURCE_DIR}/component/decoder/audio/*cpp
+        ${CMAKE_SOURCE_DIR}/component/decoder/video/*cpp
+        ${CMAKE_SOURCE_DIR}/component/encoder/*cpp
+        ${CMAKE_SOURCE_DIR}/component/encoder/audio/*cpp
+        ${CMAKE_SOURCE_DIR}/component/encoder/video/*cpp
+        ${CMAKE_SOURCE_DIR}/component/render/*cpp
+        ${CMAKE_SOURCE_DIR}/component/render/audio/*cpp
+        ${CMAKE_SOURCE_DIR}/component/render/video/*cpp
+        ${CMAKE_SOURCE_DIR}/component/sync/*cpp
+        ${CMAKE_SOURCE_DIR}/nativeapi/*cpp
         ${CMAKE_SOURCE_DIR}/utils/*cpp
-        ${CMAKE_SOURCE_DIR}/media/*cpp
-        ${CMAKE_SOURCE_DIR}/media/common/*cpp
-        ${CMAKE_SOURCE_DIR}/media/egl/*cpp
-        ${CMAKE_SOURCE_DIR}/media/eglexample/*cpp
-        ${CMAKE_SOURCE_DIR}/media/decoder/*cpp
-        ${CMAKE_SOURCE_DIR}/media/decoder/audio/*cpp
-        ${CMAKE_SOURCE_DIR}/media/decoder/video/*cpp
-        ${CMAKE_SOURCE_DIR}/media/encoder/*cpp
-        ${CMAKE_SOURCE_DIR}/media/encoder/audio/*cpp
-        ${CMAKE_SOURCE_DIR}/media/encoder/video/*cpp
-        ${CMAKE_SOURCE_DIR}/media/recorder/*cpp
-        ${CMAKE_SOURCE_DIR}/media/render/*cpp
-        ${CMAKE_SOURCE_DIR}/media/render/audio/*cpp
-        ${CMAKE_SOURCE_DIR}/media/render/video/*cpp
-        ${CMAKE_SOURCE_DIR}/media/input/*cpp
-        ${CMAKE_SOURCE_DIR}/media/output/*cpp
-        ${CMAKE_SOURCE_DIR}/media/queue/*cpp
-        ${CMAKE_SOURCE_DIR}/media/sync/*cpp
-        ${CMAKE_SOURCE_DIR}/media/util/*cpp
         )
 
 add_library( # Sets the name of the library.

@@ -8,15 +8,10 @@
 #include "Callback.h"
 #include "GLRenderWindow.h"
 #include "ThreadSafeQueue.h"
+#include "AudioEncoder.h"
 
 class CameraVideoRecorder : public RenderCallback {
-private:
 
-    GLRenderWindow *mRenderWindow;
-
-    ThreadSafeQueue *mVideoFrameQueue;
-
-    ThreadSafeQueue *mAudioFrameQueue;
 
 public:
     CameraVideoRecorder();
@@ -34,9 +29,15 @@ public:
     Frame *GetOneFrame(int type) override;
 
     GLRenderWindow *GetVideoRender() {
-        return mRenderWindow;
+        return m_RenderWindow;
     }
 
+private:
+
+    GLRenderWindow *m_RenderWindow;
+    ThreadSafeQueue *m_VideoFrameQueue;
+    ThreadSafeQueue *m_AudioFrameQueue;
+    AudioEncoder *m_AudioEncoder;
 };
 
 

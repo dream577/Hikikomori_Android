@@ -9,7 +9,7 @@
 
 #include <GLES3/gl3.h>
 #include <string>
-#include <glm.hpp>
+#include "glm.hpp"
 
 
 class GLUtils {

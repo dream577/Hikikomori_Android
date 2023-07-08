@@ -8,7 +8,7 @@
 #include "looper.h"
 #include "MediaDef.h"
 #include "LogUtil.h"
-#include "VioletEGLSurface.h"
+#include "../../../egl/VioletEGLSurface.h"
 #include "ImageGLRender.h"
 #include "Callback.h"
 

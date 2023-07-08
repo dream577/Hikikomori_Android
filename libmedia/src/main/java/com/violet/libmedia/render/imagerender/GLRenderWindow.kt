@@ -56,6 +56,17 @@ class GLRenderWindow(name: String) : VThread(name), GLRender {
         putMessage(ON_SURFACE_CHANGED)
     }
 
+    override fun setTransformMatrix(
+        translateX: Float,
+        translateY: Float,
+        scaleX: Float,
+        scaleY: Float,
+        degree: Int,
+        mirror: Int
+    ) {
+
+    }
+
     override fun onDrawFrame(frame: MediaFrame) {
 //        KLog.d(TAG, "[pts=${frame.pts}]")
         for (render in mRenders) {

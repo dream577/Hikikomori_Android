@@ -8,6 +8,12 @@ interface GLRender {
 
     fun onSurfaceChanged(width: Int, height: Int)
 
+    fun setTransformMatrix(
+        translateX: Float, translateY: Float,
+        scaleX: Float, scaleY: Float,
+        degree: Int, mirror: Int
+    )
+
     fun onDrawFrame(frame: MediaFrame)
 
     fun onSurfaceDestroyed(surface: Surface)

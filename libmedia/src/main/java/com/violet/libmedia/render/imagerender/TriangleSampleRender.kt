@@ -89,6 +89,17 @@ class TriangleSampleRender : GLRender {
         Matrix.orthoM(MATRIX_COORD, 0, -1f, 1f, -aspectRatio, aspectRatio, -1f, 1f)
     }
 
+    override fun setTransformMatrix(
+        translateX: Float,
+        translateY: Float,
+        scaleX: Float,
+        scaleY: Float,
+        degree: Int,
+        mirror: Int
+    ) {
+
+    }
+
     override fun onDrawFrame(frame: MediaFrame) {
         GLES30.glUseProgram(program)
         GLES30.glUniformMatrix4fv(matrixLocation, 1, false, MATRIX_COORD, 0)

@@ -7,36 +7,39 @@
 
 CameraVideoRecorder::CameraVideoRecorder() {
     LOGCATE("CameraVideoRecorder::CameraVideoRecorder");
-    mRenderWindow = new GLRenderWindow(this);
-    mVideoFrameQueue = new ThreadSafeQueue(MAX_AUDIO_QUEUE_SIZE, MEDIA_TYPE_VIDEO);
-    mAudioFrameQueue = new ThreadSafeQueue(MAX_AUDIO_QUEUE_SIZE, MEDIA_TYPE_AUDIO);
-    mRenderWindow->StartRender();
+    m_RenderWindow = new GLRenderWindow(this);
+    m_VideoFrameQueue = new ThreadSafeQueue(MAX_AUDIO_QUEUE_SIZE, MEDIA_TYPE_VIDEO);
+    m_AudioFrameQueue = new ThreadSafeQueue(MAX_AUDIO_QUEUE_SIZE, MEDIA_TYPE_AUDIO);
+    m_RenderWindow->StartRender();
+
+    m_AudioEncoder = new AudioEncoder();
+    m_AudioEncoder->StartEncode();
 }
 
 void CameraVideoRecorder::UnInit() {
     LOGCATE("CameraVideoRecorder::UnInit");
-    if (mAudioFrameQueue) {
-        mAudioFrameQueue->abort();
+    if (m_AudioFrameQueue) {
+        m_AudioFrameQueue->abort();
     }
 
-    if (mVideoFrameQueue) {
-        mVideoFrameQueue->abort();
+    if (m_VideoFrameQueue) {
+        m_VideoFrameQueue->abort();
     }
 
-    if (mRenderWindow) {
-        mRenderWindow->Destroy();
-        delete mRenderWindow;
-        mRenderWindow = nullptr;
+    if (m_RenderWindow) {
+        m_RenderWindow->Destroy();
+        delete m_RenderWindow;
+        m_RenderWindow = nullptr;
     }
 
-    if (mAudioFrameQueue) {
-        delete mAudioFrameQueue;
-        mAudioFrameQueue = nullptr;
+    if (m_AudioFrameQueue) {
+        delete m_AudioFrameQueue;
+        m_AudioFrameQueue = nullptr;
     }
 
-    if (mVideoFrameQueue) {
-        delete mVideoFrameQueue;
-        mVideoFrameQueue = nullptr;
+    if (m_VideoFrameQueue) {
+        delete m_VideoFrameQueue;
+        m_VideoFrameQueue = nullptr;
     }
 }
 
@@ -83,16 +86,16 @@ void CameraVideoRecorder::OnDrawPreviewFrame(uint8_t *data, int width, int heigh
             break;
     }
 
-    mVideoFrameQueue->offer(frame);
+    m_VideoFrameQueue->offer(frame);
 }
 
 Frame *CameraVideoRecorder::GetOneFrame(int type) {
     LOGCATE("CameraVideoRecorder::GetOneFrame");
     Frame *frame;
     if (type == MEDIA_TYPE_VIDEO) {
-        frame = mVideoFrameQueue->poll();
+        frame = m_VideoFrameQueue->poll();
     } else {
-        frame = mAudioFrameQueue->poll();
+        frame = m_AudioFrameQueue->poll();
     }
     return frame;
 }

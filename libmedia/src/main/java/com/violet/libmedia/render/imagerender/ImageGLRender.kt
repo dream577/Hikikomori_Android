@@ -59,8 +59,8 @@ class ImageGLRender : GLRender {
     override fun onSurfaceCreated(surface: Surface) {
         // 初始化EGL环境相关
         program = GLUtils.createProgram(
-            ShaderSource.IMAGE_VERTEX_SHADER,
-            ShaderSource.IMAGE_FRAGMENT_SHADER
+            ShaderSource.IMAGE_VERTEX_SHADER.trim(),
+            ShaderSource.IMAGE_FRAGMENT_SHADER.trim()
         )
 
         matrixLocation = GLES30.glGetUniformLocation(program, "u_MVPMatrix")
@@ -118,6 +118,18 @@ class ImageGLRender : GLRender {
 
     override fun onSurfaceChanged(width: Int, height: Int) {
         Matrix.orthoM(matrixArray, 0, -1f, 1f, -1f, 1f, 0f, 1f)
+    }
+
+    override fun setTransformMatrix(
+        translateX: Float,
+        translateY: Float,
+        scaleX: Float,
+        scaleY: Float,
+        degree: Int,
+        mirror: Int
+    ) {
+        Matrix.scaleM(matrixArray, 0, scaleX, scaleY, 1.0f)
+        Matrix.translateM(matrixArray, 0, translateX, translateY, 0f)
     }
 
     override fun onDrawFrame(frame: MediaFrame) {

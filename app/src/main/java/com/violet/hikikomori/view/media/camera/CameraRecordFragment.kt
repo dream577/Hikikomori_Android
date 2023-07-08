@@ -81,9 +81,9 @@ class CameraRecordFragment : BaseBindingFragment<FragmentCameraRecordBinding>(),
     private fun initializeEnv() = lifecycleScope.launch(Dispatchers.Main) {
         val result = initializeCamera()
         if (result) {
-            mCameraDevice = openCamera()
-            mCaptureSession = createCaptureSession()
-            createPreviewRequest()
+//            mCameraDevice = openCamera()
+//            mCaptureSession = createCaptureSession()
+//            createPreviewRequest()
         }
     }
 
