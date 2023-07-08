@@ -12,6 +12,8 @@ include_directories(
         component
         egl
         egl/eglexample
+        client/player
+        client/recorder
         component/base
         component/encoder
         component/encoder/audio
@@ -19,7 +21,6 @@ include_directories(
         component/decoder
         component/decoder/audio
         component/decoder/video
-        component/recorder
         component/render
         component/render/audio
         component/render/video

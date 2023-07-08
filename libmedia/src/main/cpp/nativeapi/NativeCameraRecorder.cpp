@@ -4,7 +4,7 @@
 // Created by bronyna on 2023/2/25.
 //
 
-#include "../client/recorder/CameraVideoRecorder.h"
+#include "CameraVideoRecorder.h"
 
 extern "C"
 JNIEXPORT jlong JNICALL

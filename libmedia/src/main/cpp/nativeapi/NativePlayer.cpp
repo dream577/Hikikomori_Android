@@ -3,7 +3,7 @@
 //
 
 #include <jni.h>
-#include "../client/player/VioletMediaPlayer.h"
+#include "VioletMediaPlayer.h"
 #include "LogUtil.h"
 
 extern "C"
