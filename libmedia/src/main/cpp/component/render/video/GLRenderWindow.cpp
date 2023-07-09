@@ -65,6 +65,8 @@ void GLRenderWindow::onSurfaceChanged() {
 
     if (mImageWidth == -1) mImageWidth = mWindowWidth;
     if (mImageHeight == -1) mImageHeight = mWindowHeight;
+
+    // 如果摄像机采集的画面旋转了90度的奇数倍，需要调换图片的宽和高
     if ((mDegree / 90) % 2 != 0 && mDegree % 90 == 0) {
         iWidth = mImageHeight;
         iHeight = mImageWidth;
@@ -72,6 +74,7 @@ void GLRenderWindow::onSurfaceChanged() {
         iWidth = mImageWidth;
         iHeight = mImageHeight;
     }
+
     wWidth = mWindowWidth;
     wHeight = mWindowHeight;
 

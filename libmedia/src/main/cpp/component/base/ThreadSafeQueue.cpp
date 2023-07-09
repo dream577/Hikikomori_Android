@@ -54,24 +54,6 @@ void ThreadSafeQueue::flush() {
     m_CondVar.notify_all();
 }
 
-void ThreadSafeQueue::clearCache() {
-    unique_lock<mutex> lock(m_Mutex);
-    FrameNode *temp;
-    while (header) {
-        temp = header;
-        header = header->next;
-        if (temp->frame) {
-            delete temp->frame;
-            temp->frame = nullptr;
-            delete temp;
-        }
-    }
-    header = tail = nullptr;
-    m_Size = 0;
-    abort_request = 0;
-    m_CondVar.notify_all();
-}
-
 int ThreadSafeQueue::put(Frame *frame) {
     if (frame == nullptr) return -1;
     if (m_Size >= m_MaxSize) return -1;

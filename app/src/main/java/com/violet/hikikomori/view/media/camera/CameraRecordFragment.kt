@@ -13,6 +13,7 @@ import android.text.TextUtils
 import android.util.Size
 import android.view.Surface
 import android.view.SurfaceHolder
+import android.view.View
 import androidx.lifecycle.lifecycleScope
 import com.violet.hikikomori.R
 import com.violet.hikikomori.databinding.FragmentCameraRecordBinding
@@ -26,12 +27,12 @@ import com.violet.libmedia.recoder.video.camera.util.getPreviewOutputSize
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
-
 class CameraRecordFragment : BaseBindingFragment<FragmentCameraRecordBinding>(),
-    SurfaceHolder.Callback, CameraFrameCallback {
+    SurfaceHolder.Callback, CameraFrameCallback, View.OnClickListener {
     companion object {
         const val TAG = "CameraRecordFragment"
     }
@@ -66,24 +67,25 @@ class CameraRecordFragment : BaseBindingFragment<FragmentCameraRecordBinding>(),
 
     private lateinit var mCameraRecordClient: CameraRecordClient
 
+    private var isRecording = AtomicBoolean(false)
 
     override fun initData() {
         super.initData()
-        mCameraRecordClient =
-            CameraRecordClient()
+        mCameraRecordClient = CameraRecordClient()
     }
 
     override fun initView() {
         super.initView()
+        mBinding.btnRecord.setOnClickListener(this)
         mBinding.cameraRecordView.holder.addCallback(this)
     }
 
     private fun initializeEnv() = lifecycleScope.launch(Dispatchers.Main) {
         val result = initializeCamera()
         if (result) {
-//            mCameraDevice = openCamera()
-//            mCaptureSession = createCaptureSession()
-//            createPreviewRequest()
+            mCameraDevice = openCamera()
+            mCaptureSession = createCaptureSession()
+            createPreviewRequest()
         }
     }
 
@@ -233,7 +235,7 @@ class CameraRecordFragment : BaseBindingFragment<FragmentCameraRecordBinding>(),
     }
 
     override fun surfaceCreated(holder: SurfaceHolder) {
-        mCameraRecordClient.initRecorder()
+        mCameraRecordClient.initRecorder(requireContext())
         mCameraRecordClient.onSurfaceCreated(holder.surface)
 
         mBinding.cameraRecordView.post {
@@ -273,12 +275,12 @@ class CameraRecordFragment : BaseBindingFragment<FragmentCameraRecordBinding>(),
         OnImageAvailableListener { reader ->
             val image = reader.acquireLatestImage()
             val data = ImageUtils.convert_YUV420_888_To_YUV420I_Data(image)
-            mCameraRecordClient.rendPreviewVideoFrame(
+            mCameraRecordClient.inputVideoFrame(
                 data,
                 image.width,
                 image.height,
                 MediaContext.VIDEO_FRAME_FORMAT_I420,
-                image.timestamp
+                image.timestamp / 1000
             )
             image.close()
         }
@@ -294,4 +296,18 @@ class CameraRecordFragment : BaseBindingFragment<FragmentCameraRecordBinding>(),
     }
 
     override fun getLayoutId(): Int = R.layout.fragment_camera_record
+
+    override fun onClick(v: View?) {
+        when (v?.id) {
+            R.id.btn_record -> {
+                if (isRecording.get()) {
+                    isRecording.set(false)
+                    mCameraRecordClient.stopRecord()
+                } else {
+                    isRecording.set(true)
+                    mCameraRecordClient.startRecord("${System.currentTimeMillis()}.mp4")
+                }
+            }
+        }
+    }
 }

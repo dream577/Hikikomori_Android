@@ -15,9 +15,6 @@ include_directories(
         client/player
         client/recorder
         component/base
-        component/encoder
-        component/encoder/audio
-        component/encoder/video
         component/decoder
         component/decoder/audio
         component/decoder/video
@@ -40,9 +37,6 @@ file(GLOB src-files
         ${CMAKE_SOURCE_DIR}/component/decoder/*cpp
         ${CMAKE_SOURCE_DIR}/component/decoder/audio/*cpp
         ${CMAKE_SOURCE_DIR}/component/decoder/video/*cpp
-        ${CMAKE_SOURCE_DIR}/component/encoder/*cpp
-        ${CMAKE_SOURCE_DIR}/component/encoder/audio/*cpp
-        ${CMAKE_SOURCE_DIR}/component/encoder/video/*cpp
         ${CMAKE_SOURCE_DIR}/component/render/*cpp
         ${CMAKE_SOURCE_DIR}/component/render/audio/*cpp
         ${CMAKE_SOURCE_DIR}/component/render/video/*cpp

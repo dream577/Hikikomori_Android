@@ -16,12 +16,12 @@ public class ImageUtils {
         byte[] data = new byte[imageWidth * imageHeight * ImageFormat.getBitsPerPixel(ImageFormat.YUV_420_888) / 8];
         int offset = 0;
 
-        KLog.d("ImageSize", String.format("width = %s, height = %s", imageWidth, imageHeight));
+//        KLog.d("ImageSize", String.format("width = %s, height = %s", imageWidth, imageHeight));
 
         for (int i = 0; i < planes.length; i++) {
             int rowStride = planes[i].getRowStride();
             int pixelStride = planes[i].getPixelStride();
-            KLog.d("ImageSize", String.format("plane%s:[rawStride = %s, pixelStride=%s]", i, rowStride, pixelStride));
+//            KLog.d("ImageSize", String.format("plane%s:[rawStride = %s, pixelStride=%s]", i, rowStride, pixelStride));
 
             int planeWidth = i == 0 ? imageWidth : imageWidth / 2;
             int planeHeight = i == 0 ? imageHeight : imageHeight / 2;

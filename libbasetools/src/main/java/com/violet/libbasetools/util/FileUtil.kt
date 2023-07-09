@@ -1,6 +1,7 @@
 package com.violet.libbasetools.util
 
 import android.content.Context
+import android.os.Environment
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
@@ -31,6 +32,7 @@ import java.util.*
  *     8、getExternalCacheDir().getAbsolutePath() = /storage/emulated/0/Android/data/{PackageName}/cache    获取某个应用在外部存储中的files路径
  */
 
+const val VIDEO_URI = "/video/"
 
 fun createFile(context: Context, extension: String): File {
     val sdf = SimpleDateFormat("yyyy_MM_dd_HH_mm_ss_SSS", Locale.US)
@@ -84,5 +86,17 @@ fun copyAssetsDirToSDCard(context: Context, assetsDirName: String, path: String)
     } catch (e: Exception) {
         e.printStackTrace()
     }
+}
+
+fun checkVideoDir(context: Context): String {
+//    val movDir = context.getExternalFilesDir(Environment.DIRECTORY_MOVIES)?.absolutePath
+//        ?: context.filesDir.absolutePath
+    val movDir = context.filesDir.absolutePath
+    val videoPath = movDir + VIDEO_URI
+    val file = File(videoPath)
+    if (!file.exists()) {
+        file.mkdirs()
+    }
+    return videoPath
 }
 

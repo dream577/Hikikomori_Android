@@ -29,7 +29,7 @@ public class CameraRecorder implements SurfaceHolder.Callback, CameraFrameCallba
 
     @Override
     public void surfaceCreated(@NonNull SurfaceHolder holder) {
-        mCameraRecordClient.initRecorder();
+        mCameraRecordClient.initRecorder(mSurfaceView.getContext());
         mCameraRecordClient.onSurfaceCreated(holder.getSurface());
         try {
             mCameraClient.initializeCamera(mSurfaceView.getDisplay());
@@ -54,7 +54,7 @@ public class CameraRecorder implements SurfaceHolder.Callback, CameraFrameCallba
 
     @Override
     public void onPreviewFrame(byte[] data, int width, int height, int format, long timestamp) {
-        mCameraRecordClient.rendPreviewVideoFrame(data, width, height, format, timestamp);
+        mCameraRecordClient.inputVideoFrame(data, width, height, format, timestamp);
     }
 
     @Override

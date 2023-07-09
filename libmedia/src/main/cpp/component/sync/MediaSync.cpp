@@ -10,7 +10,7 @@ void MediaSync::SyncAudio(Frame *frame) {
 
 void MediaSync::SyncVideo(Frame *frame) {
     long currentVideoPts = frame->pts;
-    if (frame->seekFlag) {
+    if (frame->flag == FLAG_SEEK_FINISH) {
         m_LastVideoPts = currentVideoPts;
     }
 

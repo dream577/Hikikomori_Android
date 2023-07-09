@@ -43,6 +43,12 @@ enum PlayerState {
     STATE_STOP
 };
 
+enum FrameFlag {
+    FLAG_NONE = 0,
+    FLAG_SEEK_FINISH,  // seek操作结束后的第一帧
+    FLAG_RECORD_END,   // 录制的最后一帧
+};
+
 class Frame {
 public:
     long dts;
@@ -50,7 +56,7 @@ public:
     int type;
     int format;
 
-    bool seekFlag  = false;
+    int flag = FLAG_NONE;
 
     Frame() {};
 
@@ -70,6 +76,8 @@ public:
     int dataSize;
     int channels;
     int sampleRate;
+    int sampleFormat;
+    int channelLayout;
 
     AudioFrame() : Frame() { type = MEDIA_TYPE_AUDIO; }
 

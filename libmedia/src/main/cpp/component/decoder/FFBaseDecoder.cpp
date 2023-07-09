@@ -167,7 +167,7 @@ int FFBaseDecoder::decodeLoopOnce() {
             while (avcodec_receive_frame(m_AVCodecContext, m_AVFrame) == 0) {
                 Frame *frame = onFrameAvailable();
                 if (frame && firstFrameAfterSeek) {
-                    frame->seekFlag = true;
+                    frame->flag = FLAG_SEEK_FINISH;
                     firstFrameAfterSeek = false;
                 }
                 m_Callback->OnDecodeOneFrame(frame);

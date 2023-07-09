@@ -194,10 +194,10 @@ void VioletMediaPlayer::OnSeekResult(int mediaType, bool result) {
     m_EventCallback->PostMessage(EVENT_SEEK_FINISH, 0);
     if (result) {
         if (mediaType == MEDIA_TYPE_VIDEO) {
-            m_VideoFrameQueue->clearCache();
+            m_VideoFrameQueue->flush();
         }
         if (mediaType == MEDIA_TYPE_AUDIO) {
-            m_AudioFrameQueue->clearCache();
+            m_AudioFrameQueue->flush();
         }
     }
 }
