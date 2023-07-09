@@ -15,7 +15,7 @@ public class CameraRecordClient implements AudioRecorder.AudioRecordCallback {
     }
 
     private Context mContext;
-    private long recordHandle;
+    private long recordHandle = 0;
     private AudioRecorder mAudioRecorder;
 
     public void initRecorder(Context context) {
@@ -26,33 +26,40 @@ public class CameraRecordClient implements AudioRecorder.AudioRecordCallback {
     }
 
     public void startRecord(String name) {
+        if (recordHandle == 0) return;
         String path = FileUtilKt.checkVideoDir(mContext) + name;
         native_startRecord(recordHandle, path, name);
         mAudioRecorder.startRecord();
     }
 
     public void stopRecord() {
+        if (recordHandle == 0) return;
         mAudioRecorder.stopRecord();
         native_stopRecord(recordHandle);
     }
 
     public void inputVideoFrame(byte[] data, int width, int height, int format, long timestamp) {
+        if (recordHandle == 0) return;
         native_InputVideoFrame(recordHandle, data, width, height, format, timestamp);
     }
 
     public void inputAudioFrame(byte[] data, int size, long timestamp, int sampleRate, int sampleFormat, int channelLayout) {
+        if (recordHandle == 0) return;
         native_InputAudioFrame(recordHandle, data, size, timestamp, sampleRate, sampleFormat, channelLayout);
     }
 
     public void onSurfaceCreated(Surface surface) {
+        if (recordHandle == 0) return;
         native_onSurfaceCreated(recordHandle, surface);
     }
 
     public void onSurfaceChanged(int width, int height) {
+        if (recordHandle == 0) return;
         native_onSurfaceChanged(recordHandle, width, height);
     }
 
     public void setTransformMatrix(float translateX, float translateY, float scaleX, float scaleY, int degree, int mirror) {
+        if (recordHandle == 0) return;
         native_SetTransformMatrix(recordHandle, translateX, translateY, scaleX, scaleY, degree, mirror);
     }
 
@@ -62,7 +69,14 @@ public class CameraRecordClient implements AudioRecorder.AudioRecordCallback {
     }
 
     public void onSurfaceDestroyed() {
+        if (recordHandle == 0) return;
         native_onSurfaceDestroyed(recordHandle);
+    }
+
+    public void destroyRecorder() {
+        if (recordHandle == 0) return;
+        native_destroy(recordHandle);
+        recordHandle = 0;
     }
 
     private native long native_Init();
@@ -82,4 +96,6 @@ public class CameraRecordClient implements AudioRecorder.AudioRecordCallback {
     private native void native_onSurfaceDestroyed(long recordHandle);
 
     private native void native_SetTransformMatrix(long recordHandle, float translateX, float translateY, float scaleX, float scaleY, int degree, int mirror);
+
+    private native void native_destroy(long recordHandle);
 }

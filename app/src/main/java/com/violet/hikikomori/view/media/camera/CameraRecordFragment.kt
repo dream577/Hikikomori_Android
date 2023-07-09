@@ -250,6 +250,7 @@ class CameraRecordFragment : BaseBindingFragment<FragmentCameraRecordBinding>(),
     override fun surfaceDestroyed(holder: SurfaceHolder) {
         closeCamera()
         mCameraRecordClient.onSurfaceDestroyed()
+        mCameraRecordClient.destroyRecorder()
     }
 
     override fun onPreviewFrame(

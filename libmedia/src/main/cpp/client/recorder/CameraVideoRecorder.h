@@ -135,7 +135,7 @@ private:
     pthread_t worker;
     volatile bool m_IsAudioRecording = false;
     volatile bool m_IsVideoRecording = false;
-    volatile bool m_Exit = false;
+    volatile bool m_RecordModeExit = true;
 
     int AddStream(AVOutputStream *ost, AVCodecID codec_id);
 
@@ -145,7 +145,7 @@ private:
 
     int OpenVideo(AVOutputStream *ost);
 
-    int EncodeVideo1Frame(AVOutputStream *ost, VideoFrame *frame);
+    int EncodeVideoFrame(AVOutputStream *ost, VideoFrame *frame);
 
     void RealStopRecord();
 
@@ -165,7 +165,7 @@ public:
 
     void StopRecord();
 
-    void InputVideoData(uint8_t *data, int width, int height, int format, long timestamp);
+    void OnDrawVideoFrame(uint8_t *data, int width, int height, int format, long timestamp);
 
     void InputAudioData(uint8_t *data, int size, long timestamp, int sample_rate,
                         int sample_format, int channel_layout);

@@ -57,7 +57,7 @@ int AddAdtsHeader(char *const header, const int data_length,
 }
 
 CameraVideoRecorder::CameraVideoRecorder() {
-    LOGCATE("CameraVideoRecorder::CameraVideoRecorder");
+    LOGCATE("CameraVideoRecorder::CameraVideoRecorder")
     m_RenderWindow = new GLRenderWindow(this);
     m_VideoRenderQueue = new ThreadSafeQueue(10, MEDIA_TYPE_VIDEO);
     m_RenderWindow->StartRender();
@@ -68,6 +68,7 @@ CameraVideoRecorder::CameraVideoRecorder() {
 
     m_EnableAudio = false;
     m_EnableVideo = false;
+    m_RecordModeExit = true;
 }
 
 int CameraVideoRecorder::Init() {
@@ -359,7 +360,7 @@ int CameraVideoRecorder::OpenVideo(AVOutputStream *ost) {
     return result;
 }
 
-int CameraVideoRecorder::EncodeVideo1Frame(AVOutputStream *ost, VideoFrame *video_frame) {
+int CameraVideoRecorder::EncodeVideoFrame(AVOutputStream *ost, VideoFrame *frame) {
     int result = 0;
     __EXIT:
     return result;
@@ -375,6 +376,10 @@ int CameraVideoRecorder::UnInit() {
         m_RenderWindow->Destroy();
         delete m_RenderWindow;
         m_RenderWindow = nullptr;
+    }
+    if (m_VideoRenderQueue) {
+        delete m_VideoRenderQueue;
+        m_VideoRenderQueue = nullptr;
     }
     return result;
 }
@@ -395,7 +400,7 @@ void CameraVideoRecorder::StopRecord() {
     // 设置停止标志位并等待直到录制真正结束
     m_IsVideoRecording = false;
     m_IsAudioRecording = false;
-    while (!m_Exit) {
+    while (!m_RecordModeExit) {
         av_usleep(1000 * 10);
     }
 }
@@ -429,13 +434,9 @@ void CameraVideoRecorder::RealStopRecord() {
     m_EnableAudio = false;
 }
 
-void CameraVideoRecorder::InputVideoData(uint8_t *data, int width, int height, int format,
-                                         long timestamp) {
-//    LOGCATE("CameraVideoRecorder::InputVideoData")
-    if (m_Exit) {
-        delete data;
-        return;
-    }
+void CameraVideoRecorder::OnDrawVideoFrame(uint8_t *data, int width, int height, int format,
+                                           long timestamp) {
+//    LOGCATE("CameraVideoRecorder::OnDrawVideoFrame")
     VideoFrame *frame = nullptr;
     switch (format) {
         case VIDEO_FRAME_FORMAT_RGBA:
@@ -471,7 +472,7 @@ void CameraVideoRecorder::InputVideoData(uint8_t *data, int width, int height, i
 
 void CameraVideoRecorder::InputAudioData(uint8_t *data, int size, long timestamp,
                                          int sample_rate, int sample_format, int channel_layout) {
-    if (m_Exit) {
+    if (m_RecordModeExit) {
         delete data;
         return;
     }
@@ -501,7 +502,7 @@ void *CameraVideoRecorder::StartRecordLoop(void *recorder) {
     long videoNextPts = 0;
     long audioNextPts = 0;
     int result = 0;
-    mRecorder->m_Exit = false;
+    mRecorder->m_RecordModeExit = false;
 
     // 根据是否启用音频录制、视频录制来设置是否正在录制的标志位
     mRecorder->m_IsVideoRecording = mRecorder->m_EnableVideo;
@@ -538,6 +539,6 @@ void *CameraVideoRecorder::StartRecordLoop(void *recorder) {
 
     __EXIT:
     mRecorder->RealStopRecord();
-    mRecorder->m_Exit = true;
+    mRecorder->m_RecordModeExit = true;
     return nullptr;
 }

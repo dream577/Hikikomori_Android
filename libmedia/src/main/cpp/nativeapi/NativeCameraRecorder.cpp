@@ -53,7 +53,7 @@ Java_com_violet_libmedia_recoder_video_camera_CameraRecordClient_native_1InputVi
         env->GetByteArrayRegion(data, 0, len, reinterpret_cast<jbyte *>(buf));
 
         auto *recorder = reinterpret_cast<CameraVideoRecorder *>(record_handle);
-        recorder->InputVideoData(buf, width, height, format, timestamp);
+        recorder->OnDrawVideoFrame(buf, width, height, format, timestamp);
     }
 }
 extern "C"
@@ -99,7 +99,6 @@ Java_com_violet_libmedia_recoder_video_camera_CameraRecordClient_native_1onSurfa
         GLRenderWindow *render = recorder->GetVideoRender();
         recorder->StopRecord();
         render->OnSurfaceDestroyed();
-        delete recorder;
     }
 }
 
@@ -112,5 +111,15 @@ Java_com_violet_libmedia_recoder_video_camera_CameraRecordClient_native_1SetTran
         auto *recorder = reinterpret_cast<CameraVideoRecorder *>(record_handle);
         GLRenderWindow *render = recorder->GetVideoRender();
         render->UpdateMVPMatrix(translate_x, translate_y, scale_x, scale_y, degree, mirror);
+    }
+}
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_violet_libmedia_recoder_video_camera_CameraRecordClient_native_1destroy(JNIEnv *env,
+                                                                                 jobject thiz,
+                                                                                 jlong record_handle) {
+    if (record_handle != 0) {
+        auto *recorder = reinterpret_cast<CameraVideoRecorder *>(record_handle);
+        delete recorder;
     }
 }
