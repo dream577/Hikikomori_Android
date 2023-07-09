@@ -18,6 +18,8 @@
 class RenderCallback {
 public:
     virtual Frame *GetOneFrame(int type) = 0;
+
+    virtual void FrameRendFinish(Frame* frame) = 0;
 };
 
 class DecoderCallback {

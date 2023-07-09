@@ -98,7 +98,6 @@ int ThreadSafeQueue::offer(Frame *frame) {
     if (!abort_request) {
         ret = put(frame);
     }
-    if (frame && ret == -1) delete frame;
     m_CondVar.notify_all();
     lock.unlock();
     return ret;

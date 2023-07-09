@@ -18,6 +18,7 @@ int FFBaseDecoder::init() {
         LOGCATE("FFBaseDecoder::init m_Callback==nullptr");
         return result;
     }
+
     do {
         // 1. 创建封装格式上下文
         m_AVFormatContext = avformat_alloc_context();
@@ -52,6 +53,10 @@ int FFBaseDecoder::init() {
         AVCodecParameters *param = m_AVFormatContext->streams[m_StreamIndex]->codecpar;
 
         // 6.获取解码器
+//        const AVCodecDescriptor *p = nullptr;
+//        while ((p = avcodec_descriptor_next(p)) != nullptr) {
+//            LOGCATE("supported codec name: %s", p->name)
+//        }
         m_AVCodec = avcodec_find_decoder(param->codec_id);
         if (m_AVCodec == nullptr) {
             LOGCATE("FFBaseDecoder::init avcodec_find_decoder fail.")

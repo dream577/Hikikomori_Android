@@ -36,6 +36,9 @@ void GLRenderWindow::OnDrawFrame(VideoFrame *frame) {
     if (m_Surface) {
         m_Surface->swapBuffers();
     }
+    if (m_Callback) {
+        m_Callback->FrameRendFinish(frame);
+    }
 }
 
 void GLRenderWindow::OnSurfaceDestroyed() {
@@ -125,6 +128,7 @@ void GLRenderWindow::onDrawFrame() {
         if (m_Surface) {
             m_Surface->swapBuffers();
         }
+        m_Callback->FrameRendFinish(frame);
     }
 }
 

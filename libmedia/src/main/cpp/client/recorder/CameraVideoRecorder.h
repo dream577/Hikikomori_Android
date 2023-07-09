@@ -15,6 +15,7 @@
 
 extern "C" {
 #include "libavcodec/avcodec.h"
+#include "libavcodec/codec.h"
 #include "libavformat/avformat.h"
 #include "libavutil/frame.h"
 #include "libavutil/time.h"
@@ -137,7 +138,7 @@ private:
     volatile bool m_IsVideoRecording = false;
     volatile bool m_RecordModeExit = true;
 
-    int AddStream(AVOutputStream *ost, AVCodecID codec_id);
+    int AddStream(AVOutputStream *ost, AVCodecID codec_id, const char *codec_name);
 
     int OpenAudio(AVOutputStream *ost);
 
@@ -171,6 +172,8 @@ public:
                         int sample_format, int channel_layout);
 
     Frame *GetOneFrame(int type) override;
+
+    void FrameRendFinish(Frame *frame) override;
 
     GLRenderWindow *GetVideoRender() {
         return m_RenderWindow;

@@ -306,7 +306,6 @@ void ImageGLRender::OnDrawFrame(Frame *frame) {
     GLUtils::setInt(m_Program, "u_nImgType", videoFrame->format);
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (const void *) 0);
-    delete frame;
 }
 
 void ImageGLRender::OnSurfaceDestroyed() {

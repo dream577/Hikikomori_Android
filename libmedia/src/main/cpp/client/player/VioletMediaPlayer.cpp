@@ -180,13 +180,29 @@ Frame *VioletMediaPlayer::GetOneFrame(int type) {
     return frame;
 }
 
+void VioletMediaPlayer::FrameRendFinish(Frame *frame) {
+    if (frame) {
+        // TODO 此处用来扩展录制模块，暂时搁置
+        if (frame->type == MEDIA_TYPE_VIDEO) {
+
+        } else {
+
+        }
+        delete frame;
+    }
+}
+
 void VioletMediaPlayer::OnDecodeOneFrame(Frame *frame) {
 //    LOGCATE("VioletMediaPlayer::OnDecodeOneFrame MediaType=%d", frame->type)
     if (GetPlayerState() == STATE_STOP) return;
+    int ret;
     if (frame->type == MEDIA_TYPE_VIDEO) {
-        m_VideoFrameQueue->offer(frame);
+        ret = m_VideoFrameQueue->offer(frame);
     } else {
-        m_AudioFrameQueue->offer(frame);
+        ret = m_AudioFrameQueue->offer(frame);
+    }
+    if (ret < 0 && frame != nullptr) {
+        delete frame;
     }
 }
 

@@ -23,7 +23,11 @@ Java_com_violet_libmedia_recoder_video_camera_CameraRecordClient_native_1startRe
         const char *mName = env->GetStringUTFChars(name, nullptr);
 
         auto builder = recorder->Rebuild(recorder);
+        // TODO 此处的数据暂时先固定写死
         recorder = builder->EnableAudioRecord(true)
+                ->EnableVideoRecord(true)
+                ->ConfigAudioParam(44100, AV_SAMPLE_FMT_FLTP, AV_CH_LAYOUT_STEREO)
+                ->ConfigVideoParam(1920, 1080, AV_PIX_FMT_YUV420P, 1920 * 1080 * 15 * 24 * 3 / 2, 15)
                 ->InitFile(mPath, mName)
                 ->Build();
         delete builder;

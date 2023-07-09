@@ -43,8 +43,9 @@ public:
 
     virtual void SeekToPosition(float position) override;
 
-
     virtual Frame *GetOneFrame(int type) override;
+
+    void FrameRendFinish(Frame *frame) override;
 
     virtual void OnDecodeOneFrame(Frame *frame) override;
 

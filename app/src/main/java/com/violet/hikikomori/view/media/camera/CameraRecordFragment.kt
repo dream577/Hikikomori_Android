@@ -10,6 +10,7 @@ import android.media.ImageReader.OnImageAvailableListener
 import android.os.Handler
 import android.os.HandlerThread
 import android.text.TextUtils
+import android.util.Range
 import android.util.Size
 import android.view.Surface
 import android.view.SurfaceHolder
@@ -59,8 +60,10 @@ class CameraRecordFragment : BaseBindingFragment<FragmentCameraRecordBinding>(),
     private val mDefaultCaptureSize = Size(1280, 720)
     private var mPreviewSize = mDefaultPreviewSize
     private var mCaptureSize = mDefaultCaptureSize
+
     private lateinit var mSupportPreviewSize: List<Size>
     private lateinit var mSupportCaptureSize: List<Size>
+    private var mSupportFpsRanges: Array<out Range<Int>>? = null
 
     private val mPreviewThread = HandlerThread("CameraThread")
     private var mCameraHandler: Handler? = null
@@ -105,8 +108,7 @@ class CameraRecordFragment : BaseBindingFragment<FragmentCameraRecordBinding>(),
             }
             if (!isSupportCameraId) break
             mCharacteristics = mCameraManager.getCameraCharacteristics(mCameraId)
-            val capabilities =
-                mCharacteristics.get(CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES)
+            val capabilities = mCharacteristics.get(CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES)
             var isBackWardCompatible = false
             for (capability in capabilities!!) {
                 if (capability == CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES_BACKWARD_COMPATIBLE) {
@@ -115,21 +117,24 @@ class CameraRecordFragment : BaseBindingFragment<FragmentCameraRecordBinding>(),
                 }
             }
             if (!isBackWardCompatible) break
-            val config =
-                mCharacteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP) ?: break
+            // 获取Camera支持的图像大小
+            val config = mCharacteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP) ?: break
             mSupportPreviewSize = listOf(*config.getOutputSizes(SurfaceTexture::class.java))
-            KLog.d(TAG, "support size:${mSupportPreviewSize}")
+            KLog.d(TAG, "supported size:${mSupportPreviewSize}")
             mSupportCaptureSize = listOf(*config.getOutputSizes(ImageFormat.YUV_420_888))
 
+            // 获取Camera支持的帧率
+            mSupportFpsRanges = mCharacteristics.get(CameraCharacteristics.CONTROL_AE_AVAILABLE_TARGET_FPS_RANGES)
+            mSupportFpsRanges?.let {
+                for (i in it.indices) {
+                    KLog.d(TAG, "fps range${i} = ${it[i]}")
+                }
+            }
+
+            // 获取预览View支持的最大图像大小
             val display = mBinding.cameraRecordView.display
-            mPreviewSize =
-                getPreviewOutputSize(display, mCharacteristics, SurfaceTexture::class.java, null)
-            mCaptureSize = getPreviewOutputSize(
-                display,
-                mCharacteristics,
-                SurfaceTexture::class.java,
-                ImageFormat.YUV_420_888
-            )
+            mPreviewSize = getPreviewOutputSize(display, mCharacteristics, SurfaceTexture::class.java, null)
+            mCaptureSize = getPreviewOutputSize(display, mCharacteristics, SurfaceTexture::class.java, ImageFormat.YUV_420_888)
             mSensorOrientation = mCharacteristics.get(CameraCharacteristics.SENSOR_ORIENTATION)
             mCameraRecordClient.setTransformMatrix(0f, 0f, 1.0f, 1.0f, mSensorOrientation!!, 0)
 
@@ -230,6 +235,7 @@ class CameraRecordFragment : BaseBindingFragment<FragmentCameraRecordBinding>(),
     private fun createPreviewRequest() {
         val builder = mCameraDevice?.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
         builder?.addTarget(mPreviewSurface!!)
+        builder?.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, mSupportFpsRanges!![2])
         mPreviewRequest = builder?.build()
         mCaptureSession?.setRepeatingRequest(mPreviewRequest!!, null, mCameraHandler)
     }
