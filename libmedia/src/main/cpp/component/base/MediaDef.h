@@ -23,7 +23,7 @@
 #define VIDEO_RENDER_3D_VR      2
 
 // 帧队列大小
-#define MAX_AUDIO_QUEUE_SIZE   5
+#define MAX_AUDIO_QUEUE_SIZE   25
 #define MAX_VIDEO_QUEUE_SIZE   5
 
 // 回调事件

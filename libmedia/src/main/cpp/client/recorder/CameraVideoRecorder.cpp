@@ -654,9 +654,7 @@ void CameraVideoRecorder::FrameRendFinish(Frame *frame) {
 
 void *CameraVideoRecorder::StartRecordLoop(void *recorder) {
     auto *mRecorder = (CameraVideoRecorder *) recorder;
-    long videoNextPts = 0;
-    long audioNextPts = 0;
-    int result = 0;
+    int result;
     mRecorder->m_RecordModeExit = false;
 
     // 根据是否启用音频录制、视频录制来设置是否正在录制的标志位
@@ -700,6 +698,7 @@ void *CameraVideoRecorder::StartRecordLoop(void *recorder) {
         }
     }
 
+    avio_close(mRecorder->m_FormatCtx->pb);
     // 写文件尾
     av_write_trailer(mRecorder->m_FormatCtx);
     LOGCATE("CameraVideoRecorder::StartRecordLoop record finish, save as: %s",

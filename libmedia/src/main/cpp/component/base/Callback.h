@@ -19,14 +19,12 @@ class RenderCallback {
 public:
     virtual Frame *GetOneFrame(int type) = 0;
 
-    virtual void FrameRendFinish(Frame* frame) = 0;
+    virtual void FrameRendFinish(Frame *frame) = 0;
 };
 
 class DecoderCallback {
 public:
     virtual void OnDecodeOneFrame(Frame *frame) = 0;
-
-    virtual void OnSeekResult(int mediaType, bool result) = 0;
 
     virtual int GetPlayerState() = 0;
 

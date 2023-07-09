@@ -47,6 +47,8 @@ public:
 
     void flush();
 
+    void clearCache();
+
     void start();
 
 private:

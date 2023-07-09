@@ -27,12 +27,14 @@ void ThreadSafeQueue::abort() {
     unique_lock<mutex> lock(m_Mutex);
     abort_request = 1;
     m_CondVar.notify_all();
+    lock.unlock();
 }
 
 void ThreadSafeQueue::start() {
     unique_lock<mutex> lock(m_Mutex);
     abort_request = 0;
     m_CondVar.notify_all();
+    lock.unlock();
 }
 
 void ThreadSafeQueue::flush() {
@@ -52,6 +54,26 @@ void ThreadSafeQueue::flush() {
     m_MaxSize = INT_MAX;
     abort_request = 0;
     m_CondVar.notify_all();
+    lock.unlock();
+}
+
+void ThreadSafeQueue::clearCache() {
+    unique_lock<mutex> lock(m_Mutex);
+    FrameNode *temp;
+    while (header) {
+        temp = header;
+        header = header->next;
+        if (temp->frame) {
+            delete temp->frame;
+            temp->frame = nullptr;
+            delete temp;
+        }
+    }
+    header = tail = nullptr;
+    m_Size = 0;
+    abort_request = 0;
+    m_CondVar.notify_all();
+    lock.unlock();
 }
 
 int ThreadSafeQueue::put(Frame *frame) {

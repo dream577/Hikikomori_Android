@@ -5,13 +5,13 @@
 #ifndef HIKIKOMORI_VIOLETMEDIAPLAYER_H
 #define HIKIKOMORI_VIOLETMEDIAPLAYER_H
 
+#include "AVInputEngine.h"
 #include "MediaPlayer.h"
 #include "MediaDef.h"
 #include "GLRenderWindow.h"
 #include "VideoNativeRender.h"
 #include "OpenSLAudioRender.h"
-#include "AudioDecoder.h"
-#include "VideoDecoder.h"
+
 #include "MediaSync.h"
 #include "ThreadSafeQueue.h"
 
@@ -49,8 +49,6 @@ public:
 
     virtual void OnDecodeOneFrame(Frame *frame) override;
 
-    virtual void OnSeekResult(int mediaType, bool result) override;
-
     virtual int GetPlayerState() override;
 
     virtual void SetPlayerState(PlayerState state) override;
@@ -58,8 +56,7 @@ public:
 private:
     volatile PlayerState state = STATE_UNKNOWN;
 
-    VideoDecoder *m_VideoDecoder;
-    AudioDecoder *m_AudioDecoder;
+    AVInputEngine *m_InputEngine;
     GLRenderWindow *m_ImageRenderWindow;
     OpenSLAudioRender *m_AudioRender;
     MediaSync *m_AVSync;
@@ -70,11 +67,6 @@ private:
 
     ThreadSafeQueue *m_VideoFrameQueue;
     ThreadSafeQueue *m_AudioFrameQueue;
-
-    void unInitAudioPlayer();
-
-    void unInitVideoPlayer();
-
 };
 
 
