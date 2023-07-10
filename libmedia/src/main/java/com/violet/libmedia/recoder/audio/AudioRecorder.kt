@@ -15,22 +15,24 @@ class AudioRecorder {
         private const val DEFAULT_SAMPLE_FORMAT = AudioFormat.ENCODING_PCM_16BIT
     }
 
-    private val mAudioRecord: AudioRecord? = null
-    private var record: AudioRecord? = null
+    private var mAudioRecord: AudioRecord? = null
+    private var mRecordThread: Thread? = null
     private var mMinBufferSize = 0
     private val isStop: AtomicBoolean = AtomicBoolean(false)
     var recordCallback: AudioRecordCallback? = null
 
     fun startRecord() {
-        val mRecordThread = Thread({
+        mRecordThread = Thread({
             try {
                 _startRecord()
             } catch (e: Exception) {
                 e.printStackTrace()
                 KLog.d(TAG, "Record Error")
+            } finally {
+                stopRecord()
             }
         }, "AudioRecordThread")
-        mRecordThread.start()
+        mRecordThread!!.start()
     }
 
     @SuppressLint("MissingPermission")
@@ -45,24 +47,24 @@ class AudioRecorder {
             KLog.d(TAG, "parameters are not supported by the hardware.")
             return false
         }
-        record = AudioRecord(
+        mAudioRecord = AudioRecord(
             AudioSource.DEFAULT,
             DEFAULT_SAMPLE_RATE,
             DEFAULT_CHANNEL_LAYOUT,
             DEFAULT_SAMPLE_FORMAT,
             mMinBufferSize
         )
-        if (record!!.state != AudioRecord.STATE_INITIALIZED) {
+        if (mAudioRecord!!.state != AudioRecord.STATE_INITIALIZED) {
             KLog.d(TAG, "AudioRecord init failure")
             return false
         }
         val mBuffer = ByteArray(4096)
         var size: Int
         var timestamp: Long
-        record!!.startRecording()
+        mAudioRecord!!.startRecording()
         while (!isStop.get()) {
             timestamp = System.nanoTime() / 1000
-            size = record!!.read(mBuffer, 0, 4096)
+            size = mAudioRecord!!.read(mBuffer, 0, 4096)
             if (size > 0) {
                 recordCallback?.onReadSampleData(
                     mBuffer, size, timestamp,
@@ -89,7 +91,6 @@ class AudioRecorder {
 
     fun stopRecord() {
         isStop.set(true)
-        mAudioRecord?.stop()
     }
 
     interface AudioRecordCallback {

@@ -12,9 +12,11 @@ import com.violet.hikikomori.model.ImageItem
 import com.violet.hikikomori.model.VideoItem
 import com.violet.hikikomori.viewmodel.BaseViewModel
 import com.violet.libbasetools.model.Event
+import com.violet.libbasetools.util.checkVideoDir
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.schedulers.Schedulers
+import java.io.File
 
 class FileViewModel(application: Application) : BaseViewModel(application) {
     private val _videoListLiveData: MutableLiveData<Event<List<VideoItem>>> = MutableLiveData()
@@ -73,6 +75,14 @@ class FileViewModel(application: Application) : BaseViewModel(application) {
                 list.add(video)
             }
             cursor.close()
+        }
+
+        val videoDirPath = checkVideoDir(context)
+        val files = File(videoDirPath).listFiles()
+        if (files != null) {
+            for (file in files) {
+                list.add(VideoItem(list.size, file.name, file.path))
+            }
         }
         return list
     }

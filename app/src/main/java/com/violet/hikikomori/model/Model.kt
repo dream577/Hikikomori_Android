@@ -28,7 +28,17 @@ class VideoItem(
     val size: Long = 0,
     val duration: Int = 0,
     val thumbnail: Bitmap? = null
-) : MediaItem(id, title, path)
+) : MediaItem(id, title, path) {
+    constructor(id: Int, title: String, path: String) : this(
+        id,
+        title,
+        null,
+        null,
+        null,
+        null,
+        path
+    )
+}
 
 class ImageItem(
     id: Int = 0,

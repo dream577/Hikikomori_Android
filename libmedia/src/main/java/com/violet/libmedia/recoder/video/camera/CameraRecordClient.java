@@ -34,8 +34,8 @@ public class CameraRecordClient implements AudioRecorder.AudioRecordCallback {
 
     public void stopRecord() {
         if (recordHandle == 0) return;
-        mAudioRecorder.stopRecord();
         native_stopRecord(recordHandle);
+        mAudioRecorder.stopRecord();
     }
 
     public void inputVideoFrame(byte[] data, int width, int height, int format, long timestamp) {

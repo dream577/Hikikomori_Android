@@ -478,7 +478,7 @@ int CameraVideoRecorder::EncodeVideoFrame(AVOutputStream *ost, VideoFrame *video
 
         // 将编码数据写入文件
         AVRational *time_base = &ost->oc->streams[pkt->stream_index]->time_base;
-        LOGCATE("CameraVideoRecorder::EncodeAudioFrame pts:%s pts_time:%s dts:%s dts_time:%s duration:%s duration_time:%s stream_index:%d",
+        LOGCATE("CameraVideoRecorder::EncodeVideoFrame pts:%s pts_time:%s dts:%s dts_time:%s duration:%s duration_time:%s stream_index:%d",
                 av_ts2str(pkt->pts), av_ts2timestr(pkt->pts, time_base),
                 av_ts2str(pkt->dts), av_ts2timestr(pkt->dts, time_base),
                 av_ts2str(pkt->duration), av_ts2timestr(pkt->duration, time_base),
@@ -520,7 +520,7 @@ void CameraVideoRecorder::StartRecord() {
 }
 
 void CameraVideoRecorder::StopRecord() {
-    LOGCATE("CameraVideoRecorder::StopRecord()")
+    LOGCATE("CameraVideoRecorder::StopRecord() start")
     // 设置停止标志位并等待直到录制真正结束
     m_IsVideoRecording = false;
     m_IsAudioRecording = false;
@@ -528,15 +528,15 @@ void CameraVideoRecorder::StopRecord() {
         m_AudioEncoderQueue->abort();
     }
     if (m_VideoEncoderQueue) {
-        m_VideoRenderQueue->abort();
+        m_VideoEncoderQueue->abort();
     }
     while (!m_RecordModeExit) {
         av_usleep(1000 * 10);
     }
+    LOGCATE("CameraVideoRecorder::StopRecord() end")
 }
 
 void CameraVideoRecorder::RealStopRecord() {
-    LOGCATE("CameraVideoRecorder::RealStopRecord()")
     if (m_AudioEncoderQueue) {
         delete m_AudioEncoderQueue;
         m_AudioEncoderQueue = nullptr;
@@ -558,15 +558,14 @@ void CameraVideoRecorder::RealStopRecord() {
         m_FormatCtx = nullptr;
     }
     // 重置标志位
-    m_IsAudioRecording = false;
-    m_IsVideoRecording = false;
     m_EnableVideo = false;
     m_EnableAudio = false;
+    LOGCATE("CameraVideoRecorder::RealStopRecord()")
 }
 
 void CameraVideoRecorder::OnDrawVideoFrame(uint8_t *data, int width, int height, int format,
                                            long timestamp) {
-//    LOGCATE("CameraVideoRecorder::OnDrawVideoFrame")
+    LOGCATE("CameraVideoRecorder::OnDrawVideoFrame")
     VideoFrame *frame = nullptr;
     switch (format) {
         case VIDEO_FRAME_FORMAT_RGBA:
@@ -624,7 +623,7 @@ void CameraVideoRecorder::InputAudioData(uint8_t *data, int size, long timestamp
 }
 
 Frame *CameraVideoRecorder::GetOneFrame(int type) {
-//    LOGCATE("CameraVideoRecorder::GetOneFrame");
+//    LOGCATE("CameraVideoRecorder::GetOneFrame")
     Frame *frame;
     if (type == MEDIA_TYPE_VIDEO) {
         frame = m_VideoRenderQueue->poll();
@@ -635,6 +634,7 @@ Frame *CameraVideoRecorder::GetOneFrame(int type) {
 }
 
 void CameraVideoRecorder::FrameRendFinish(Frame *frame) {
+    LOGCATE("CameraVideoRecorder::FrameRendFinish")
     if (frame) {
         if (frame->type == MEDIA_TYPE_VIDEO) {
             if (m_IsVideoRecording) {
@@ -643,11 +643,7 @@ void CameraVideoRecorder::FrameRendFinish(Frame *frame) {
                 delete frame;
             }
         } else {
-            if (m_IsAudioRecording) {
-                m_AudioEncoderQueue->offer(frame);
-            } else {
-                delete frame;
-            }
+            delete frame;
         }
     }
 }
@@ -660,6 +656,7 @@ void *CameraVideoRecorder::StartRecordLoop(void *recorder) {
     // 根据是否启用音频录制、视频录制来设置是否正在录制的标志位
     mRecorder->m_IsVideoRecording = mRecorder->m_EnableVideo;
     mRecorder->m_IsAudioRecording = mRecorder->m_EnableAudio;
+    LOGCATE("CameraVideoRecorder::StartRecordLoop  %d, %d", mRecorder->m_IsAudioRecording, mRecorder->m_IsVideoRecording)
 
     if (!mRecorder->m_IsVideoRecording && !mRecorder->m_IsAudioRecording) {
         goto __EXIT;
@@ -698,11 +695,11 @@ void *CameraVideoRecorder::StartRecordLoop(void *recorder) {
         }
     }
 
-    avio_close(mRecorder->m_FormatCtx->pb);
     // 写文件尾
     av_write_trailer(mRecorder->m_FormatCtx);
     LOGCATE("CameraVideoRecorder::StartRecordLoop record finish, save as: %s",
             mRecorder->m_FilePath)
+    avio_close(mRecorder->m_FormatCtx->pb);
 
     __EXIT:
     mRecorder->RealStopRecord();
