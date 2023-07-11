@@ -29,13 +29,13 @@ protected:
     DecoderCallback *m_Callback = nullptr;
     MediaEventCallback *m_EventCallback = nullptr;
 
-    virtual int _init() = 0;
+    virtual int _Init() = 0;
 
-    virtual void _decodeLoop() = 0;
+    virtual void _DecoderLoop() = 0;
 
-    virtual void _seekPosition(float timestamp) = 0;
+    virtual void _SeekPosition(float timestamp) = 0;
 
-    virtual int _unInit() = 0;
+    virtual int _UnInit() = 0;
 
 public:
     Decoder(DecoderCallback *decoder_cb, MediaEventCallback *event_cb) {
@@ -77,19 +77,19 @@ public:
         looper::handle(what, data);
         switch (what) {
             case MESSAGE_DECODER_INIT:
-                result = _init();
+                result = _Init();
                 sem_post(&runBlock);
                 break;
             case MESSAGE_DECODER_LOOP:
-                _decodeLoop();
+                _DecoderLoop();
                 break;
             case MESSAGE_DECODER_SEEK: {
                 float *ts = (float *) data;
-                _seekPosition(*ts);
+                _SeekPosition(*ts);
                 break;
             }
             case MESSAGE_DECODER_UNINIT:
-                _unInit();
+                _UnInit();
                 break;
         }
     }

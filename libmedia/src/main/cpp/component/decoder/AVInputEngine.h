@@ -27,8 +27,8 @@ using namespace std;
 class AVInputStream {
 public:
     AVFormatContext *fc;
-    AVCodecContext *c;
-    const AVCodec *ac;
+    AVCodecContext *cc;
+    const AVCodec *c;
     int stream_index;
 
     AVBufferRef *hw_ctx;
@@ -36,19 +36,19 @@ public:
 
     AVInputStream() {
         fc = nullptr;
+        cc = nullptr;
         c = nullptr;
-        ac = nullptr;
         hw_ctx = nullptr;
         stream_index = -1;
     }
 
     ~AVInputStream() {
         fc = nullptr;
-        ac = nullptr;
-        if (c) {
-            avcodec_close(c);
-            avcodec_free_context(&c);
-            c = nullptr;
+        c = nullptr;
+        if (cc) {
+            avcodec_close(cc);
+            avcodec_free_context(&cc);
+            cc = nullptr;
         }
         if (hw_ctx) {
             av_buffer_unref(&hw_ctx);
@@ -60,40 +60,44 @@ public:
 
 class AVInputEngine : public Decoder {
 private:
-    virtual int decodeLoopOnce();
 
-    float m_SeekPosition = -1;               // seek position
+    char m_Path[MAX_PATH_LENGTH] = {0};               // 文件地址
+    float m_SeekPosition = -1;                        // seek position
 
-    int HwDecoderInit(AVInputStream *ist, const enum AVHWDeviceType type);
-
-    AVPixelFormat GetHwFormat(AVInputStream *ist, const enum AVPixelFormat *pix_fmts);
-
-protected:
     AVFormatContext *m_AVFormatContext = nullptr;     // 封装格式上下文
 
-    AVInputStream *m_AudioIst;
+    /*
+     * Video相关
+     */
     AVInputStream *m_VideoIst;
+    bool m_VideoSeekFinish;
+    bool m_AudioEnable;
 
+    /*
+     * Audio相关
+     */
+    AVInputStream *m_AudioIst;
     SwrContext *m_SwrContext;    // audio resample context
     int m_nbSamples = 0;         // number of sample per channel
     int m_DstFrameDataSize = 0;  // dst frame data size
-    uint8_t *m_AudioOutBuffer = nullptr;
+    uint8_t *m_AudioOutBuffer;
+    bool m_AudioSeekFinish;
+    bool m_VideoEnable;
 
     AVFrame *m_Frame;
     AVPacket *m_Pkt;
 
-    char m_Path[MAX_PATH_LENGTH] = {0};               // 文件地址
+protected:
 
-    bool video_seek_finish = false;
-    bool audio_seek_finish = false;
+    int _Init();
 
-    int _init();
+    virtual int _UnInit() override;
 
-    virtual int _unInit() override;
+    virtual void _DecoderLoop() override;
 
-    virtual void _decodeLoop() override;
+    virtual void _SeekPosition(float timestamp) override;
 
-    virtual void _seekPosition(float timestamp) override;
+    virtual int DecoderLoopOnce();
 
     int InitAudioSwrContext();
 
@@ -103,20 +107,37 @@ protected:
 
     int OpenCodec(AVInputStream *ist);
 
+    int FindCodecAndAllocCtx(AVInputStream *ist);
+
 public:
 
     AVInputEngine(const char *path, MediaEventCallback *event_cb,
                   DecoderCallback *decoder_cb) : Decoder(decoder_cb, event_cb) {
         strcpy(m_Path, path);
         m_VideoIst = nullptr;
+        m_VideoEnable = false;
+        m_VideoSeekFinish = false;
+
         m_AudioIst = nullptr;
+        m_SwrContext = nullptr;
+        m_AudioOutBuffer = nullptr;
+        m_AudioSeekFinish = false;
+        m_AudioEnable = false;
+
+        m_Frame = nullptr;
+        m_Pkt = nullptr;
     }
 
     virtual ~AVInputEngine() {
         LOGCATE("AVInputEngine::~AVInputEngine")
     }
-
 };
+
+static enum AVPixelFormat hw_pix_fmt;
+
+static int HwDecoderInit(AVInputStream *ist, const enum AVHWDeviceType type);
+
+static enum AVPixelFormat GetHwFormat(AVCodecContext *ctx, const enum AVPixelFormat *pix_fmts);
 
 
 #endif //HIKIKOMORI_AVINPUTENGINE_H

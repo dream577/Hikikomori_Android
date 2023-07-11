@@ -568,22 +568,22 @@ void CameraVideoRecorder::OnDrawVideoFrame(uint8_t *data, int width, int height,
 //    LOGCATE("CameraVideoRecorder::OnDrawVideoFrame")
     VideoFrame *frame = nullptr;
     switch (format) {
-        case VIDEO_FRAME_FORMAT_RGBA:
+        case IMAGE_FORMAT_RGBA:
             frame = new VideoFrame();
 
-            frame->format = VIDEO_FRAME_FORMAT_RGBA;
+            frame->format = IMAGE_FORMAT_RGBA;
             frame->width = width;
             frame->height = height;
             frame->yuvBuffer[0] = data;
             frame->planeSize[0] = width * 4;
             frame->pts = timestamp;
             break;
-        case VIDEO_FRAME_FORMAT_I420:
+        case IMAGE_FORMAT_I420:
             frame = new VideoFrame();
             int yPlaneByteSize = width * height;
             int uvPlaneByteSize = yPlaneByteSize / 2;
 
-            frame->format = VIDEO_FRAME_FORMAT_I420;
+            frame->format = IMAGE_FORMAT_I420;
             frame->width = width;
             frame->height = height;
             frame->yuvBuffer[0] = data;

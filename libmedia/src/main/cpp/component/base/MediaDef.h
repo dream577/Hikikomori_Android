@@ -7,14 +7,14 @@
 #ifndef HIKIKOMORI_MEDIADEF_H
 #define HIKIKOMORI_MEDIADEF_H
 
-#define MEDIA_TYPE_VIDEO 0x00
-#define MEDIA_TYPE_AUDIO 0x01
+#define  MEDIA_TYPE_VIDEO      0x00
+#define  MEDIA_TYPE_AUDIO      0x01
 
 // 视频帧类型
-#define VIDEO_FRAME_FORMAT_RGBA           0x01
-#define VIDEO_FRAME_FORMAT_NV21           0x02
-#define VIDEO_FRAME_FORMAT_NV12           0x03
-#define VIDEO_FRAME_FORMAT_I420           0x04
+#define  IMAGE_FORMAT_RGBA     0x01
+#define  IMAGE_FORMAT_NV21     0x02
+#define  IMAGE_FORMAT_NV12     0x03
+#define  IMAGE_FORMAT_I420     0x04
 
 // 渲染器类型
 #define VIDEO_RENDER_UNKONWN   -1
@@ -23,8 +23,8 @@
 #define VIDEO_RENDER_3D_VR      2
 
 // 帧队列大小
-#define MAX_AUDIO_QUEUE_SIZE   25
-#define MAX_VIDEO_QUEUE_SIZE   5
+#define MAX_AUDIO_QUEUE_SIZE   100
+#define MAX_VIDEO_QUEUE_SIZE   15
 
 // 回调事件
 #define EVENT_DURATION         0

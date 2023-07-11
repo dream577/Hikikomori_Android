@@ -40,9 +40,9 @@ static char fShaderStr[] =
         "        yuv.x = texture(s_texture0, v_texCoord).r;\n"
         "        yuv.y = texture(s_texture1, v_texCoord).a - 0.5;\n"
         "        yuv.z = texture(s_texture1, v_texCoord).r - 0.5;\n"
-        "        highp vec3 rgb = mat3(1.0,       1.0,     1.0,\n"
-        "        0.0, \t-0.344, \t1.770,\n"
-        "        1.403,  -0.714,     0.0) * yuv;\n"
+        "        highp vec3 rgb = mat3(1.0,      1.0,     1.0,\n"
+        "                              0.0,     -0.344,   1.770,\n"
+        "                              1.403,   -0.714,   0.0) * yuv;\n"
         "        outColor = vec4(rgb, 1.0);\n"
         "\n"
         "    }\n"
@@ -52,9 +52,9 @@ static char fShaderStr[] =
         "        yuv.x = texture(s_texture0, v_texCoord).r;\n"
         "        yuv.y = texture(s_texture1, v_texCoord).r - 0.5;\n"
         "        yuv.z = texture(s_texture1, v_texCoord).a - 0.5;\n"
-        "        highp vec3 rgb = mat3(1.0,       1.0,     1.0,\n"
-        "        0.0, \t-0.344, \t1.770,\n"
-        "        1.403,  -0.714,     0.0) * yuv;\n"
+        "        highp vec3 rgb = mat3(1.0,      1.0,     1.0,\n"
+        "                              0.0,     -0.344,   1.770,\n"
+        "                              1.403,   -0.714,   0.0) * yuv;\n"
         "        outColor = vec4(rgb, 1.0);\n"
         "    }\n"
         "    else if(u_nImgType == 4) //I420\n"
@@ -63,9 +63,9 @@ static char fShaderStr[] =
         "        yuv.x = texture(s_texture0, v_texCoord).r;\n"
         "        yuv.y = texture(s_texture1, v_texCoord).r - 0.5;\n"
         "        yuv.z = texture(s_texture2, v_texCoord).r - 0.5;\n"
-        "        highp vec3 rgb = mat3(1.0,       1.0,     1.0,\n"
-        "                              0.0, \t-0.344, \t1.770,\n"
-        "                              1.403,  -0.714,     0.0) * yuv;\n"
+        "        highp vec3 rgb = mat3(1.0,     1.0,     1.0,\n"
+        "                              0.0,    -0.344,   1.770,\n"
+        "                              1.403,  -0.714,   0.0) * yuv;\n"
         "        outColor = vec4(rgb, 1.0);\n"
         "    }\n"
         "    else\n"
@@ -114,9 +114,6 @@ void ImageGLRender::OnSurfaceCreated(JNIEnv *jniEnv, jobject surface) {
     glGenBuffers(2, m_VboIds);
     glBindBuffer(GL_ARRAY_BUFFER, m_VboIds[0]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(verticesCoords), verticesCoords, GL_STATIC_DRAW);
-
-//    glBindBuffer(GL_ARRAY_BUFFER, m_VboIds[1]);
-//    glBufferData(GL_ARRAY_BUFFER, sizeof(textureCoords), textureCoords, GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_VboIds[1]);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
@@ -252,42 +249,17 @@ void ImageGLRender::OnDrawFrame(Frame *frame) {
     auto *videoFrame = (VideoFrame *) frame;
 
     switch (videoFrame->format) {
-        case VIDEO_FRAME_FORMAT_RGBA:
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, m_TextureId[0]);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, videoFrame->width, videoFrame->height, 0,
-                         GL_RGBA, GL_UNSIGNED_BYTE, videoFrame->yuvBuffer[0]);
-            glBindTexture(GL_TEXTURE_2D, GL_NONE);
+        case IMAGE_FORMAT_RGBA:
+            DrawGRBA(videoFrame);
             break;
-        case VIDEO_FRAME_FORMAT_I420:
-            //upload Y plane data
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, m_TextureId[0]);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, videoFrame->width,
-                         videoFrame->height, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE,
-                         videoFrame->yuvBuffer[0]);
-            glBindTexture(GL_TEXTURE_2D, GL_NONE);
-
-            //update U plane data
-            glActiveTexture(GL_TEXTURE1);
-            glBindTexture(GL_TEXTURE_2D, m_TextureId[1]);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, videoFrame->width >> 1,
-                         videoFrame->height >> 1, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE,
-                         videoFrame->yuvBuffer[1]);
-            glBindTexture(GL_TEXTURE_2D, GL_NONE);
-
-            //update V plane data
-            glActiveTexture(GL_TEXTURE2);
-            glBindTexture(GL_TEXTURE_2D, m_TextureId[2]);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, videoFrame->width >> 1,
-                         videoFrame->height >> 1, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE,
-                         videoFrame->yuvBuffer[2]);
-            glBindTexture(GL_TEXTURE_2D, GL_NONE);
+        case IMAGE_FORMAT_I420:
+            DrawI420(videoFrame);
             break;
-        case VIDEO_FRAME_FORMAT_NV12:
+        case IMAGE_FORMAT_NV12:
+        case IMAGE_FORMAT_NV21:
+            DrawNV12orNV21(videoFrame);
             break;
-        case VIDEO_FRAME_FORMAT_NV21:
-            break;
+        default:;
     }
 
     // Use the program object
@@ -306,6 +278,59 @@ void ImageGLRender::OnDrawFrame(Frame *frame) {
     GLUtils::setInt(m_Program, "u_nImgType", videoFrame->format);
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (const void *) 0);
+}
+
+void ImageGLRender::DrawGRBA(VideoFrame *videoFrame) {
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, m_TextureId[0]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, videoFrame->width, videoFrame->height,
+                 0, GL_RGBA, GL_UNSIGNED_BYTE, videoFrame->yuvBuffer[0]);
+    glBindTexture(GL_TEXTURE_2D, GL_NONE);
+}
+
+void ImageGLRender::DrawI420(VideoFrame *videoFrame) {
+    //upload Y plane data
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, m_TextureId[0]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, videoFrame->width,
+                 videoFrame->height, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE,
+                 videoFrame->yuvBuffer[0]);
+    glBindTexture(GL_TEXTURE_2D, GL_NONE);
+
+    //update U plane data
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, m_TextureId[1]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, videoFrame->width >> 1,
+                 videoFrame->height >> 1, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE,
+                 videoFrame->yuvBuffer[1]);
+    glBindTexture(GL_TEXTURE_2D, GL_NONE);
+
+    //update V plane data
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, m_TextureId[2]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, videoFrame->width >> 1,
+                 videoFrame->height >> 1, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE,
+                 videoFrame->yuvBuffer[2]);
+    glBindTexture(GL_TEXTURE_2D, GL_NONE);
+}
+
+void ImageGLRender::DrawNV12orNV21(VideoFrame *videoFrame) {
+    // update Y plane data
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, m_TextureId[0]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, videoFrame->width,
+                 videoFrame->height, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE,
+                 videoFrame->yuvBuffer[0]);
+    glBindTexture(GL_TEXTURE_2D, GL_NONE);
+
+    // update UV plane data
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, m_TextureId[1]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE_ALPHA, videoFrame->width >> 1,
+                 videoFrame->height >> 1, 0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE,
+                 videoFrame->yuvBuffer[1]
+    );
+    glBindTexture(GL_TEXTURE_2D, GL_NONE);
 }
 
 void ImageGLRender::OnSurfaceDestroyed() {
