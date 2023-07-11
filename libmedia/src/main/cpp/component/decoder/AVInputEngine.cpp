@@ -7,8 +7,9 @@
 #include "MediaDef.h"
 
 int AVInputEngine::_init() {
-    LOGCATE("AVInputEngine::init");
-    int result = -1;
+    LOGCATE("AVInputEngine::init")
+    int result = 0;
+    int index;
 
     if (m_Callback == nullptr) {
         LOGCATE("AVInputEngine::init m_Callback==nullptr");
@@ -32,25 +33,26 @@ int AVInputEngine::_init() {
             break;
         }
 
-        // 寻找音视频流
-        for (int i = 0; i < m_AVFormatContext->nb_streams; i++) {
-            AVStream *stream = m_AVFormatContext->streams[i];
-            if (stream->codecpar->codec_type == AVMEDIA_TYPE_VIDEO && m_VideoIst == nullptr) {
-                LOGCATE("AVInputEngine::init, video_stream_index=%d", i)
-                m_VideoIst = new AVInputStream();
-                m_VideoIst->fc = m_AVFormatContext;
-                m_VideoIst->stream_index = i;
-                result = OpenDecoder(m_VideoIst);
-            }
-            if (stream->codecpar->codec_type == AVMEDIA_TYPE_AUDIO && m_AudioIst == nullptr) {
-                LOGCATE("AVInputEngine::init, audio_stream_index=%d", i)
-                m_AudioIst = new AVInputStream();
-                m_AudioIst->fc = m_AVFormatContext;
-                m_AudioIst->stream_index = i;
-                result = OpenDecoder(m_AudioIst);
-                if (result >= 0) {
-                    InitAudioSwrContext();
-                }
+        index = av_find_best_stream(m_AVFormatContext, AVMEDIA_TYPE_VIDEO, -1,
+                                    -1, nullptr, 0);
+        LOGCATE("AVInputEngine::FindVideoStream, video_stream_index=%d", index)
+        if (index >= 0) {
+            m_VideoIst = new AVInputStream();
+            m_VideoIst->fc = m_AVFormatContext;
+            m_VideoIst->stream_index = index;
+            result = OpenCodec(m_VideoIst);
+        }
+
+        index = av_find_best_stream(m_AVFormatContext, AVMEDIA_TYPE_AUDIO, -1,
+                                    -1, nullptr, 0);
+        if (index >= 0) {
+            LOGCATE("AVInputEngine::FindAudioStream, audio_stream_index=%d", index)
+            m_AudioIst = new AVInputStream();
+            m_AudioIst->fc = m_AVFormatContext;
+            m_AudioIst->stream_index = index;
+            result = OpenCodec(m_AudioIst);
+            if (result >= 0) {
+                InitAudioSwrContext();
             }
         }
 
@@ -88,16 +90,83 @@ int AVInputEngine::InitAudioSwrContext() {
     return 0;
 }
 
-int AVInputEngine::OpenDecoder(AVInputStream *ist) {
-    LOGCATE("AVInputEngine::OpenDecoder")
-    int result = 0;
-    const AVCodec *codec;
+int AVInputEngine::HwDecoderInit(AVInputStream *ist, const enum AVHWDeviceType type) {
+    int err = 0;
+
+    if ((err = av_hwdevice_ctx_create(&ist->hw_ctx, type,
+                                      nullptr, nullptr, 0)) < 0) {
+        LOGCATE("AVInputEngine::HwDecoderInit Failed to create specified HW device.");
+        return err;
+    }
+    ist->c->hw_device_ctx = av_buffer_ref(ist->hw_ctx);
+
+    return err;
+}
+
+enum AVPixelFormat AVInputEngine::GetHwFormat(AVInputStream *ist,
+                                              const enum AVPixelFormat *pix_fmts) {
+    const enum AVPixelFormat *p;
+
+    for (p = pix_fmts; *p != -1; p++) {
+        if (*p == ist->pix_fmt)
+            return *p;
+    }
+
+    LOGCATE("Failed to get HW surface format.")
+    return AV_PIX_FMT_NONE;
+}
+
+int AVInputEngine::OpenCodec(AVInputStream *ist) {
+    LOGCATE("AVInputEngine::OpenCodec")
+    enum AVHWDeviceType type;
+    AVCodecID codecId;
+    const AVCodec *codec = nullptr;
+    int result;
+    int i;
+
+    type = av_hwdevice_find_type_by_name("mediacodec");
+    if (type == AV_HWDEVICE_TYPE_NONE) {
+        while ((type = av_hwdevice_iterate_types(type)) != AV_HWDEVICE_TYPE_NONE) {
+            LOGCATE("AVInputEngine::OpenCodec Available device types:%s",
+                    av_hwdevice_get_type_name(type))
+        }
+    }
+
     do {
         // 获取解码器参数
         AVCodecParameters *param = ist->fc->streams[ist->stream_index]->codecpar;
+        codecId = param->codec_id;
 
-        // 获取解码器
-        codec = avcodec_find_decoder(param->codec_id);
+//        if (param->codec_type == AVMEDIA_TYPE_VIDEO) {
+//            // 尝试根据名称查找硬解码器
+//            switch (codecId) {
+//                case AV_CODEC_ID_H264:
+//                    codec = avcodec_find_decoder_by_name("h264_mediacodec");
+//                    break;
+//                case AV_CODEC_ID_HEVC:
+//                    codec = avcodec_find_decoder_by_name("h265_mediacodec");
+//                    break;
+//                default:;
+//            }
+//
+//            for (i = 0;; i++) {
+//                const AVCodecHWConfig *config = avcodec_get_hw_config(codec, i);
+//                if (!config) {
+//                    LOGCATE("Decoder %s does not support device type %s.\n", codec->name,
+//                            av_hwdevice_get_type_name(type))
+//                } else if (config->methods & AV_CODEC_HW_CONFIG_METHOD_HW_DEVICE_CTX &&
+//                           config->device_type == type) {
+//                    ist->pix_fmt = config->pix_fmt;
+//                    LOGCATE("%s support pix format: %d.\n", codec->name, config->pix_fmt)
+//                    break;
+//                }
+//            }
+//        }
+
+        // 根据id查找解码器
+        if (codec == nullptr) {
+            codec = avcodec_find_decoder(param->codec_id);
+        }
         if (codec == nullptr) {
             LOGCATE("AVInputEngine::init avcodec_find_decoder fail.")
             result = -1;

@@ -565,7 +565,7 @@ void CameraVideoRecorder::RealStopRecord() {
 
 void CameraVideoRecorder::OnDrawVideoFrame(uint8_t *data, int width, int height, int format,
                                            long timestamp) {
-    LOGCATE("CameraVideoRecorder::OnDrawVideoFrame")
+//    LOGCATE("CameraVideoRecorder::OnDrawVideoFrame")
     VideoFrame *frame = nullptr;
     switch (format) {
         case VIDEO_FRAME_FORMAT_RGBA:
@@ -634,7 +634,7 @@ Frame *CameraVideoRecorder::GetOneFrame(int type) {
 }
 
 void CameraVideoRecorder::FrameRendFinish(Frame *frame) {
-    LOGCATE("CameraVideoRecorder::FrameRendFinish")
+//    LOGCATE("CameraVideoRecorder::FrameRendFinish")
     if (frame) {
         if (frame->type == MEDIA_TYPE_VIDEO) {
             if (m_IsVideoRecording) {

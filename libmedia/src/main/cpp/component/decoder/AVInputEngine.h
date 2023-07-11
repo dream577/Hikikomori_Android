@@ -28,20 +28,31 @@ class AVInputStream {
 public:
     AVFormatContext *fc;
     AVCodecContext *c;
+    const AVCodec *ac;
     int stream_index;
+
+    AVBufferRef *hw_ctx;
+    AVPixelFormat pix_fmt;
 
     AVInputStream() {
         fc = nullptr;
         c = nullptr;
+        ac = nullptr;
+        hw_ctx = nullptr;
         stream_index = -1;
     }
 
     ~AVInputStream() {
         fc = nullptr;
+        ac = nullptr;
         if (c) {
             avcodec_close(c);
             avcodec_free_context(&c);
             c = nullptr;
+        }
+        if (hw_ctx) {
+            av_buffer_unref(&hw_ctx);
+            hw_ctx = nullptr;
         }
         stream_index = -1;
     }
@@ -52,6 +63,10 @@ private:
     virtual int decodeLoopOnce();
 
     float m_SeekPosition = -1;               // seek position
+
+    int HwDecoderInit(AVInputStream *ist, const enum AVHWDeviceType type);
+
+    AVPixelFormat GetHwFormat(AVInputStream *ist, const enum AVPixelFormat *pix_fmts);
 
 protected:
     AVFormatContext *m_AVFormatContext = nullptr;     // 封装格式上下文
@@ -86,7 +101,7 @@ protected:
 
     Frame *VideoFrameAvailable();
 
-    int OpenDecoder(AVInputStream *_Ist);
+    int OpenCodec(AVInputStream *ist);
 
 public:
 
