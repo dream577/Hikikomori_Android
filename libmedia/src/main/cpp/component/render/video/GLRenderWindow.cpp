@@ -44,9 +44,9 @@ void GLRenderWindow::UpdateMVPMatrix(float translateX, float translateY, float s
     post(MESSAGE_UPDATE_MATRIX, nullptr);
 }
 
-void GLRenderWindow::OnDrawFrame(MediaFrame *frame) {
+void GLRenderWindow::OnDrawFrame(std::shared_ptr<MediaFrame> frame) {
     if (glRender) {
-        glRender->OnDrawFrame(frame);
+        glRender->OnDrawFrame(frame.get());
     }
     if (m_Surface) {
         m_Surface->swapBuffers();
@@ -140,7 +140,7 @@ void GLRenderWindow::onDrawFrame() {
         if (m_Surface) {
             m_Surface->swapBuffers();
         }
-//        m_Callback->FrameRendFinish(frame);
+        m_Callback->FrameRendFinish(frame);
     }
 }
 

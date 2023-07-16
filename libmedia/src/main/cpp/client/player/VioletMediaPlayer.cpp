@@ -122,7 +122,7 @@ shared_ptr<MediaFrame> VioletMediaPlayer::GetOneFrame(int type) {
     return frame;
 }
 
-void VioletMediaPlayer::FrameRendFinish(MediaFrame *frame) {
+void VioletMediaPlayer::FrameRendFinish(shared_ptr<MediaFrame> frame) {
     if (frame) {
         // TODO 此处用来扩展录制模块，暂时搁置
         if (frame->type == MEDIA_TYPE_VIDEO) {

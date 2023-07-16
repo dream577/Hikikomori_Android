@@ -80,7 +80,7 @@ Java_com_violet_libmedia_recoder_video_camera_CameraRecordClient_native_1onSurfa
         JNIEnv *env, jobject thiz, jlong record_handler, jobject surface) {
     if (record_handler != 0) {
         auto *recorder = reinterpret_cast<CameraVideoRecorder *>(record_handler);
-        GLRenderWindow *render = recorder->GetVideoRender();
+        shared_ptr<GLRenderWindow> render = recorder->GetVideoRender();
         render->OnSurfaceCreated(env, surface);
     }
 }
@@ -90,7 +90,7 @@ Java_com_violet_libmedia_recoder_video_camera_CameraRecordClient_native_1onSurfa
         JNIEnv *env, jobject thiz, jlong record_handler, jint width, jint height) {
     if (record_handler != 0) {
         auto *recorder = reinterpret_cast<CameraVideoRecorder *>(record_handler);
-        GLRenderWindow *render = recorder->GetVideoRender();
+        shared_ptr<GLRenderWindow> render = recorder->GetVideoRender();
         render->OnSurfaceChanged(width, height);
     }
 }
@@ -100,7 +100,7 @@ Java_com_violet_libmedia_recoder_video_camera_CameraRecordClient_native_1onSurfa
         JNIEnv *env, jobject thiz, jlong record_handler) {
     if (record_handler != 0) {
         auto *recorder = reinterpret_cast<CameraVideoRecorder *>(record_handler);
-        GLRenderWindow *render = recorder->GetVideoRender();
+        shared_ptr<GLRenderWindow> render = recorder->GetVideoRender();
         recorder->StopRecord();
         render->OnSurfaceDestroyed();
     }
@@ -113,7 +113,7 @@ Java_com_violet_libmedia_recoder_video_camera_CameraRecordClient_native_1SetTran
         jfloat scale_x, jfloat scale_y, jint degree, jint mirror) {
     if (record_handle != 0) {
         auto *recorder = reinterpret_cast<CameraVideoRecorder *>(record_handle);
-        GLRenderWindow *render = recorder->GetVideoRender();
+        shared_ptr<GLRenderWindow> render = recorder->GetVideoRender();
         render->UpdateMVPMatrix(translate_x, translate_y, scale_x, scale_y, degree, mirror);
     }
 }

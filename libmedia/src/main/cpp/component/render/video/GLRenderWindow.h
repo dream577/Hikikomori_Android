@@ -46,7 +46,7 @@ public:
     void UpdateMVPMatrix(float translateX, float translateY, float scaleX,
                          float scaleY, int degree, int mirror);
 
-    void OnDrawFrame(MediaFrame *frame);
+    void OnDrawFrame(std::shared_ptr<MediaFrame> frame);
 
     void OnSurfaceDestroyed() override;
 

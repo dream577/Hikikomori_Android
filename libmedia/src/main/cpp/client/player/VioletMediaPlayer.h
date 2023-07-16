@@ -46,7 +46,7 @@ public:
 
     virtual shared_ptr<MediaFrame> GetOneFrame(int type) override;
 
-    void FrameRendFinish(MediaFrame *frame) override;
+    void FrameRendFinish(shared_ptr<MediaFrame> frame) override;
 
     virtual void OnDecodeOneFrame(std::shared_ptr<MediaFrame> frame) override;
 

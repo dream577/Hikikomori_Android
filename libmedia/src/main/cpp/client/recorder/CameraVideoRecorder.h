@@ -103,10 +103,10 @@ public:
 class CameraVideoRecorder : public RenderCallback {
 
 private:
-    GLRenderWindow *m_RenderWindow;
+    shared_ptr<GLRenderWindow> m_RenderWindow;
 
-    AVOutputStream *m_VideoOst;
-    AVOutputStream *m_AudioOst;
+    shared_ptr<AVOutputStream> m_VideoOst;
+    shared_ptr<AVOutputStream> m_AudioOst;
 
     AVFormatContext *m_FormatCtx = nullptr;
     char m_FilePath[1024];
@@ -115,8 +115,8 @@ private:
     /**
      * Video
      */
-    LinkedBlockingQueue<MediaFrame> *m_VideoEncoderQueue;
-    LinkedBlockingQueue<MediaFrame> *m_VideoRenderQueue;
+    shared_ptr<LinkedBlockingQueue<MediaFrame>> m_VideoEncoderQueue;
+    shared_ptr<LinkedBlockingQueue<MediaFrame>> m_VideoRenderQueue;
     bool m_EnableVideo;
     int m_ImageWidth;
     int m_ImageHeight;
@@ -127,7 +127,7 @@ private:
     /**
      * Audio
      */
-    LinkedBlockingQueue<MediaFrame> *m_AudioEncoderQueue;
+    shared_ptr<LinkedBlockingQueue<MediaFrame>> m_AudioEncoderQueue;
     bool m_EnableAudio;
     int m_SampleRate = 44100;
     int m_SampleFormat = AV_SAMPLE_FMT_S16;
@@ -138,15 +138,15 @@ private:
     volatile bool m_IsVideoRecording = false;
     volatile bool m_RecordModeExit = true;
 
-    int AddStream(AVOutputStream *ost, AVCodecID codec_id, const char *codec_name);
+    int AddStream(shared_ptr<AVOutputStream> ost, AVCodecID codec_id, const char *codec_name);
 
-    int OpenAudio(AVOutputStream *ost);
+    int OpenAudio(shared_ptr<AVOutputStream> ost);
 
-    int EncodeAudioFrame(AVOutputStream *ost, MediaFrame *frame);
+    int EncodeAudioFrame(shared_ptr<AVOutputStream> ost, shared_ptr<MediaFrame> frame);
 
-    int OpenVideo(AVOutputStream *ost);
+    int OpenVideo(shared_ptr<AVOutputStream> ost);
 
-    int EncodeVideoFrame(AVOutputStream *ost, MediaFrame *frame);
+    int EncodeVideoFrame(shared_ptr<AVOutputStream> ost, shared_ptr<MediaFrame> frame);
 
     void RealStopRecord();
 
@@ -173,9 +173,9 @@ public:
 
     shared_ptr<MediaFrame> GetOneFrame(int type) override;
 
-    void FrameRendFinish(MediaFrame *frame) override;
+    void FrameRendFinish(shared_ptr<MediaFrame> frame) override;
 
-    GLRenderWindow *GetVideoRender() {
+    shared_ptr<GLRenderWindow> GetVideoRender() {
         return m_RenderWindow;
     }
 

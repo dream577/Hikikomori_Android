@@ -20,7 +20,7 @@ class RenderCallback {
 public:
     virtual std::shared_ptr<MediaFrame>GetOneFrame(int type) = 0;
 
-    virtual void FrameRendFinish(MediaFrame *frame) = 0;
+    virtual void FrameRendFinish(std::shared_ptr<MediaFrame> frame) = 0;
 };
 
 class DecoderCallback {
