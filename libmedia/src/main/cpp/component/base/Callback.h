@@ -11,20 +11,21 @@
 
 #include <jni.h>
 #include <stdlib.h>
+#include <memory>
 
 #define INIT_CALLBACK    10000000
 #define UNINIT_CALLBACK  10000001
 
 class RenderCallback {
 public:
-    virtual Frame *GetOneFrame(int type) = 0;
+    virtual std::shared_ptr<MediaFrame>GetOneFrame(int type) = 0;
 
-    virtual void FrameRendFinish(Frame *frame) = 0;
+    virtual void FrameRendFinish(MediaFrame *frame) = 0;
 };
 
 class DecoderCallback {
 public:
-    virtual void OnDecodeOneFrame(Frame *frame) = 0;
+    virtual void OnDecodeOneFrame(std::shared_ptr<MediaFrame> frame) = 0;
 
     virtual int GetPlayerState() = 0;
 

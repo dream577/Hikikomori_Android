@@ -4,6 +4,21 @@
 
 #include "GLRenderWindow.h"
 
+GLRenderWindow::GLRenderWindow(RenderCallback *callback) {
+    this->m_Callback = callback;
+    this->mImageWidth = 0;
+    this->mImageHeight = 0;
+    this->mWindowWidth = 0;
+    this->mWindowHeight = 0;
+}
+
+GLRenderWindow::~GLRenderWindow() {
+    Destroy();
+    m_Callback = nullptr;
+    m_JavaSurface = nullptr;
+    m_JniEnv = nullptr;
+}
+
 void GLRenderWindow::OnSurfaceCreated(JNIEnv *jniEnv, jobject surface) {
     this->m_JniEnv = jniEnv;
     this->m_JavaSurface = surface;
@@ -29,7 +44,7 @@ void GLRenderWindow::UpdateMVPMatrix(float translateX, float translateY, float s
     post(MESSAGE_UPDATE_MATRIX, nullptr);
 }
 
-void GLRenderWindow::OnDrawFrame(VideoFrame *frame) {
+void GLRenderWindow::OnDrawFrame(MediaFrame *frame) {
     if (glRender) {
         glRender->OnDrawFrame(frame);
     }
@@ -112,10 +127,7 @@ void GLRenderWindow::updateMVPMatrix(float translateX, float translateY, float s
 }
 
 void GLRenderWindow::onDrawFrame() {
-    VideoFrame *frame = nullptr;
-    if (m_Callback) {
-        frame = (VideoFrame *) m_Callback->GetOneFrame(MEDIA_TYPE_VIDEO);
-    }
+    shared_ptr<MediaFrame> frame =  m_Callback->GetOneFrame(MEDIA_TYPE_VIDEO);
     if (frame) {
         if (frame->width != mImageWidth || frame->height != mImageHeight) {
             mImageWidth = frame->width;
@@ -123,12 +135,12 @@ void GLRenderWindow::onDrawFrame() {
             onSurfaceChanged();
         }
         if (glRender) {
-            glRender->OnDrawFrame(frame);
+            glRender->OnDrawFrame(frame.get());
         }
         if (m_Surface) {
             m_Surface->swapBuffers();
         }
-        m_Callback->FrameRendFinish(frame);
+//        m_Callback->FrameRendFinish(frame);
     }
 }
 

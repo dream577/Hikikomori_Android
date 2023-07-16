@@ -28,16 +28,16 @@ class OpenSLAudioRender : public looper {
 private:
     int mLoopMsg = MESSAGE_AUDIO_RENDER_LOOP;
     RenderCallback *m_Callback;
-    volatile bool stop = false;
 
     int result = -1;
     sem_t runBlock;
+    volatile bool stop;
 
-    int createEngine();
+    int CreateEngine();
 
-    int createOutputMixer();
+    int CreateOutputMixer();
 
-    int createAudioPlayer();
+    int CreateAudioPlayer();
 
     void onStartPlay();
 
@@ -63,14 +63,9 @@ protected:
     virtual void handle(int what, void *data) override;
 
 public:
-    OpenSLAudioRender(RenderCallback *callback) {
-        this->m_Callback = callback;
-        sem_init(&runBlock, 0, 0);
-    }
+    OpenSLAudioRender(RenderCallback *callback);
 
-    ~OpenSLAudioRender() {
-        m_Callback = nullptr;
-    }
+    ~OpenSLAudioRender();
 
     int Init();
 

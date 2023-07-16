@@ -4,13 +4,15 @@
 #include "MediaSync.h"
 #include "LogUtil.h"
 
-void MediaSync::SyncAudio(Frame *frame) {
-    m_CurrAudioPts = frame->pts;
+void MediaSync::SyncAudio(long pts, int flag) {
+    m_CurrAudioPts = pts;
+    LOGCATE("MediaSync::SyncAudio audio play pts:%ld",pts)
 }
 
-void MediaSync::SyncVideo(Frame *frame) {
-    long currentVideoPts = frame->pts;
-    if (frame->flag == FLAG_SEEK_FINISH) {
+void MediaSync::SyncVideo(long pts, int flag) {
+    LOGCATE("MediaSync::SyncVideo video play pts:%ld",pts)
+    long currentVideoPts = pts;
+    if (flag == FLAG_SEEK_FINISH) {
         m_LastVideoPts = currentVideoPts;
     }
 
@@ -30,7 +32,7 @@ void MediaSync::SyncVideo(Frame *frame) {
         delay *= 2;
     }
     av_usleep(delay * 1000);
-    m_LastVideoPts = frame->pts;
+    m_LastVideoPts = pts;
 }
 
 

@@ -29,11 +29,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-// for __android_log_print(ANDROID_LOG_INFO, "YourApp", "formatted message");
-#include <android/log.h>
-
-#define TAG "Native-MyGLooper"
-#define LOGV(...) __android_log_print(ANDROID_LOG_VERBOSE, TAG, __VA_ARGS__)
+#include "LogUtil.h"
 
 struct loopermessage;
 typedef struct loopermessage loopermessage;
@@ -62,9 +58,7 @@ looper::looper() {
 
 looper::~looper() {
     if (running) {
-        LOGV(
-                "Looper deleted while still running. Some messages will not be "
-                "processed");
+        LOGCATE("Looper deleted while still running. Some messages will not be ""processed")
         quit();
     }
 }
@@ -98,7 +92,7 @@ void looper::addmsg(loopermessage *msg, bool flush) {
     } else {
         head = msg;
     }
-    LOGV("post msg %d", msg->what);
+    LOGCATE("post msg %d", msg->what);
     sem_post(&headwriteprotect);
     sem_post(&headdataavailable);
 }
@@ -124,18 +118,18 @@ void looper::loop() {
         sem_post(&headwriteprotect);
 
         if (msg->quit) {
-            LOGV("quitting");
+            LOGCATE("quitting");
             delete msg;
             return;
         }
-        LOGV("processing msg %d", msg->what);
+        LOGCATE("processing msg %d", msg->what);
         handle(msg->what, msg->obj);
         delete msg;
     }
 }
 
 void looper::quit() {
-    LOGV("m_UnInit");
+    LOGCATE("m_UnInit");
     loopermessage *msg = new loopermessage();
     msg->what = 0;
     msg->obj = NULL;

@@ -5,25 +5,31 @@
 #include "OpenSLAudioRender.h"
 #include "LogUtil.h"
 
+OpenSLAudioRender::OpenSLAudioRender(RenderCallback *callback) {
+    this->m_Callback = callback;
+    sem_init(&runBlock, 0, 0);
+    stop = false;
+}
+
 int OpenSLAudioRender::init() {
     LOGCATE("OpenSLRender::init");
     int result = -1;
     do {
-        result = createEngine();
+        result = CreateEngine();
         if (result != SL_RESULT_SUCCESS) {
             LOGCATE("OpenSLRender::Init CreateEngine fail. result=%d", result);
             break;
         }
 
-        result = createOutputMixer();
+        result = CreateOutputMixer();
         if (result != SL_RESULT_SUCCESS) {
-            LOGCATE("OpenSLRender::Init createOutputMixer fail. result=%d", result);
+            LOGCATE("OpenSLRender::Init CreateOutputMixer fail. result=%d", result);
             break;
         }
 
-        result = createAudioPlayer();
+        result = CreateAudioPlayer();
         if (result != SL_RESULT_SUCCESS) {
-            LOGCATE("OpenSLRender::Init createAudioPlayer fail. result=%d", result);
+            LOGCATE("OpenSLRender::Init CreateAudioPlayer fail. result=%d", result);
             break;
         }
 
@@ -37,7 +43,7 @@ int OpenSLAudioRender::init() {
 }
 
 int OpenSLAudioRender::unInit() {
-    LOGCATE("OpenSLRender::unInit start");
+    LOGCATE("OpenSLRender::unInit start")
     if (m_AudioPlayerObj) {
         (*m_AudioPlayerPlay)->SetPlayState(m_AudioPlayerPlay, SL_PLAYSTATE_STOPPED);
         m_AudioPlayerPlay = nullptr;
@@ -63,8 +69,8 @@ int OpenSLAudioRender::unInit() {
     return 0;
 }
 
-int OpenSLAudioRender::createEngine() {
-    LOGCATE("OpenSLAudioRender::createEngine")
+int OpenSLAudioRender::CreateEngine() {
+    LOGCATE("OpenSLAudioRender::CreateEngine")
     SLresult result = SL_RESULT_SUCCESS;
     do {
         SLEngineOption engineOptions[] = {
@@ -72,25 +78,25 @@ int OpenSLAudioRender::createEngine() {
         result = slCreateEngine(&m_EngineObj, sizeof(engineOptions) / sizeof(engineOptions[0]),
                                 engineOptions, 0, nullptr, nullptr);
         if (result != SL_RESULT_SUCCESS) {
-            LOGCATE("OpenSLAudioRender::createEngine slCreateEngine fail. result=%d", result);
+            LOGCATE("OpenSLAudioRender::CreateEngine slCreateEngine fail. result=%d", result);
             break;
         }
         result = (*m_EngineObj)->Realize(m_EngineObj, SL_BOOLEAN_FALSE);
         if (result != SL_RESULT_SUCCESS) {
-            LOGCATE("OpenSLAudioRender::createEngine Realize fail. result=%d", result);
+            LOGCATE("OpenSLAudioRender::CreateEngine Realize fail. result=%d", result);
             break;
         }
         result = (*m_EngineObj)->GetInterface(m_EngineObj, SL_IID_ENGINE, &m_EngineEngine);
         if (result != SL_RESULT_SUCCESS) {
-            LOGCATE("OpenSLAudioRender::createEngine GetInterface fail. result=%d", result);
+            LOGCATE("OpenSLAudioRender::CreateEngine GetInterface fail. result=%d", result);
             break;
         }
     } while (false);
     return result;
 }
 
-int OpenSLAudioRender::createOutputMixer() {
-    LOGCATE("OpenSLAudioRender::createOutputMixer")
+int OpenSLAudioRender::CreateOutputMixer() {
+    LOGCATE("OpenSLAudioRender::CreateOutputMixer")
     SLresult result = SL_RESULT_SUCCESS;
     do {
         const SLInterfaceID mids[1] = {SL_IID_ENVIRONMENTALREVERB};
@@ -98,21 +104,21 @@ int OpenSLAudioRender::createOutputMixer() {
 
         result = (*m_EngineEngine)->CreateOutputMix(m_EngineEngine, &m_OutputMixObj, 1, mids, mreq);
         if (result != SL_RESULT_SUCCESS) {
-            LOGCATE("OpenSLAudioRender::createEngine CreateOutputMix fail. result=%d", result);
+            LOGCATE("OpenSLAudioRender::CreateEngine CreateOutputMix fail. result=%d", result);
             break;
         }
 
         result = (*m_OutputMixObj)->Realize(m_OutputMixObj, SL_BOOLEAN_FALSE);
         if (result != SL_RESULT_SUCCESS) {
-            LOGCATE("OpenSLAudioRender::createEngine Realize fail. result=%d", result);
+            LOGCATE("OpenSLAudioRender::CreateEngine Realize fail. result=%d", result);
             break;
         }
     } while (false);
     return result;
 }
 
-int OpenSLAudioRender::createAudioPlayer() {
-    LOGCATE("OpenSLAudioRender::createAudioPlayer")
+int OpenSLAudioRender::CreateAudioPlayer() {
+    LOGCATE("OpenSLAudioRender::CreateAudioPlayer")
     SLDataLocator_AndroidSimpleBufferQueue android_queue = {SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE,
                                                             2};
     SLDataFormat_PCM pcm = {
@@ -139,40 +145,40 @@ int OpenSLAudioRender::createAudioPlayer() {
                                                       &dataSource, &slDataSink, 3, ids, req);
 
         if (result != SL_RESULT_SUCCESS) {
-            LOGCATE("OpenSLAudioRender::createEngine CreateAudioPlayer fail. result=%d", result);
+            LOGCATE("OpenSLAudioRender::CreateEngine CreateAudioPlayer fail. result=%d", result);
             break;
         }
 
         result = (*m_AudioPlayerObj)->Realize(m_AudioPlayerObj, SL_BOOLEAN_FALSE);
         if (result != SL_RESULT_SUCCESS) {
-            LOGCATE("OpenSLAudioRender::createEngine Realize fail. result=%d", result);
+            LOGCATE("OpenSLAudioRender::CreateEngine Realize fail. result=%d", result);
             break;
         }
 
         result = (*m_AudioPlayerObj)->GetInterface(m_AudioPlayerObj, SL_IID_PLAY,
                                                    &m_AudioPlayerPlay);
         if (result != SL_RESULT_SUCCESS) {
-            LOGCATE("OpenSLAudioRender::createEngine GetInterface fail. result=%d", result);
+            LOGCATE("OpenSLAudioRender::CreateEngine GetInterface fail. result=%d", result);
             break;
         }
 
         result = (*m_AudioPlayerObj)->GetInterface(m_AudioPlayerObj, SL_IID_BUFFERQUEUE,
                                                    &m_BufferQueue);
         if (result != SL_RESULT_SUCCESS) {
-            LOGCATE("OpenSLAudioRender::createEngine GetInterface fail. result=%d", result);
+            LOGCATE("OpenSLAudioRender::CreateEngine GetInterface fail. result=%d", result);
             break;
         }
 
         result = (*m_BufferQueue)->RegisterCallback(m_BufferQueue, audioPlayerCallback, this);
         if (result != SL_RESULT_SUCCESS) {
-            LOGCATE("OpenSLAudioRender::createEngine RegisterCallback fail. result=%d", result);
+            LOGCATE("OpenSLAudioRender::CreateEngine RegisterCallback fail. result=%d", result);
             break;
         }
 
         result = (*m_AudioPlayerObj)->GetInterface(m_AudioPlayerObj, SL_IID_VOLUME,
                                                    &m_AudioPlayerVolume);
         if (result != SL_RESULT_SUCCESS) {
-            LOGCATE("OpenSLAudioRender::createEngine GetInterface fail. result=%d", result);
+            LOGCATE("OpenSLAudioRender::CreateEngine GetInterface fail. result=%d", result);
             break;
         }
     } while (false);
@@ -180,14 +186,11 @@ int OpenSLAudioRender::createAudioPlayer() {
 }
 
 void OpenSLAudioRender::onPlayFrame() {
-    Frame *frame;
-    do {
-        frame = m_Callback->GetOneFrame(MEDIA_TYPE_AUDIO);
-        if (stop) return;
-    } while (frame == nullptr);
-    auto *audioFrame = (AudioFrame *) frame;
-    (*m_BufferQueue)->Enqueue(m_BufferQueue, audioFrame->data, audioFrame->dataSize);
-    m_Callback->FrameRendFinish(frame);
+    shared_ptr<MediaFrame> frame = m_Callback->GetOneFrame(MEDIA_TYPE_AUDIO);
+    if (frame && !stop) {
+        (*m_BufferQueue)->Enqueue(m_BufferQueue, frame->plane[0], frame->planeSize[0]);
+    }
+//    m_Callback->FrameRendFinish(frame);
 }
 
 void
@@ -248,4 +251,9 @@ int OpenSLAudioRender::UnInit() {
     post(MESSAGE_AUDIO_RENDER_UNINIT, nullptr);
     quit();
     return 0;
+}
+
+OpenSLAudioRender::~OpenSLAudioRender() {
+    UnInit();
+    m_Callback = nullptr;
 }

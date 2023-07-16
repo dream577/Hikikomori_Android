@@ -244,20 +244,18 @@ void ImageGLRender::UpdateMVPMatrix(float translateX, float translateY, float sc
     m_MVPMatrix = Projection * View * Model;
 }
 
-void ImageGLRender::OnDrawFrame(Frame *frame) {
+void ImageGLRender::OnDrawFrame(MediaFrame *frame) {
 //    LOGCATE("ImageGLRender::onDrawFrame");
-    auto *videoFrame = (VideoFrame *) frame;
-
-    switch (videoFrame->format) {
+    switch (frame->format) {
         case IMAGE_FORMAT_RGBA:
-            DrawGRBA(videoFrame);
+            DrawGRBA(frame);
             break;
         case IMAGE_FORMAT_I420:
-            DrawI420(videoFrame);
+            DrawI420(frame);
             break;
         case IMAGE_FORMAT_NV12:
         case IMAGE_FORMAT_NV21:
-            DrawNV12orNV21(videoFrame);
+            DrawNV12orNV21(frame);
             break;
         default:;
     }
@@ -275,26 +273,26 @@ void ImageGLRender::OnDrawFrame(Frame *frame) {
         GLUtils::setInt(m_Program, samplerName, i);
     }
 
-    GLUtils::setInt(m_Program, "u_nImgType", videoFrame->format);
+    GLUtils::setInt(m_Program, "u_nImgType", frame->format);
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (const void *) 0);
 }
 
-void ImageGLRender::DrawGRBA(VideoFrame *videoFrame) {
+void ImageGLRender::DrawGRBA(MediaFrame *videoFrame) {
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, m_TextureId[0]);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, videoFrame->width, videoFrame->height,
-                 0, GL_RGBA, GL_UNSIGNED_BYTE, videoFrame->yuvBuffer[0]);
+                 0, GL_RGBA, GL_UNSIGNED_BYTE, videoFrame->plane[0]);
     glBindTexture(GL_TEXTURE_2D, GL_NONE);
 }
 
-void ImageGLRender::DrawI420(VideoFrame *videoFrame) {
+void ImageGLRender::DrawI420(MediaFrame *videoFrame) {
     //upload Y plane data
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, m_TextureId[0]);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, videoFrame->width,
                  videoFrame->height, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE,
-                 videoFrame->yuvBuffer[0]);
+                 videoFrame->plane[0]);
     glBindTexture(GL_TEXTURE_2D, GL_NONE);
 
     //update U plane data
@@ -302,7 +300,7 @@ void ImageGLRender::DrawI420(VideoFrame *videoFrame) {
     glBindTexture(GL_TEXTURE_2D, m_TextureId[1]);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, videoFrame->width >> 1,
                  videoFrame->height >> 1, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE,
-                 videoFrame->yuvBuffer[1]);
+                 videoFrame->plane[1]);
     glBindTexture(GL_TEXTURE_2D, GL_NONE);
 
     //update V plane data
@@ -310,17 +308,17 @@ void ImageGLRender::DrawI420(VideoFrame *videoFrame) {
     glBindTexture(GL_TEXTURE_2D, m_TextureId[2]);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, videoFrame->width >> 1,
                  videoFrame->height >> 1, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE,
-                 videoFrame->yuvBuffer[2]);
+                 videoFrame->plane[2]);
     glBindTexture(GL_TEXTURE_2D, GL_NONE);
 }
 
-void ImageGLRender::DrawNV12orNV21(VideoFrame *videoFrame) {
+void ImageGLRender::DrawNV12orNV21(MediaFrame *videoFrame) {
     // update Y plane data
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, m_TextureId[0]);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, videoFrame->width,
                  videoFrame->height, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE,
-                 videoFrame->yuvBuffer[0]);
+                 videoFrame->plane[0]);
     glBindTexture(GL_TEXTURE_2D, GL_NONE);
 
     // update UV plane data
@@ -328,7 +326,7 @@ void ImageGLRender::DrawNV12orNV21(VideoFrame *videoFrame) {
     glBindTexture(GL_TEXTURE_2D, m_TextureId[1]);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE_ALPHA, videoFrame->width >> 1,
                  videoFrame->height >> 1, 0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE,
-                 videoFrame->yuvBuffer[1]
+                 videoFrame->plane[1]
     );
     glBindTexture(GL_TEXTURE_2D, GL_NONE);
 }

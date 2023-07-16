@@ -11,9 +11,10 @@
 #include "GLRenderWindow.h"
 #include "VideoNativeRender.h"
 #include "OpenSLAudioRender.h"
+#include "CustomContainer.h"
 
 #include "MediaSync.h"
-#include "ThreadSafeQueue.h"
+#include "CustomContainer.h"
 
 class VioletMediaPlayer : public MediaPlayer, public DecoderCallback, public RenderCallback {
 
@@ -43,11 +44,11 @@ public:
 
     virtual void SeekToPosition(float position) override;
 
-    virtual Frame *GetOneFrame(int type) override;
+    virtual shared_ptr<MediaFrame> GetOneFrame(int type) override;
 
-    void FrameRendFinish(Frame *frame) override;
+    void FrameRendFinish(MediaFrame *frame) override;
 
-    virtual void OnDecodeOneFrame(Frame *frame) override;
+    virtual void OnDecodeOneFrame(std::shared_ptr<MediaFrame> frame) override;
 
     virtual int GetPlayerState() override;
 
@@ -56,17 +57,17 @@ public:
 private:
     volatile PlayerState state = STATE_UNKNOWN;
 
-    AVInputEngine *m_InputEngine;
-    GLRenderWindow *m_ImageRenderWindow;
-    OpenSLAudioRender *m_AudioRender;
-    MediaSync *m_AVSync;
-    MediaEventCallback *m_EventCallback;
+    shared_ptr<AVInputEngine> m_InputEngine;
+    shared_ptr<GLRenderWindow> m_ImageRenderWindow;
+    shared_ptr<OpenSLAudioRender> m_AudioRender;
+    shared_ptr<MediaSync> m_AVSync;
+    shared_ptr<MediaEventCallback> m_EventCallback;
 
     mutex m_Mutex;
     condition_variable m_Cond;
 
-    ThreadSafeQueue *m_VideoFrameQueue;
-    ThreadSafeQueue *m_AudioFrameQueue;
+    shared_ptr<LinkedBlockingQueue<MediaFrame>> m_VideoFrameQueue;
+    shared_ptr<LinkedBlockingQueue<MediaFrame>> m_AudioFrameQueue;
 };
 
 

@@ -35,19 +35,9 @@ enum ImageRenderMessage {
 
 class GLRenderWindow : public ImageRenderItf, public looper {
 public:
-    GLRenderWindow(RenderCallback *callback) {
-        this->m_Callback = callback;
-        this->mImageWidth = 0;
-        this->mImageHeight = 0;
-        this->mWindowWidth = 0;
-        this->mWindowHeight = 0;
-    }
+    GLRenderWindow(RenderCallback *callback);
 
-    ~GLRenderWindow() {
-        m_Callback = nullptr;
-        m_JavaSurface = nullptr;
-        m_JniEnv = nullptr;
-    }
+    ~GLRenderWindow();
 
     void OnSurfaceCreated(JNIEnv *jniEnv, jobject surface) override;
 
@@ -56,7 +46,7 @@ public:
     void UpdateMVPMatrix(float translateX, float translateY, float scaleX,
                          float scaleY, int degree, int mirror);
 
-    void OnDrawFrame(VideoFrame *frame);
+    void OnDrawFrame(MediaFrame *frame);
 
     void OnSurfaceDestroyed() override;
 

@@ -2,13 +2,14 @@
 // Created by bronyna on 2023/2/5.
 //
 
-#ifndef HIKIKOMORI_DECODER_H
-#define HIKIKOMORI_DECODER_H
+#ifndef HIKIKOMORI_INPUTENGINE_H
+#define HIKIKOMORI_INPUTENGINE_H
 
 #define MAX_PATH_LENGTH 2048
 
 #include "MediaDef.h"
 #include "Callback.h"
+#include <memory>
 
 enum DecoderMsg {
     MESSAGE_DECODER_INIT = 0,
@@ -18,7 +19,7 @@ enum DecoderMsg {
     MESSAGE_DECODER_SEEK
 };
 
-class Decoder : public looper {
+class InputEngine : public looper {
 private:
     int mLoopMsg = MESSAGE_DECODER_LOOP;
     int result = -1;
@@ -26,8 +27,6 @@ private:
     sem_t runBlock;
 
 protected:
-    DecoderCallback *m_Callback = nullptr;
-    MediaEventCallback *m_EventCallback = nullptr;
 
     virtual int _Init() = 0;
 
@@ -38,15 +37,11 @@ protected:
     virtual int _UnInit() = 0;
 
 public:
-    Decoder(DecoderCallback *decoder_cb, MediaEventCallback *event_cb) {
-        m_Callback = decoder_cb;
-        m_EventCallback = event_cb;
+    InputEngine() {
         sem_init(&runBlock, 0, 0);
     }
 
-    virtual ~Decoder() {
-        m_Callback = nullptr;
-        m_EventCallback = nullptr;
+    virtual ~InputEngine() {
         sem_destroy(&runBlock);
     }
 
@@ -95,4 +90,4 @@ public:
     }
 };
 
-#endif //HIKIKOMORI_DECODER_H
+#endif //HIKIKOMORI_INPUTENGINE_H

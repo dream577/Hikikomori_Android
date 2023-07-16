@@ -59,7 +59,7 @@ int AddAdtsHeader(char *const header, const int data_length,
 CameraVideoRecorder::CameraVideoRecorder() {
     LOGCATE("CameraVideoRecorder::CameraVideoRecorder")
     m_RenderWindow = new GLRenderWindow(this);
-    m_VideoRenderQueue = new ThreadSafeQueue(10, MEDIA_TYPE_VIDEO);
+    m_VideoRenderQueue = new LinkedBlockingQueue<MediaFrame>(10);
     m_RenderWindow->StartRender();
 
     m_FormatCtx = nullptr;
@@ -85,7 +85,7 @@ int CameraVideoRecorder::Init() {
     }
 
     if (m_EnableAudio) {
-        m_AudioEncoderQueue = new ThreadSafeQueue(15, MEDIA_TYPE_AUDIO);
+        m_AudioEncoderQueue = new LinkedBlockingQueue<MediaFrame>(15);
         m_AudioOst = new AVOutputStream();
         m_AudioOst->oc = m_FormatCtx;
         result = AddStream(m_AudioOst, AV_CODEC_ID_AAC, nullptr);
@@ -99,7 +99,7 @@ int CameraVideoRecorder::Init() {
     }
 
     if (m_EnableVideo) {
-        m_VideoEncoderQueue = new ThreadSafeQueue(15, MEDIA_TYPE_VIDEO);
+        m_VideoEncoderQueue = new LinkedBlockingQueue<MediaFrame>(15);
         m_VideoOst = new AVOutputStream();
         m_VideoOst->oc = m_FormatCtx;
         const char *h264_codec_name = "h264";
@@ -271,15 +271,15 @@ int CameraVideoRecorder::OpenAudio(AVOutputStream *ost) {
     return result;
 }
 
-int CameraVideoRecorder::EncodeAudioFrame(AVOutputStream *ost, AudioFrame *audio_frame) {
+int CameraVideoRecorder::EncodeAudioFrame(AVOutputStream *ost, MediaFrame *audio_frame) {
     int result;
     int64_t dst_nb_samples;
     AVFrame *frame = ost->sf;
     AVPacket *pkt = av_packet_alloc();
 
     if (audio_frame) {
-        frame->data[0] = audio_frame->data;
-        frame->nb_samples = audio_frame->dataSize / 4;
+        frame->data[0] = audio_frame->plane[0];
+        frame->nb_samples = audio_frame->planeSize[0] / 4;
         frame->pts = ost->nextPts;
         ost->nextPts += frame->nb_samples;
     } else {
@@ -407,14 +407,14 @@ int CameraVideoRecorder::OpenVideo(AVOutputStream *ost) {
     return result;
 }
 
-int CameraVideoRecorder::EncodeVideoFrame(AVOutputStream *ost, VideoFrame *video_frame) {
+int CameraVideoRecorder::EncodeVideoFrame(AVOutputStream *ost, MediaFrame *video_frame) {
     int result = 0;
     AVFrame *frame = ost->sf;
     AVPacket *pkt = av_packet_alloc();
     if (video_frame) {
-        frame->data[0] = video_frame->yuvBuffer[0];
-        frame->data[1] = video_frame->yuvBuffer[1];
-        frame->data[2] = video_frame->yuvBuffer[2];
+        frame->data[0] = video_frame->plane[0];
+        frame->data[1] = video_frame->plane[1];
+        frame->data[2] = video_frame->plane[2];
         frame->linesize[0] = video_frame->planeSize[0];
         frame->linesize[1] = video_frame->planeSize[1];
         frame->linesize[2] = video_frame->planeSize[2];
@@ -494,7 +494,7 @@ int CameraVideoRecorder::UnInit() {
     int result = 0;
     LOGCATE("CameraVideoRecorder::UnInit()")
     if (m_VideoRenderQueue) {
-        m_VideoRenderQueue->abort();
+        m_VideoRenderQueue->overrule();
     }
     if (m_RenderWindow) {
         m_RenderWindow->Destroy();
@@ -525,10 +525,10 @@ void CameraVideoRecorder::StopRecord() {
     m_IsVideoRecording = false;
     m_IsAudioRecording = false;
     if (m_AudioEncoderQueue) {
-        m_AudioEncoderQueue->abort();
+        m_AudioEncoderQueue->overrule();
     }
     if (m_VideoEncoderQueue) {
-        m_VideoEncoderQueue->abort();
+        m_VideoEncoderQueue->overrule();
     }
     while (!m_RecordModeExit) {
         av_usleep(1000 * 10);
@@ -566,29 +566,29 @@ void CameraVideoRecorder::RealStopRecord() {
 void CameraVideoRecorder::OnDrawVideoFrame(uint8_t *data, int width, int height, int format,
                                            long timestamp) {
 //    LOGCATE("CameraVideoRecorder::OnDrawVideoFrame")
-    VideoFrame *frame = nullptr;
+    MediaFrame *frame = nullptr;
     switch (format) {
         case IMAGE_FORMAT_RGBA:
-            frame = new VideoFrame();
+            frame = new MediaFrame();
 
             frame->format = IMAGE_FORMAT_RGBA;
             frame->width = width;
             frame->height = height;
-            frame->yuvBuffer[0] = data;
+            frame->plane[0] = data;
             frame->planeSize[0] = width * 4;
             frame->pts = timestamp;
             break;
         case IMAGE_FORMAT_I420:
-            frame = new VideoFrame();
+            frame = new MediaFrame();
             int yPlaneByteSize = width * height;
             int uvPlaneByteSize = yPlaneByteSize / 2;
 
             frame->format = IMAGE_FORMAT_I420;
             frame->width = width;
             frame->height = height;
-            frame->yuvBuffer[0] = data;
-            frame->yuvBuffer[1] = data + yPlaneByteSize;
-            frame->yuvBuffer[2] = data + yPlaneByteSize + uvPlaneByteSize / 2;
+            frame->plane[0] = data;
+            frame->plane[1] = data + yPlaneByteSize;
+            frame->plane[2] = data + yPlaneByteSize + uvPlaneByteSize / 2;
             frame->planeSize[0] = width;
             frame->planeSize[1] = width / 2;
             frame->planeSize[2] = width / 2;
@@ -597,10 +597,7 @@ void CameraVideoRecorder::OnDrawVideoFrame(uint8_t *data, int width, int height,
     }
 
     frame->type = MEDIA_TYPE_VIDEO;
-    int ret = m_VideoRenderQueue->offer(frame);
-    if (ret < 0) {
-        delete frame;
-    }
+    while (!m_VideoRenderQueue->offer(shared_ptr<MediaFrame>(frame)) && m_IsVideoRecording);
 }
 
 void CameraVideoRecorder::InputAudioData(uint8_t *data, int size, long timestamp,
@@ -609,36 +606,36 @@ void CameraVideoRecorder::InputAudioData(uint8_t *data, int size, long timestamp
         delete data;
         return;
     }
-    auto *frame = new AudioFrame();
-    frame->data = data;
-    frame->dataSize = size;
+    auto *frame = new MediaFrame();
+    frame->plane[0] = data;
+    frame->planeSize[0] = size;
     frame->sampleRate = sample_rate;
     frame->sampleFormat = sample_format;
     frame->channelLayout = channel_layout;
     frame->pts = timestamp;
-    int ret = m_AudioEncoderQueue->offer(frame);
+    int ret = m_AudioEncoderQueue->offer(shared_ptr<MediaFrame>(frame));
     if (ret < 0) {
         delete frame;
     }
 }
 
-Frame *CameraVideoRecorder::GetOneFrame(int type) {
+shared_ptr<MediaFrame> CameraVideoRecorder::GetOneFrame(int type) {
 //    LOGCATE("CameraVideoRecorder::GetOneFrame")
-    Frame *frame;
-    if (type == MEDIA_TYPE_VIDEO) {
-        frame = m_VideoRenderQueue->poll();
-    } else {
-        frame = m_AudioEncoderQueue->poll();
-    }
+    shared_ptr<MediaFrame> frame;
+//    if (type == MEDIA_TYPE_VIDEO) {
+//        frame = m_VideoRenderQueue->poll();
+//    } else {
+//        frame = m_AudioEncoderQueue->poll();
+//    }
     return frame;
 }
 
-void CameraVideoRecorder::FrameRendFinish(Frame *frame) {
+void CameraVideoRecorder::FrameRendFinish(MediaFrame *frame) {
 //    LOGCATE("CameraVideoRecorder::FrameRendFinish")
     if (frame) {
         if (frame->type == MEDIA_TYPE_VIDEO) {
             if (m_IsVideoRecording) {
-                m_VideoEncoderQueue->offer(frame);
+                m_VideoEncoderQueue->offer(shared_ptr<MediaFrame>(frame));
             } else {
                 delete frame;
             }
@@ -656,7 +653,8 @@ void *CameraVideoRecorder::StartRecordLoop(void *recorder) {
     // 根据是否启用音频录制、视频录制来设置是否正在录制的标志位
     mRecorder->m_IsVideoRecording = mRecorder->m_EnableVideo;
     mRecorder->m_IsAudioRecording = mRecorder->m_EnableAudio;
-    LOGCATE("CameraVideoRecorder::StartRecordLoop  %d, %d", mRecorder->m_IsAudioRecording, mRecorder->m_IsVideoRecording)
+    LOGCATE("CameraVideoRecorder::StartRecordLoop  %d, %d", mRecorder->m_IsAudioRecording,
+            mRecorder->m_IsVideoRecording)
 
     if (!mRecorder->m_IsVideoRecording && !mRecorder->m_IsAudioRecording) {
         goto __EXIT;
@@ -670,8 +668,8 @@ void *CameraVideoRecorder::StartRecordLoop(void *recorder) {
         goto __EXIT;
     }
 
-    AudioFrame *audio_frame;
-    VideoFrame *video_frame;
+    MediaFrame *audio_frame;
+    MediaFrame *video_frame;
     // 音频或者视频录制未结束
     while (mRecorder->m_IsAudioRecording || mRecorder->m_IsVideoRecording) {
         if (mRecorder->m_IsAudioRecording && mRecorder->m_IsVideoRecording) {
@@ -680,17 +678,17 @@ void *CameraVideoRecorder::StartRecordLoop(void *recorder) {
             double audioTimestamp = (double) mRecorder->m_AudioOst->nextPts *
                                     av_q2d(mRecorder->m_AudioOst->cc->time_base);
             if (videoTimestamp < audioTimestamp) {
-                video_frame = (VideoFrame *) mRecorder->m_VideoEncoderQueue->poll();
+                video_frame = mRecorder->m_VideoEncoderQueue->poll().get();
                 mRecorder->EncodeVideoFrame(mRecorder->m_VideoOst, video_frame);
             } else {
-                audio_frame = (AudioFrame *) mRecorder->m_AudioEncoderQueue->poll();
+                audio_frame = mRecorder->m_AudioEncoderQueue->poll().get();
                 mRecorder->EncodeAudioFrame(mRecorder->m_AudioOst, audio_frame);
             }
         } else if (mRecorder->m_IsAudioRecording) {
-            audio_frame = (AudioFrame *) mRecorder->m_AudioEncoderQueue->poll();
+            audio_frame = mRecorder->m_AudioEncoderQueue->poll().get();
             mRecorder->EncodeAudioFrame(mRecorder->m_AudioOst, audio_frame);
         } else {
-            video_frame = (VideoFrame *) mRecorder->m_VideoEncoderQueue->poll();
+            video_frame = mRecorder->m_VideoEncoderQueue->poll().get();
             mRecorder->EncodeVideoFrame(mRecorder->m_VideoOst, video_frame);
         }
     }

@@ -49,81 +49,47 @@ enum FrameFlag {
     FLAG_RECORD_END,   // 录制的最后一帧
 };
 
-class Frame {
+class MediaFrame {
 public:
+    /**
+     * common
+     */
+    uint8_t *plane[3];
+    int planeSize[3];
     long dts;
     long pts;
-    int type;
+    int type;  // video/audio
+
+    /**
+     * video
+     */
     int format;
+    int width;
+    int height;
 
-    int flag = FLAG_NONE;
-
-    Frame() {};
-
-    Frame(long dts, long pts, int type, int format) {
-        Frame::dts = dts;
-        Frame::pts = pts;
-        Frame::type = type;
-        Frame::format = format;
-    }
-
-    virtual ~Frame() {}
-};
-
-class AudioFrame : public Frame {
-public:
-    uint8_t *data;
-    int dataSize;
+    /**
+     * audio
+     */
     int channels;
     int sampleRate;
     int sampleFormat;
     int channelLayout;
 
-    AudioFrame() : Frame() { type = MEDIA_TYPE_AUDIO; }
+    int flag = FLAG_NONE;
 
-    AudioFrame(uint8_t *data, int dataSize, int channels, int sampleRate, long dts, long pts,
-               int format) : Frame(dts, pts, MEDIA_TYPE_AUDIO, format) {
-        AudioFrame::data = data;
-        AudioFrame::dataSize = dataSize;
-        AudioFrame::channels = channels;
-        AudioFrame::sampleRate = sampleRate;
-    }
+    MediaFrame() {
+        plane[0] = plane[1] = plane[2] = nullptr;
+        planeSize[0] = planeSize[1] = planeSize[2] = 0;
+        type = MEDIA_TYPE_VIDEO;
+    };
 
-    virtual ~AudioFrame() {
-        if (data != nullptr) {
-            delete data;
-            data = nullptr;
+    virtual ~MediaFrame() {
+        if (plane[0]) {
+            delete plane[0];
         }
-    }
-};
-
-class VideoFrame : public Frame {
-public:
-    uint8_t *yuvBuffer[3];
-    int planeSize[3];
-    int width;
-    int height;
-
-    VideoFrame() : Frame() { type = MEDIA_TYPE_VIDEO; };
-
-    VideoFrame(uint8_t *yuvBuffer[3], int planeSize[3], int width, int height, long dts, long pts,
-               int format)
-            : Frame(dts, pts, MEDIA_TYPE_VIDEO, format) {
-        for (int i = 0; i < 3; i++) {
-            VideoFrame::yuvBuffer[i] = yuvBuffer[i];
-            VideoFrame::planeSize[i] = planeSize[i];
-        }
-        VideoFrame::width = width;
-        VideoFrame::height = height;
-    }
-
-    virtual ~VideoFrame() {
-        if (yuvBuffer[0]) {
-            delete yuvBuffer[0];
-        }
-        yuvBuffer[0] = nullptr;
-        yuvBuffer[1] = nullptr;
-        yuvBuffer[2] = nullptr;
+        plane[0] = nullptr;
+        plane[1] = nullptr;
+        plane[2] = nullptr;
     }
 };
 

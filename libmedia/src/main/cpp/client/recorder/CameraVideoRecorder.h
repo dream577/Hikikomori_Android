@@ -7,8 +7,8 @@
 
 #include "Callback.h"
 #include "GLRenderWindow.h"
-#include "ThreadSafeQueue.h"
 #include "MediaDef.h"
+#include "CustomContainer.h"
 
 #include <stdio.h>
 #include <pthread.h>
@@ -115,8 +115,8 @@ private:
     /**
      * Video
      */
-    ThreadSafeQueue *m_VideoEncoderQueue;
-    ThreadSafeQueue *m_VideoRenderQueue;
+    LinkedBlockingQueue<MediaFrame> *m_VideoEncoderQueue;
+    LinkedBlockingQueue<MediaFrame> *m_VideoRenderQueue;
     bool m_EnableVideo;
     int m_ImageWidth;
     int m_ImageHeight;
@@ -127,7 +127,7 @@ private:
     /**
      * Audio
      */
-    ThreadSafeQueue *m_AudioEncoderQueue;
+    LinkedBlockingQueue<MediaFrame> *m_AudioEncoderQueue;
     bool m_EnableAudio;
     int m_SampleRate = 44100;
     int m_SampleFormat = AV_SAMPLE_FMT_S16;
@@ -142,11 +142,11 @@ private:
 
     int OpenAudio(AVOutputStream *ost);
 
-    int EncodeAudioFrame(AVOutputStream *ost, AudioFrame *frame);
+    int EncodeAudioFrame(AVOutputStream *ost, MediaFrame *frame);
 
     int OpenVideo(AVOutputStream *ost);
 
-    int EncodeVideoFrame(AVOutputStream *ost, VideoFrame *frame);
+    int EncodeVideoFrame(AVOutputStream *ost, MediaFrame *frame);
 
     void RealStopRecord();
 
@@ -171,9 +171,9 @@ public:
     void InputAudioData(uint8_t *data, int size, long timestamp, int sample_rate,
                         int sample_format, int channel_layout);
 
-    Frame *GetOneFrame(int type) override;
+    shared_ptr<MediaFrame> GetOneFrame(int type) override;
 
-    void FrameRendFinish(Frame *frame) override;
+    void FrameRendFinish(MediaFrame *frame) override;
 
     GLRenderWindow *GetVideoRender() {
         return m_RenderWindow;

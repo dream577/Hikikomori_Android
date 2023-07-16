@@ -47,12 +47,12 @@ void VideoNativeRender::onSurfaceChanged(int width, int height) {
 
 void VideoNativeRender::onDrawFrame() {
     LOGCATE("VideoNativeRender::onDrawFrame");
-    Frame *frame = m_Callback->GetOneFrame(MEDIA_TYPE_VIDEO);
+    shared_ptr<MediaFrame> p =  m_Callback->GetOneFrame(MEDIA_TYPE_VIDEO);
+    MediaFrame *frame = p.get();
     if (m_NativeWindow == nullptr || frame == nullptr) return;
-    auto *videoFrame = (VideoFrame *) frame;
     ANativeWindow_lock(m_NativeWindow, &m_NativeWindowBuffer, nullptr);
 
-    sws_scale(m_SwsContext, videoFrame->yuvBuffer, videoFrame->planeSize,
+    sws_scale(m_SwsContext, frame->plane, frame->planeSize,
               0, mImageHeight, m_RGBAFrame->data, m_RGBAFrame->linesize);
 
     auto *dstBuffer = static_cast<uint8_t *>(m_NativeWindowBuffer.bits);

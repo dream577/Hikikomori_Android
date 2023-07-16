@@ -23,9 +23,9 @@ extern "C" {
 class MediaSync {
 
 public:
-    void SyncAudio(Frame *frame);
+    void SyncAudio(long pts, int flag);
 
-    void SyncVideo(Frame *frame);
+    void SyncVideo(long pts, int flag);
 
 private:
     long m_CurrAudioPts = 0; // 当前音频帧的时间戳

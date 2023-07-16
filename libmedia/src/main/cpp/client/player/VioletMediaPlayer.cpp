@@ -3,77 +3,61 @@
 //
 
 #include "VioletMediaPlayer.h"
-#include "LogUtil.h"
-#include "ImageDef.h"
 
 int VioletMediaPlayer::Init(JNIEnv *jniEnv, jobject obj, char *url, int decodeType,
                             int renderType) {
     LOGCATE("VioletMediaPlayer::Init")
-    m_EventCallback = new MediaEventCallback(jniEnv, obj);
 
-    m_InputEngine = new AVInputEngine(url, m_EventCallback, this);
+    m_EventCallback = shared_ptr<MediaEventCallback>(new MediaEventCallback(jniEnv, obj));
+
+    m_InputEngine = shared_ptr<AVInputEngine>(new AVInputEngine(url, m_EventCallback, this));
     int result = m_InputEngine->Init();
 
-    m_ImageRenderWindow = new GLRenderWindow(this);
-    m_VideoFrameQueue = new ThreadSafeQueue(MAX_VIDEO_QUEUE_SIZE, MEDIA_TYPE_VIDEO);
+    m_ImageRenderWindow = shared_ptr<GLRenderWindow>(new GLRenderWindow(this));
+    m_VideoFrameQueue = make_shared<LinkedBlockingQueue<MediaFrame>>(MAX_VIDEO_QUEUE_SIZE);
 
-    m_AudioRender = new OpenSLAudioRender(this);
+    m_AudioRender = shared_ptr<OpenSLAudioRender>(new OpenSLAudioRender(this));
     m_AudioRender->Init();
-    m_AudioFrameQueue = new ThreadSafeQueue(MAX_AUDIO_QUEUE_SIZE, MEDIA_TYPE_AUDIO);
+    m_AudioFrameQueue = make_shared<LinkedBlockingQueue<MediaFrame>>(MAX_AUDIO_QUEUE_SIZE);
 
-    m_AVSync = new MediaSync();
+    m_AVSync = shared_ptr<MediaSync>(new MediaSync());
     return result;
 }
 
 int VioletMediaPlayer::UnInit() {
     LOGCATE("VioletMediaPlayer::UnInit")
     if (m_AudioFrameQueue) {
-        m_AudioFrameQueue->abort();
+        m_AudioFrameQueue->overrule();
     }
     if (m_VideoFrameQueue) {
-        m_VideoFrameQueue->abort();
+        m_VideoFrameQueue->overrule();
     }
     if (m_InputEngine) {
-        m_InputEngine->UnInit();
-        delete m_InputEngine;
-        m_InputEngine = nullptr;
+        m_InputEngine.reset();
     }
     if (m_AudioRender) {
-        m_AudioRender->UnInit();
-        delete m_AudioRender;
-        m_AudioRender = nullptr;
-    }
-    if (m_AudioFrameQueue) {
-        delete m_AudioFrameQueue;
-        m_AudioFrameQueue = nullptr;
+        m_AudioRender.reset();
     }
     if (m_ImageRenderWindow) {
-        m_ImageRenderWindow->Destroy();
-        delete m_ImageRenderWindow;
-        m_ImageRenderWindow = nullptr;
+        m_ImageRenderWindow.reset();
     }
-    if (m_VideoFrameQueue) {
-        delete m_VideoFrameQueue;
-        m_VideoFrameQueue = nullptr;
-    }
-    delete m_EventCallback;
     return 0;
 }
 
 void VioletMediaPlayer::OnSurfaceCreated(JNIEnv *jniEnv, jobject surface) {
-    if (m_ImageRenderWindow != nullptr) {
+    if (m_ImageRenderWindow) {
         m_ImageRenderWindow->OnSurfaceCreated(jniEnv, surface);
     }
 }
 
 void VioletMediaPlayer::OnSurfaceChanged(int width, int height) {
-    if (m_ImageRenderWindow != nullptr) {
+    if (m_ImageRenderWindow) {
         m_ImageRenderWindow->OnSurfaceChanged(width, height);
     }
 }
 
 void VioletMediaPlayer::OnSurfaceDestroyed() {
-    if (m_ImageRenderWindow != nullptr) {
+    if (m_ImageRenderWindow) {
         m_ImageRenderWindow->OnSurfaceDestroyed();
     }
 }
@@ -119,26 +103,26 @@ void VioletMediaPlayer::SeekToPosition(float position) {
     m_InputEngine->SeekPosition(position);
 }
 
-Frame *VioletMediaPlayer::GetOneFrame(int type) {
+shared_ptr<MediaFrame> VioletMediaPlayer::GetOneFrame(int type) {
 //    LOGCATE("VioletMediaPlayer::GetOneFrame type=%d", type)
-    Frame *frame = nullptr;
+    shared_ptr<MediaFrame> frame;
     if (GetPlayerState() == STATE_STOP) return frame;
     if (type == MEDIA_TYPE_VIDEO) {
         frame = m_VideoFrameQueue->poll();
         if (frame) {
-            m_AVSync->SyncVideo(frame);
+            m_AVSync->SyncVideo(frame->pts, frame->flag);
         }
     } else {
         frame = m_AudioFrameQueue->poll();
         if (frame) {
-            m_AVSync->SyncAudio(frame);
+            m_AVSync->SyncAudio(frame->pts, frame->flag);
             m_EventCallback->PostMessage(EVENT_PLAYING, frame->pts);
         }
     }
     return frame;
 }
 
-void VioletMediaPlayer::FrameRendFinish(Frame *frame) {
+void VioletMediaPlayer::FrameRendFinish(MediaFrame *frame) {
     if (frame) {
         // TODO 此处用来扩展录制模块，暂时搁置
         if (frame->type == MEDIA_TYPE_VIDEO) {
@@ -146,25 +130,21 @@ void VioletMediaPlayer::FrameRendFinish(Frame *frame) {
         } else {
 
         }
-        delete frame;
     }
 }
 
-void VioletMediaPlayer::OnDecodeOneFrame(Frame *frame) {
+void VioletMediaPlayer::OnDecodeOneFrame(std::shared_ptr<MediaFrame> frame) {
 //    LOGCATE("VioletMediaPlayer::OnDecodeOneFrame MediaType=%d", frame->type)
     if (GetPlayerState() == STATE_STOP) return;
     if (frame->flag == FLAG_SEEK_FINISH) {
-        m_AudioFrameQueue->clearCache();
-        m_VideoFrameQueue->clearCache();
+        m_AudioFrameQueue->clear();
+        m_VideoFrameQueue->clear();
     }
-    int ret;
+
     if (frame->type == MEDIA_TYPE_VIDEO) {
-        ret = m_VideoFrameQueue->offer(frame);
+        m_VideoFrameQueue->offer(frame);
     } else {
-        ret = m_AudioFrameQueue->offer(frame);
-    }
-    if (ret < 0) {
-        delete frame;
+        m_AudioFrameQueue->offer(frame);
     }
 }
 
@@ -175,6 +155,7 @@ int VioletMediaPlayer::GetPlayerState() {
 void VioletMediaPlayer::SetPlayerState(PlayerState state) {
     unique_lock<mutex> lock(m_Mutex);
     this->state = state;
+    lock.unlock();
     m_Cond.notify_all();
 }
 

@@ -32,14 +32,14 @@ private:
     TransformMatrix m_transformMatrix;
     mat4 m_MVPMatrix;
 
-    void DrawGRBA(VideoFrame *frame);
+    void DrawGRBA(MediaFrame *frame);
 
-    void DrawI420(VideoFrame *frame);
+    void DrawI420(MediaFrame *frame);
 
-    void DrawNV12orNV21(VideoFrame *frame);
+    void DrawNV12orNV21(MediaFrame *frame);
 
 public:
-    void OnDrawFrame(Frame *frame);
+    void OnDrawFrame(MediaFrame *frame);
 
     void OnSurfaceCreated(JNIEnv *jniEnv, jobject surface) override;
 
