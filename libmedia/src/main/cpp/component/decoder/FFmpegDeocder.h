@@ -39,7 +39,7 @@ public:
 
     virtual int OpenCodec(const AVCodecParameters *param) = 0;
 
-    int Decode(AVPacket *packet, double timeBase) {
+    int Decode(AVPacket *packet, double timeBase, int &flag) {
         int result = 0;
         int frameCount = 0;
         result = avcodec_send_packet(m_CodecCtx, packet);
@@ -50,11 +50,22 @@ public:
         while ((result = avcodec_receive_frame(m_CodecCtx, m_Frame)) == 0) {
             std::shared_ptr<MediaFrame> frame = OnFrameAvailable(m_Frame, timeBase);
             frameCount++;
+            if (m_CodecCtx->codec_type == AVMEDIA_TYPE_VIDEO) {
+                if (flag & 0x01) {
+                    frame->flag = FLAG_SEEK_FINISH;
+                    flag = flag & 0x10;
+                }
+            } else {
+                if (flag & 0x10) {
+                    frame->flag = FLAG_SEEK_FINISH;
+                    flag = flag & 0x01;
+                }
+            }
             m_Callback->OnDecodeOneFrame(frame);
         }
 
         __EXIT:
-        if (result == 0) return frameCount;
+        if (result == 0 || frameCount > 0) return frameCount;
         return result;
     }
 

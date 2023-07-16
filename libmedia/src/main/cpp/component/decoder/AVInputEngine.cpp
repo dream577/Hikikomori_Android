@@ -102,13 +102,13 @@ void AVInputEngine::_DecoderLoop() {
     while (m_DecoderCallback->GetPlayerState() == STATE_PAUSE) {
         av_usleep(10 * 1000);
     }
-    if (DecoderLoopOnce() != 0 || m_DecoderCallback->GetPlayerState() == STATE_STOP) {
+    if (DecoderLoopOnce() == AVERROR_EOF  || m_DecoderCallback->GetPlayerState() == STATE_STOP) {
         disableAutoLoop();
     }
 }
 
 int AVInputEngine::DecoderLoopOnce() {
-//    LOGCATE("AVInputEngine::DecoderLoopOnce m_MediaType=%d", m_MediaType)
+    LOGCATE("AVInputEngine::DecoderLoopOnce")
     if (m_SeekPosition > 0) {
         auto seek_target = static_cast<int64_t>(m_SeekPosition * 1000000);
         int64_t seek_min = INT64_MIN;
@@ -124,7 +124,7 @@ int AVInputEngine::DecoderLoopOnce() {
                 m_VideoCodec->flush();
             }
             LOGCATE("AVInputEngine::DecoderLoopOnce success while seeking")
-            m_SeekFinish = true;
+            m_SeekFinish = 0x11;
         }
         m_SeekPosition = -1;   // 重置seek标志位
     }
@@ -132,10 +132,10 @@ int AVInputEngine::DecoderLoopOnce() {
     int result = av_read_frame(m_AVFormatContext, m_Pkt);
     while (result == 0) {
         if (m_Pkt->stream_index == m_VideoStreamIndex && m_VideoEnable) {
-            result = m_VideoCodec->Decode(m_Pkt, m_VideoTimebase);
+            result = m_VideoCodec->Decode(m_Pkt, m_VideoTimebase, m_SeekFinish);
         }
         if (m_Pkt->stream_index == m_AudioStreamIndex && m_AudioEnable) {
-            result = m_AudioCodec->Decode(m_Pkt, m_AudioTimebase);
+            result = m_AudioCodec->Decode(m_Pkt, m_AudioTimebase, m_SeekFinish);
         }
 
         switch (result) {
@@ -149,6 +149,7 @@ int AVInputEngine::DecoderLoopOnce() {
             case AVERROR(EINVAL):
             case AVERROR_INPUT_CHANGED:
             case AVERROR(ENOMEM):
+                break;
             default:
                 break;
         }

@@ -107,7 +107,7 @@ shared_ptr<MediaFrame> VioletMediaPlayer::GetOneFrame(int type) {
 //    LOGCATE("VioletMediaPlayer::GetOneFrame type=%d", type)
     shared_ptr<MediaFrame> frame;
     if (GetPlayerState() == STATE_STOP) return frame;
-    if (type == MEDIA_TYPE_VIDEO) {
+    if (type == AVMEDIA_TYPE_VIDEO) {
         frame = m_VideoFrameQueue->poll();
         if (frame) {
             m_AVSync->SyncVideo(frame->pts, frame->flag);
@@ -125,7 +125,7 @@ shared_ptr<MediaFrame> VioletMediaPlayer::GetOneFrame(int type) {
 void VioletMediaPlayer::FrameRendFinish(shared_ptr<MediaFrame> frame) {
     if (frame) {
         // TODO 此处用来扩展录制模块，暂时搁置
-        if (frame->type == MEDIA_TYPE_VIDEO) {
+        if (frame->type == AVMEDIA_TYPE_VIDEO) {
 
         } else {
 
@@ -141,7 +141,7 @@ void VioletMediaPlayer::OnDecodeOneFrame(std::shared_ptr<MediaFrame> frame) {
         m_VideoFrameQueue->clear();
     }
 
-    if (frame->type == MEDIA_TYPE_VIDEO) {
+    if (frame->type == AVMEDIA_TYPE_VIDEO) {
         m_VideoFrameQueue->offer(frame);
     } else {
         m_AudioFrameQueue->offer(frame);

@@ -47,7 +47,7 @@ void VideoNativeRender::onSurfaceChanged(int width, int height) {
 
 void VideoNativeRender::onDrawFrame() {
     LOGCATE("VideoNativeRender::onDrawFrame");
-    shared_ptr<MediaFrame> p =  m_Callback->GetOneFrame(MEDIA_TYPE_VIDEO);
+    shared_ptr<MediaFrame> p =  m_Callback->GetOneFrame(AVMEDIA_TYPE_VIDEO);
     MediaFrame *frame = p.get();
     if (m_NativeWindow == nullptr || frame == nullptr) return;
     ANativeWindow_lock(m_NativeWindow, &m_NativeWindowBuffer, nullptr);

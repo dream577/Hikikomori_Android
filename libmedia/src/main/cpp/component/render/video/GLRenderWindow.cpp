@@ -3,6 +3,7 @@
 //
 
 #include "GLRenderWindow.h"
+#include "libavutil/avutil.h"
 
 GLRenderWindow::GLRenderWindow(RenderCallback *callback) {
     this->m_Callback = callback;
@@ -127,7 +128,7 @@ void GLRenderWindow::updateMVPMatrix(float translateX, float translateY, float s
 }
 
 void GLRenderWindow::onDrawFrame() {
-    shared_ptr<MediaFrame> frame =  m_Callback->GetOneFrame(MEDIA_TYPE_VIDEO);
+    shared_ptr<MediaFrame> frame =  m_Callback->GetOneFrame(AVMEDIA_TYPE_VIDEO);
     if (frame) {
         if (frame->width != mImageWidth || frame->height != mImageHeight) {
             mImageWidth = frame->width;

@@ -27,7 +27,7 @@ private:
     shared_ptr<MediaEventCallback> m_EventCallback;
 
     AVFormatContext *m_AVFormatContext = nullptr;     // 封装格式上下文
-    bool m_SeekFinish;
+    int m_SeekFinish = 0x00;
 
     /*
      * Video相关

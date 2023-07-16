@@ -6,6 +6,7 @@
 #define HIKIKOMORI_AUDIOFFDECODER_H
 
 #include "FFmpegDeocder.h"
+#include <utility>
 
 extern "C" {
 #include "libswresample/swresample.h"

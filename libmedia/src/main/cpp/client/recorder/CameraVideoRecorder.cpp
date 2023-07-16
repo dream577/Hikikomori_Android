@@ -587,7 +587,7 @@ void CameraVideoRecorder::OnDrawVideoFrame(uint8_t *data, int width, int height,
             break;
     }
 
-    frame->type = MEDIA_TYPE_VIDEO;
+    frame->type = AVMEDIA_TYPE_VIDEO;
     m_VideoRenderQueue->offer(frame);
 }
 
@@ -613,7 +613,7 @@ void CameraVideoRecorder::InputAudioData(uint8_t *data, int size, long timestamp
 shared_ptr<MediaFrame> CameraVideoRecorder::GetOneFrame(int type) {
 //    LOGCATE("CameraVideoRecorder::GetOneFrame")
     shared_ptr<MediaFrame> frame;
-    if (type == MEDIA_TYPE_VIDEO) {
+    if (type == AVMEDIA_TYPE_VIDEO) {
         frame = m_VideoRenderQueue->poll();
     } else {
         frame = m_AudioEncoderQueue->poll();
@@ -623,7 +623,7 @@ shared_ptr<MediaFrame> CameraVideoRecorder::GetOneFrame(int type) {
 
 void CameraVideoRecorder::FrameRendFinish(shared_ptr<MediaFrame> frame) {
 //    LOGCATE("CameraVideoRecorder::FrameRendFinish")
-    if (frame && frame->type == MEDIA_TYPE_VIDEO) {
+    if (frame && frame->type == AVMEDIA_TYPE_VIDEO) {
         if (m_IsVideoRecording) {
             m_VideoEncoderQueue->offer(shared_ptr<MediaFrame>(frame));
         }

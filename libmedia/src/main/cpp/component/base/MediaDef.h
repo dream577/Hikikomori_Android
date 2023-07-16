@@ -7,9 +7,6 @@
 #ifndef HIKIKOMORI_MEDIADEF_H
 #define HIKIKOMORI_MEDIADEF_H
 
-#define  MEDIA_TYPE_VIDEO      0x00
-#define  MEDIA_TYPE_AUDIO      0x01
-
 // 视频帧类型
 #define  IMAGE_FORMAT_RGBA     0x01
 #define  IMAGE_FORMAT_NV21     0x02
@@ -80,7 +77,6 @@ public:
     MediaFrame() {
         plane[0] = plane[1] = plane[2] = nullptr;
         planeSize[0] = planeSize[1] = planeSize[2] = 0;
-        type = MEDIA_TYPE_VIDEO;
     };
 
     virtual ~MediaFrame() {

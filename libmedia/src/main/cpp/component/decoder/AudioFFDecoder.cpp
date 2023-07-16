@@ -4,8 +4,6 @@
 
 #include "AudioFFDecoder.h"
 
-#include <utility>
-
 AudioFFDecoder::AudioFFDecoder(DecoderCallback *callback) : FFmpegDecoder(
         callback) {
     m_SwrContext = nullptr;
@@ -78,7 +76,7 @@ std::shared_ptr<MediaFrame> AudioFFDecoder::OnFrameAvailable(AVFrame *avFrame, d
     int result = swr_convert(m_SwrContext, &m_AudioOutBuffer, m_DstFrameDataSize / 2,
                              (const uint8_t **) avFrame->data, avFrame->nb_samples);
     std::shared_ptr<MediaFrame> frame = std::make_shared<MediaFrame>();
-    frame->type = MEDIA_TYPE_AUDIO;
+    frame->type = AVMEDIA_TYPE_AUDIO;
     if (result > 0) {
         auto *data = (uint8_t *) malloc(m_DstFrameDataSize);
         memcpy(data, m_AudioOutBuffer, m_DstFrameDataSize);

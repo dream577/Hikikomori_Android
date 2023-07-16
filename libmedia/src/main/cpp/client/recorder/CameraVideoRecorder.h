@@ -7,7 +7,6 @@
 
 #include "Callback.h"
 #include "GLRenderWindow.h"
-#include "MediaDef.h"
 #include "CustomContainer.h"
 
 #include <stdio.h>

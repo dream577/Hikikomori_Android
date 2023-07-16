@@ -3,7 +3,7 @@
 //
 
 #include "OpenSLAudioRender.h"
-#include "LogUtil.h"
+#include "libavutil/avutil.h"
 
 OpenSLAudioRender::OpenSLAudioRender(RenderCallback *callback) {
     this->m_Callback = callback;
@@ -186,11 +186,11 @@ int OpenSLAudioRender::CreateAudioPlayer() {
 }
 
 void OpenSLAudioRender::onPlayFrame() {
-    shared_ptr<MediaFrame> frame = m_Callback->GetOneFrame(MEDIA_TYPE_AUDIO);
+    shared_ptr<MediaFrame> frame = m_Callback->GetOneFrame(AVMEDIA_TYPE_AUDIO);
     if (frame && !stop) {
         (*m_BufferQueue)->Enqueue(m_BufferQueue, frame->plane[0], frame->planeSize[0]);
     }
-//    m_Callback->FrameRendFinish(frame);
+    m_Callback->FrameRendFinish(frame);
 }
 
 void

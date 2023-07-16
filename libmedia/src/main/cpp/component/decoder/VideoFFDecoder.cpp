@@ -89,7 +89,7 @@ int VideoFFDecoder::OpenCodec(const AVCodecParameters *param) {
 std::shared_ptr<MediaFrame> VideoFFDecoder::OnFrameAvailable(AVFrame *avFrame, double timeBase) {
 //    LOGCATE("AVInputEngine::VideoFrameAvailable")
     std::shared_ptr<MediaFrame> frame = std::make_shared<MediaFrame>();
-    frame->type = MEDIA_TYPE_VIDEO;
+    frame->type = AVMEDIA_TYPE_VIDEO;
 
     long dts = (long) ((avFrame->pkt_dts * timeBase) * 1000);
     long pts = (long) ((avFrame->pts * timeBase) * 1000);
