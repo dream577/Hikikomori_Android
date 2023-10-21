@@ -73,6 +73,17 @@ public:
         head = tail = make_shared<Node<E>>();
     }
 
+    LinkedBlockingQueue(int cap, std::function<shared_ptr<E>(int)> const &fun) {
+        this->capability = cap;
+        this->abort = false;
+        atomic_init(&count, 0);
+        head = tail = make_shared<Node<E>>();
+        for (int i = 0; i < capability; i++) {
+            auto data = fun(i);
+            put(data);
+        }
+    }
+
     bool put(shared_ptr<E> data) {
         unique_lock<mutex> lock(mux);
         if (count == capability) return false;
@@ -143,8 +154,8 @@ public:
 
     ~LinkedBlockingQueue() {
         unique_lock<mutex> lock(mux);
-        _clear();
         abort = true;
+        _clear();
         lock.unlock();
         cond.notify_all();
     }

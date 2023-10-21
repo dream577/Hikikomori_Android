@@ -15,11 +15,16 @@ extern "C" {
 #include "LogUtil.h"
 #include "Callback.h"
 
+#define MAX_VIDEO_FRAME_SIZE 15
+#define MAX_AUDIO_FRAME_SIZE 100
+
 class FFBaseDecoder {
 private:
     AVFrame *m_Frame;
 
 protected:
+    shared_ptr<LinkedBlockingQueue<MediaFrame>> pool;
+
     DecoderCallback *m_Callback;
 
     AVCodecContext *m_CodecCtx;
@@ -61,8 +66,15 @@ public:
         return result;
     }
 
-    void flush() {
+    void Flush() {
         avcodec_flush_buffers(m_CodecCtx);
+    }
+
+    void Stop() {
+        if (pool) {
+            pool->overrule();
+            pool->clear();
+        }
     }
 
     void CloseCodec() {

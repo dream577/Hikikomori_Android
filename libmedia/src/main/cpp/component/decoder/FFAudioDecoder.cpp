@@ -101,6 +101,10 @@ std::shared_ptr<MediaFrame> FFAudioDecoder::OnFrameAvailable(AVFrame *avFrame) {
 }
 
 FFAudioDecoder::~FFAudioDecoder() {
+    if (pool) {
+        pool->overrule();
+        pool->clear();
+    }
     if (m_SwrContext) {
         swr_free(&m_SwrContext);
         m_SwrContext = nullptr;

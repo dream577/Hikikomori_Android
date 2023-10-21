@@ -8,20 +8,19 @@ int VioletMediaPlayer::Init(JNIEnv *jniEnv, jobject obj, char *url, int decodeTy
                             int renderType) {
     LOGCATE("VioletMediaPlayer::Init")
 
-    m_EventCallback = shared_ptr<MediaEventCallback>(new MediaEventCallback(jniEnv, obj));
+    m_EventCallback = make_shared<MediaEventCallback>(jniEnv, obj);
 
-    m_InputEngine = shared_ptr<FFMediaInputEngine>(
-            new FFMediaInputEngine(url, m_EventCallback, this));
+    m_InputEngine = make_shared<FFMediaInputEngine>(url, m_EventCallback, this);
     int result = m_InputEngine->Init();
 
-    m_ImageRenderWindow = shared_ptr<GLRenderWindow>(new GLRenderWindow(this));
-    m_VideoFrameQueue = make_shared<LinkedBlockingQueue<MediaFrame>>(MAX_VIDEO_QUEUE_SIZE);
+    m_ImageRenderWindow = make_shared<GLRenderWindow>(this);
+    m_VideoFrameQueue = make_shared<LinkedBlockingQueue<MediaFrame>>(MAX_VIDEO_FRAME_SIZE);
 
-    m_AudioRender = shared_ptr<OpenSLAudioRender>(new OpenSLAudioRender(this));
+    m_AudioRender = make_shared<OpenSLAudioRender>(this);
     m_AudioRender->Init();
-    m_AudioFrameQueue = make_shared<LinkedBlockingQueue<MediaFrame>>(MAX_AUDIO_QUEUE_SIZE);
+    m_AudioFrameQueue = make_shared<LinkedBlockingQueue<MediaFrame>>(MAX_AUDIO_FRAME_SIZE);
 
-    m_AVSync = shared_ptr<MediaSync>(new MediaSync());
+    m_AVSync = make_shared<MediaSync>();
     return result;
 }
 
@@ -33,14 +32,14 @@ int VioletMediaPlayer::UnInit() {
     if (m_VideoFrameQueue) {
         m_VideoFrameQueue->overrule();
     }
-    if (m_InputEngine) {
-        m_InputEngine.reset();
+    if (m_ImageRenderWindow) {
+        m_ImageRenderWindow.reset();
     }
     if (m_AudioRender) {
         m_AudioRender.reset();
     }
-    if (m_ImageRenderWindow) {
-        m_ImageRenderWindow.reset();
+    if (m_InputEngine) {
+        m_InputEngine.reset();
     }
     return 0;
 }
@@ -68,6 +67,7 @@ void VioletMediaPlayer::Play() {
     if (GetPlayerState() != STATE_UNKNOWN) return;
     SetPlayerState(STATE_PLAYING);
     m_InputEngine->StartDecodeLoop();
+
     m_AudioRender->StartRenderLoop();
     m_ImageRenderWindow->StartRenderLoop();
 }
@@ -127,7 +127,7 @@ void VioletMediaPlayer::FrameRendFinish(shared_ptr<MediaFrame> frame) {
     if (frame) {
         // TODO 此处用来扩展录制模块，暂时搁置
         if (frame->type == AVMEDIA_TYPE_VIDEO) {
-
+            MediaFrame::recycle(frame);
         } else {
 
         }

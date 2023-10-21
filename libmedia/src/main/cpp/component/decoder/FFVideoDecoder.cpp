@@ -91,26 +91,34 @@ int FFVideoDecoder::OpenCodec(const AVCodecParameters *param) {
 }
 
 std::shared_ptr<MediaFrame> FFVideoDecoder::OnFrameAvailable(AVFrame *avFrame) {
-//    LOGCATE("FFMediaInputEngine::VideoFrameAvailable")
-    std::shared_ptr<MediaFrame> frame = std::make_shared<MediaFrame>();
-    frame->type = AVMEDIA_TYPE_VIDEO;
-
+    LOGCATE("FFMediaInputEngine::VideoFrameAvailable")
     long dts = (long) ((avFrame->pkt_dts * timebase) * 1000);
     long pts = (long) ((avFrame->pts * timebase) * 1000);
+    shared_ptr<MediaFrame> frame;
 
     switch (avFrame->format) {
         case AV_PIX_FMT_YUV420P:
         case AV_PIX_FMT_YUVJ420P: {
             int yPlaneByteSize = avFrame->width * avFrame->height;
             int uvPlaneByteSize = yPlaneByteSize / 2;
-            auto *data = (uint8_t *) malloc(yPlaneByteSize + uvPlaneByteSize);
 
+            if (!pool) {
+                auto fun = [&](int i) -> shared_ptr<MediaFrame> {
+                    auto f = make_shared<MediaFrame>();
+                    f->plane[0] = (uint8_t *) malloc((yPlaneByteSize + uvPlaneByteSize));
+                    f->plane[1] = f->plane[0] + yPlaneByteSize;
+                    f->plane[2] = f->plane[0] + yPlaneByteSize + uvPlaneByteSize / 2;
+                    return f;
+                };
+                pool = make_shared<LinkedBlockingQueue<MediaFrame>>(15, fun);
+            }
+
+            frame = pool->poll();
+            if (!frame) break;
+            frame->pool = pool;
             frame->format = IMAGE_FORMAT_I420;
             frame->width = avFrame->width;
             frame->height = avFrame->height;
-            frame->plane[0] = data;
-            frame->plane[1] = data + yPlaneByteSize;
-            frame->plane[2] = data + yPlaneByteSize + uvPlaneByteSize / 2;
             memcpy(frame->plane[0], avFrame->data[0], yPlaneByteSize);
             memcpy(frame->plane[1], avFrame->data[1], uvPlaneByteSize / 2);
             memcpy(frame->plane[2], avFrame->data[2], uvPlaneByteSize / 2);
@@ -130,13 +138,24 @@ std::shared_ptr<MediaFrame> FFVideoDecoder::OnFrameAvailable(AVFrame *avFrame) {
         case AV_PIX_FMT_NV12: {
             int yPlaneByteSize = avFrame->width * avFrame->height;
             int uvPlaneByteSize = yPlaneByteSize / 2;
-            auto *data = (uint8_t *) malloc(yPlaneByteSize + uvPlaneByteSize);
 
+            if (!pool) {
+                auto fun = [&](int i) -> shared_ptr<MediaFrame> {
+                    auto f = make_shared<MediaFrame>();
+                    f->plane[0] = (uint8_t *) malloc((yPlaneByteSize + uvPlaneByteSize));
+                    f->plane[1] = f->plane[0] + yPlaneByteSize;
+                    f->plane[2] = nullptr;
+                    return f;
+                };
+                pool = make_shared<LinkedBlockingQueue<MediaFrame>>(15, fun);
+            }
+
+            frame = pool->poll();
+            if (!frame) break;
+            frame->pool = pool;
             frame->format = IMAGE_FORMAT_NV12;
             frame->width = avFrame->width;
             frame->height = avFrame->height;
-            frame->plane[0] = data;
-            frame->plane[1] = data + yPlaneByteSize;
             memcpy(frame->plane[0], avFrame->data[0], yPlaneByteSize);
             memcpy(frame->plane[1], avFrame->data[1], uvPlaneByteSize);
             frame->planeSize[0] = avFrame->linesize[0];
@@ -148,13 +167,24 @@ std::shared_ptr<MediaFrame> FFVideoDecoder::OnFrameAvailable(AVFrame *avFrame) {
         case AV_PIX_FMT_NV21: {
             int yPlaneByteSize = avFrame->width * avFrame->height;
             int uvPlaneByteSize = yPlaneByteSize / 2;
-            auto *data = (uint8_t *) malloc(yPlaneByteSize + uvPlaneByteSize);
 
+            if (!pool) {
+                auto fun = [&](int i) -> shared_ptr<MediaFrame> {
+                    auto f = make_shared<MediaFrame>();
+                    f->plane[0] = (uint8_t *) malloc((yPlaneByteSize + uvPlaneByteSize));
+                    f->plane[1] = f->plane[0] + yPlaneByteSize;
+                    f->plane[2] = nullptr;
+                    return f;
+                };
+                pool = make_shared<LinkedBlockingQueue<MediaFrame>>(15, fun);
+            }
+
+            frame = pool->poll();
+            if (!frame) break;
+            frame->pool = pool;
             frame->format = IMAGE_FORMAT_NV21;
             frame->width = avFrame->width;
             frame->height = avFrame->height;
-            frame->plane[0] = data;
-            frame->plane[1] = data + yPlaneByteSize;
             memcpy(frame->plane[0], avFrame->data[0], yPlaneByteSize);
             memcpy(frame->plane[1], avFrame->data[1], uvPlaneByteSize);
             frame->planeSize[0] = avFrame->linesize[0];
@@ -166,6 +196,9 @@ std::shared_ptr<MediaFrame> FFVideoDecoder::OnFrameAvailable(AVFrame *avFrame) {
         default:;
             // AV_PIX_FMT_RGBA
 //            delete frame;
+    }
+    if (frame) {
+        frame->type = AVMEDIA_TYPE_VIDEO;
     }
     return frame;
 }
@@ -198,6 +231,10 @@ int FFVideoDecoder::HwDecoderInit(AVCodecContext *c, AVBufferRef *hw_ctx,
 }
 
 FFVideoDecoder::~FFVideoDecoder() {
+    if (pool) {
+        pool->overrule();
+        pool->clear();
+    }
     if (hw_ctx) {
         av_buffer_unref(&hw_ctx);
         hw_ctx = nullptr;

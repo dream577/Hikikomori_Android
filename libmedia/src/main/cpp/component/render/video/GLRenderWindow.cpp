@@ -146,7 +146,6 @@ void GLRenderWindow::onDrawFrame() {
 }
 
 void GLRenderWindow::onSurfaceDestroyed() {
-    LOGCATE("GLRenderWindow::onSurfaceDestroyed")
     if (glRender) {
         glRender->OnSurfaceDestroyed();
         glRender = nullptr;
@@ -160,6 +159,7 @@ void GLRenderWindow::onSurfaceDestroyed() {
         ANativeWindow_release(m_NativeWindow);
         m_NativeWindow = nullptr;
     }
+    LOGCATE("GLRenderWindow::onSurfaceDestroyed finish")
 }
 
 void GLRenderWindow::Destroy() {

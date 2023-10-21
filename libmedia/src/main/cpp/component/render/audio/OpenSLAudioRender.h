@@ -29,6 +29,14 @@ private:
     int mLoopMsg = MESSAGE_AUDIO_RENDER_LOOP;
     RenderCallback *m_Callback;
 
+    SLObjectItf m_EngineObj;
+    SLEngineItf m_EngineEngine;
+    SLObjectItf m_OutputMixObj;
+    SLObjectItf m_AudioPlayerObj;
+    SLPlayItf m_AudioPlayerPlay;
+    SLVolumeItf m_AudioPlayerVolume;
+    SLAndroidSimpleBufferQueueItf m_BufferQueue;
+
     int result = -1;
     sem_t runBlock;
     volatile bool stop;
@@ -46,14 +54,6 @@ private:
     void playAudioFrame();
 
     void onPlayFrame();
-
-    SLObjectItf m_EngineObj;
-    SLEngineItf m_EngineEngine;
-    SLObjectItf m_OutputMixObj;
-    SLObjectItf m_AudioPlayerObj;
-    SLPlayItf m_AudioPlayerPlay;
-    SLVolumeItf m_AudioPlayerVolume;
-    SLAndroidSimpleBufferQueueItf m_BufferQueue;
 
     int init();
 

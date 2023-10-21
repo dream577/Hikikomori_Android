@@ -92,7 +92,7 @@ void looper::addmsg(loopermessage *msg, bool flush) {
     } else {
         head = msg;
     }
-    LOGCATE("post msg %d", msg->what);
+//    LOGCATE("post msg %d", msg->what);
     sem_post(&headwriteprotect);
     sem_post(&headdataavailable);
 }
@@ -118,18 +118,18 @@ void looper::loop() {
         sem_post(&headwriteprotect);
 
         if (msg->quit) {
-            LOGCATE("quitting");
+            LOGCATE("Lopper quitting");
             delete msg;
             return;
         }
-        LOGCATE("processing msg %d", msg->what);
+//        LOGCATE("processing msg %d", msg->what);
         handle(msg->what, msg->obj);
         delete msg;
     }
 }
 
 void looper::quit() {
-    LOGCATE("m_UnInit");
+    LOGCATE("Looper m_UnInit")
     loopermessage *msg = new loopermessage();
     msg->what = 0;
     msg->obj = NULL;

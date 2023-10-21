@@ -332,13 +332,13 @@ void ImageGLRender::DrawNV12orNV21(MediaFrame *videoFrame) {
 }
 
 void ImageGLRender::OnSurfaceDestroyed() {
-    LOGCATE("ImageGLRender::onSurfaceDestroyed")
     glDeleteVertexArrays(1, &m_VaoId);
     glDeleteBuffers(2, m_VboIds);
     glDeleteTextures(3, m_TextureId);
     if (m_Program != GL_NONE) {
         glDeleteProgram(m_Program);
     }
+    LOGCATE("ImageGLRender::onSurfaceDestroyed finish")
 }
 
 

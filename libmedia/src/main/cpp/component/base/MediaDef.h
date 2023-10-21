@@ -3,6 +3,7 @@
 //
 
 #include "stdint.h"
+#include "CustomContainer.h"
 
 #ifndef HIKIKOMORI_MEDIADEF_H
 #define HIKIKOMORI_MEDIADEF_H
@@ -18,10 +19,6 @@
 #define VIDEO_RENDER_ANWINDOW   0
 #define VIDEO_RENDER_OPENGL     1
 #define VIDEO_RENDER_3D_VR      2
-
-// 帧队列大小
-#define MAX_AUDIO_QUEUE_SIZE   100
-#define MAX_VIDEO_QUEUE_SIZE   15
 
 // 回调事件
 #define EVENT_DURATION         0
@@ -74,10 +71,19 @@ public:
 
     int flag = FLAG_NONE;
 
+    std::weak_ptr<LinkedBlockingQueue<MediaFrame>> pool;
+
     MediaFrame() {
         plane[0] = plane[1] = plane[2] = nullptr;
         planeSize[0] = planeSize[1] = planeSize[2] = 0;
     };
+
+    static void recycle(shared_ptr<MediaFrame> frame) {
+        auto queue = frame->pool.lock();
+        if (queue) {
+            queue->offer(frame);
+        }
+    }
 
     virtual ~MediaFrame() {
         if (plane[0]) {

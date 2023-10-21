@@ -12,9 +12,11 @@ extern "C" {
 }
 
 #include "MediaDef.h"
+#include "LogUtil.h"
 
 #include <stdint.h>
 #include <math.h>
+#include <memory>
 
 #define MIN_SYNC_THRESHOLD       10
 #define MAX_SYNC_THRESHOLD       100
@@ -34,21 +36,51 @@ private:
 };
 
 class SyncClock {
+private:
+    bool useSystemClock = false;
+    long referenceClock = -1L;
+public:
+    SyncClock(bool useSystemClock) {
+        this->useSystemClock = useSystemClock;
+    }
 
+    void setRefClock(long timestamp) {
+        if (useSystemClock) {
+            referenceClock = GetSysCurrentTime() - timestamp;
+        } else {
+            referenceClock = timestamp;
+        }
+    }
+
+    long getRefClock() {
+        if (useSystemClock) {
+            return GetSysCurrentTime();
+        } else {
+            return referenceClock;
+        }
+    }
 };
 
-class Sync {
+class Synchronizer {
 protected:
-    SyncClock clock;
+    std::shared_ptr<SyncClock> clock;
 
     long lastFramePts;
+
+public:
+    Synchronizer(std::shared_ptr<SyncClock> clock) {
+        this->clock = clock;
+        this->lastFramePts = 0l;
+    }
+
+    virtual void sync(std::shared_ptr<MediaFrame> frame) = 0;
 };
 
-class AudioSync : public Sync {
+class AudioSync : public Synchronizer {
 
 };
 
-class VideoSync : public Sync {
+class VideoSync : public Synchronizer {
 
 };
 

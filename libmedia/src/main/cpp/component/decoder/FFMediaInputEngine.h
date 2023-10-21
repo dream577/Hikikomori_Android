@@ -46,13 +46,13 @@ private:
 
 protected:
 
-    int _Init() override;
+    int init() override;
 
-    virtual int _UnInit() override;
+    virtual int unInit() override;
 
-    virtual void _DecoderLoop() override;
+    virtual void decodeLoop() override;
 
-    virtual void _SeekPosition(float timestamp) override;
+    virtual void seekToPosition(float timestamp) override;
 
     virtual int DecoderLoopOnce();
 
