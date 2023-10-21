@@ -5,7 +5,7 @@
 #ifndef HIKIKOMORI_VIOLETMEDIAPLAYER_H
 #define HIKIKOMORI_VIOLETMEDIAPLAYER_H
 
-#include "AVInputEngine.h"
+#include "FFMediaInputEngine.h"
 #include "MediaPlayer.h"
 #include "MediaDef.h"
 #include "GLRenderWindow.h"
@@ -16,48 +16,41 @@
 #include "MediaSync.h"
 #include "CustomContainer.h"
 
-class VioletMediaPlayer : public MediaPlayer, public DecoderCallback, public RenderCallback {
+class VioletMediaPlayer : public MediaPlayer, public DecoderCallback,
+                          public AVSurface, public RenderCallback {
 
 public:
     VioletMediaPlayer() {};
 
     virtual ~VioletMediaPlayer() {}
 
+    /* ****************  播放API  **************** */
     virtual int
     Init(JNIEnv *jniEnv, jobject obj, char *url, int decodeType, int renderType) override;
-
-    virtual void OnSurfaceCreated(JNIEnv *jniEnv, jobject surface) override;
-
-    virtual void OnSurfaceChanged(int width, int height) override;
-
-    virtual void OnSurfaceDestroyed() override;
-
     virtual int UnInit() override;
-
     virtual void Play() override;
-
     virtual void Pause() override;
-
     virtual void Resume() override;
-
     virtual void Stop() override;
-
     virtual void SeekToPosition(float position) override;
 
-    virtual shared_ptr<MediaFrame> GetOneFrame(int type) override;
+    virtual void OnSurfaceCreated(JNIEnv *jniEnv, jobject surface) override;
+    virtual void OnSurfaceChanged(int width, int height) override;
+    virtual void OnSurfaceDestroyed() override;
 
-    void FrameRendFinish(shared_ptr<MediaFrame> frame) override;
-
-    virtual void OnDecodeOneFrame(std::shared_ptr<MediaFrame> frame) override;
-
+    /* 解码相关 */
+    virtual void OnFrameReady(std::shared_ptr<MediaFrame> frame) override;
     virtual int GetPlayerState() override;
-
     virtual void SetPlayerState(PlayerState state) override;
+
+    /* 渲染相关 */
+    virtual shared_ptr<MediaFrame> GetOneFrame(int type) override;
+    void FrameRendFinish(shared_ptr<MediaFrame> frame) override;
 
 private:
     volatile PlayerState state = STATE_UNKNOWN;
 
-    shared_ptr<AVInputEngine> m_InputEngine;
+    shared_ptr<FFMediaInputEngine> m_InputEngine;
     shared_ptr<GLRenderWindow> m_ImageRenderWindow;
     shared_ptr<OpenSLAudioRender> m_AudioRender;
     shared_ptr<MediaSync> m_AVSync;

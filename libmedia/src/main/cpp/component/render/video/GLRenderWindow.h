@@ -33,7 +33,7 @@ enum ImageRenderMessage {
     MESSAGE_IMAGE_DRAW_FRAME,
 };
 
-class GLRenderWindow : public ImageRenderItf, public looper {
+class GLRenderWindow : public AVSurface, public looper {
 public:
     GLRenderWindow(RenderCallback *callback);
 
@@ -52,7 +52,7 @@ public:
 
     void Destroy();
 
-    void StartRender();
+    void StartRenderLoop();
 
 protected:
 

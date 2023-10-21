@@ -36,7 +36,7 @@ JNIEXPORT jlong JNICALL
 Java_com_violet_libmedia_VioletVideoClient_native_1Init(JNIEnv *env, jobject thiz, jstring url,
                                                         jint player_type, jint render_type) {
     const char *path = env->GetStringUTFChars(url, nullptr);
-    MediaPlayer *player = new VioletMediaPlayer();
+    auto *player = new VioletMediaPlayer();
     player->Init(env, thiz, const_cast<char *>(path), 0, render_type);
     env->ReleaseStringUTFChars(url, path);
     return reinterpret_cast<jlong>(player);
@@ -47,7 +47,7 @@ JNIEXPORT void JNICALL
 Java_com_violet_libmedia_VioletVideoClient_native_1Play(JNIEnv *env, jobject thiz,
                                                         jlong player_handle) {
     if (player_handle != 0) {
-        MediaPlayer *player = reinterpret_cast<MediaPlayer *>(player_handle);
+        auto *player = reinterpret_cast<VioletMediaPlayer *>(player_handle);
         player->Play();
     }
 }
@@ -56,7 +56,7 @@ JNIEXPORT void JNICALL
 Java_com_violet_libmedia_VioletVideoClient_native_1pause(JNIEnv *env, jobject thiz,
                                                          jlong player_handle) {
     if (player_handle != 0) {
-        MediaPlayer *player = reinterpret_cast<MediaPlayer *>(player_handle);
+        auto *player = reinterpret_cast<VioletMediaPlayer *>(player_handle);
         player->Pause();
     }
 }
@@ -65,7 +65,7 @@ JNIEXPORT void JNICALL
 Java_com_violet_libmedia_VioletVideoClient_native_1resume(JNIEnv *env, jobject thiz,
                                                           jlong player_handle) {
     if (player_handle != 0) {
-        MediaPlayer *player = reinterpret_cast<MediaPlayer *>(player_handle);
+        auto *player = reinterpret_cast<VioletMediaPlayer *>(player_handle);
         player->Resume();
     }
 }
@@ -74,7 +74,7 @@ JNIEXPORT void JNICALL
 Java_com_violet_libmedia_VioletVideoClient_native_1stop(JNIEnv *env, jobject thiz,
                                                         jlong player_handle) {
     if (player_handle != 0) {
-        MediaPlayer *player = reinterpret_cast<MediaPlayer *>(player_handle);
+        auto *player = reinterpret_cast<VioletMediaPlayer *>(player_handle);
         player->Stop();
         delete player;
     }
@@ -86,7 +86,7 @@ Java_com_violet_libmedia_VioletVideoClient_native_1seekToPosition(JNIEnv *env, j
                                                                   jlong player_handle,
                                                                   jfloat position) {
     if (player_handle != 0) {
-        MediaPlayer *player = reinterpret_cast<MediaPlayer *>(player_handle);
+        auto *player = reinterpret_cast<VioletMediaPlayer *>(player_handle);
         player->SeekToPosition(position);
     }
 }
@@ -97,7 +97,7 @@ Java_com_violet_libmedia_VioletVideoClient_native_1onSurfaceCreated(JNIEnv *env,
                                                                     jlong player_handle,
                                                                     jobject surfaceObj) {
     if (player_handle != 0) {
-        MediaPlayer *player = reinterpret_cast<MediaPlayer *>(player_handle);
+        auto *player = reinterpret_cast<VioletMediaPlayer *>(player_handle);
         player->OnSurfaceCreated(env, surfaceObj);
     }
 }
@@ -108,7 +108,7 @@ Java_com_violet_libmedia_VioletVideoClient_native_1onSurfaceChanged(JNIEnv *env,
                                                                     jlong player_handle, jint w,
                                                                     jint h) {
     if (player_handle != 0) {
-        MediaPlayer *player = reinterpret_cast<MediaPlayer *>(player_handle);
+        auto *player = reinterpret_cast<VioletMediaPlayer *>(player_handle);
         player->OnSurfaceChanged(w, h);
     }
 }
@@ -118,7 +118,7 @@ JNIEXPORT void JNICALL
 Java_com_violet_libmedia_VioletVideoClient_native_1onSurfaceDestroyed(JNIEnv *env, jobject thiz,
                                                                       jlong player_handle) {
     if (player_handle != 0) {
-        MediaPlayer *player = reinterpret_cast<MediaPlayer *>(player_handle);
+        auto *player = reinterpret_cast<VioletMediaPlayer *>(player_handle);
         player->OnSurfaceDestroyed();
     }
 }

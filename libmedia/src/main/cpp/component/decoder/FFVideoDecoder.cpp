@@ -2,15 +2,16 @@
 // Created by bronyna on 2023/7/16.
 //
 
-#include "VideoFFDecoder.h"
+#include "FFVideoDecoder.h"
 
 #include <utility>
 
-VideoFFDecoder::VideoFFDecoder(DecoderCallback *callback): FFmpegDecoder(callback) {
+FFVideoDecoder::FFVideoDecoder(DecoderCallback *callback, double timebase)
+        : FFBaseDecoder(callback, timebase) {
     hw_ctx = nullptr;
 }
 
-int VideoFFDecoder::OpenCodec(const AVCodecParameters *param) {
+int FFVideoDecoder::OpenCodec(const AVCodecParameters *param) {
     enum AVHWDeviceType deviceType;
     AVCodecID codecId = param->codec_id;
     bool supportHwCodec = true;
@@ -21,7 +22,8 @@ int VideoFFDecoder::OpenCodec(const AVCodecParameters *param) {
     supportHwCodec = deviceType != AV_HWDEVICE_TYPE_NONE;
     if (!supportHwCodec) {
         while ((deviceType = av_hwdevice_iterate_types(deviceType)) != AV_HWDEVICE_TYPE_NONE) {
-            LOGCATE("VideoFFDecoder::OpenCodec Available device types:%s", av_hwdevice_get_type_name(deviceType))
+            LOGCATE("FFVideoDecoder::OpenCodec Available device types:%s",
+                    av_hwdevice_get_type_name(deviceType))
         }
     }
 
@@ -39,10 +41,12 @@ int VideoFFDecoder::OpenCodec(const AVCodecParameters *param) {
         for (i = 0;; i++) {
             const AVCodecHWConfig *config = avcodec_get_hw_config(m_Codec, i);
             if (!config) {
-                LOGCATE("Decoder %s does not support device type %s.\n", m_Codec->name, av_hwdevice_get_type_name(deviceType))
+                LOGCATE("Decoder %s does not support device type %s.\n", m_Codec->name,
+                        av_hwdevice_get_type_name(deviceType))
                 supportHwCodec = false;
                 m_Codec = avcodec_find_decoder(codecId); // 不支持时切换软解码器
-            } else if (config->methods & AV_CODEC_HW_CONFIG_METHOD_HW_DEVICE_CTX && config->device_type == deviceType) {
+            } else if (config->methods & AV_CODEC_HW_CONFIG_METHOD_HW_DEVICE_CTX &&
+                       config->device_type == deviceType) {
                 pix_fmt = config->pix_fmt;
                 LOGCATE("%s support pix format: %d.\n", m_Codec->name, config->pix_fmt)
                 break;
@@ -51,7 +55,7 @@ int VideoFFDecoder::OpenCodec(const AVCodecParameters *param) {
     } else {
         m_Codec = avcodec_find_decoder(codecId);
     }
-    if (!m_Codec){
+    if (!m_Codec) {
         return result;
     }
 
@@ -67,7 +71,7 @@ int VideoFFDecoder::OpenCodec(const AVCodecParameters *param) {
 
     result = avcodec_parameters_to_context(m_CodecCtx, param);
     if (result < 0) {
-        LOGCATE("VideoFFDecoder::OpenCodec avcodec_parameters_to_context fail.")
+        LOGCATE("FFVideoDecoder::OpenCodec avcodec_parameters_to_context fail.")
         return result;
     }
 
@@ -80,19 +84,19 @@ int VideoFFDecoder::OpenCodec(const AVCodecParameters *param) {
     // 打开解码器
     result = avcodec_open2(m_CodecCtx, m_Codec, &pAVDictionary);
     if (result < 0) {
-        LOGCATE("VideoFFDecoder::OpenCodec avcodec_open2 fail.")
+        LOGCATE("FFVideoDecoder::OpenCodec avcodec_open2 fail.")
     }
 
     return result;
 }
 
-std::shared_ptr<MediaFrame> VideoFFDecoder::OnFrameAvailable(AVFrame *avFrame, double timeBase) {
-//    LOGCATE("AVInputEngine::VideoFrameAvailable")
+std::shared_ptr<MediaFrame> FFVideoDecoder::OnFrameAvailable(AVFrame *avFrame) {
+//    LOGCATE("FFMediaInputEngine::VideoFrameAvailable")
     std::shared_ptr<MediaFrame> frame = std::make_shared<MediaFrame>();
     frame->type = AVMEDIA_TYPE_VIDEO;
 
-    long dts = (long) ((avFrame->pkt_dts * timeBase) * 1000);
-    long pts = (long) ((avFrame->pts * timeBase) * 1000);
+    long dts = (long) ((avFrame->pkt_dts * timebase) * 1000);
+    long pts = (long) ((avFrame->pts * timebase) * 1000);
 
     switch (avFrame->format) {
         case AV_PIX_FMT_YUV420P:
@@ -166,7 +170,8 @@ std::shared_ptr<MediaFrame> VideoFFDecoder::OnFrameAvailable(AVFrame *avFrame, d
     return frame;
 }
 
-enum AVPixelFormat VideoFFDecoder::GetHwFormat(AVCodecContext *ctx, const enum AVPixelFormat *pix_fmts) {
+enum AVPixelFormat
+FFVideoDecoder::GetHwFormat(AVCodecContext *ctx, const enum AVPixelFormat *pix_fmts) {
     const enum AVPixelFormat *p;
 
     for (p = pix_fmts; *p != -1; p++) {
@@ -178,7 +183,8 @@ enum AVPixelFormat VideoFFDecoder::GetHwFormat(AVCodecContext *ctx, const enum A
     return AV_PIX_FMT_NONE;
 }
 
-int VideoFFDecoder::HwDecoderInit(AVCodecContext *c, AVBufferRef *hw_ctx, const enum AVHWDeviceType type) {
+int FFVideoDecoder::HwDecoderInit(AVCodecContext *c, AVBufferRef *hw_ctx,
+                                  const enum AVHWDeviceType type) {
     int err = 0;
 
     if ((err = av_hwdevice_ctx_create(&hw_ctx, type,
@@ -191,7 +197,7 @@ int VideoFFDecoder::HwDecoderInit(AVCodecContext *c, AVBufferRef *hw_ctx, const 
     return err;
 }
 
-VideoFFDecoder::~VideoFFDecoder() {
+FFVideoDecoder::~FFVideoDecoder() {
     if (hw_ctx) {
         av_buffer_unref(&hw_ctx);
         hw_ctx = nullptr;

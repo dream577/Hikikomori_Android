@@ -10,7 +10,8 @@ int VioletMediaPlayer::Init(JNIEnv *jniEnv, jobject obj, char *url, int decodeTy
 
     m_EventCallback = shared_ptr<MediaEventCallback>(new MediaEventCallback(jniEnv, obj));
 
-    m_InputEngine = shared_ptr<AVInputEngine>(new AVInputEngine(url, m_EventCallback, this));
+    m_InputEngine = shared_ptr<FFMediaInputEngine>(
+            new FFMediaInputEngine(url, m_EventCallback, this));
     int result = m_InputEngine->Init();
 
     m_ImageRenderWindow = shared_ptr<GLRenderWindow>(new GLRenderWindow(this));
@@ -68,7 +69,7 @@ void VioletMediaPlayer::Play() {
     SetPlayerState(STATE_PLAYING);
     m_InputEngine->StartDecodeLoop();
     m_AudioRender->StartRenderLoop();
-    m_ImageRenderWindow->StartRender();
+    m_ImageRenderWindow->StartRenderLoop();
 }
 
 void VioletMediaPlayer::Pause() {
@@ -133,12 +134,20 @@ void VioletMediaPlayer::FrameRendFinish(shared_ptr<MediaFrame> frame) {
     }
 }
 
-void VioletMediaPlayer::OnDecodeOneFrame(std::shared_ptr<MediaFrame> frame) {
-//    LOGCATE("VioletMediaPlayer::OnDecodeOneFrame MediaType=%d", frame->type)
+void VioletMediaPlayer::OnFrameReady(std::shared_ptr<MediaFrame> frame) {
+//    LOGCATE("VioletMediaPlayer::OnFrameReady MediaType=%d", frame->type)
     if (GetPlayerState() == STATE_STOP) return;
-    if (frame->flag == FLAG_SEEK_FINISH) {
-        m_AudioFrameQueue->clear();
-        m_VideoFrameQueue->clear();
+    if (frame->flag != FLAG_NONE) {
+        switch (frame->flag) {
+            case FLAG_SEEK_FINISH:
+                m_AudioFrameQueue->clear();
+                m_VideoFrameQueue->clear();
+                break;
+            default: {
+
+            }
+        }
+        return;
     }
 
     if (frame->type == AVMEDIA_TYPE_VIDEO) {

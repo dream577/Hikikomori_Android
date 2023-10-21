@@ -2,8 +2,8 @@
 // Created by bronyna on 2023/2/5.
 //
 
-#ifndef HIKIKOMORI_AVINPUTENGINE_H
-#define HIKIKOMORI_AVINPUTENGINE_H
+#ifndef HIKIKOMORI_FFMEDIAINPUTENGINE_H
+#define HIKIKOMORI_FFMEDIAINPUTENGINE_H
 
 extern "C" {
 #include "libavformat/avformat.h"
@@ -12,12 +12,12 @@ extern "C" {
 }
 
 #include "InputEngine.h"
-#include "VideoFFDecoder.h"
-#include "AudioFFDecoder.h"
+#include "FFVideoDecoder.h"
+#include "FFAudioDecoder.h"
 
 using namespace std;
 
-class AVInputEngine : public InputEngine {
+class FFMediaInputEngine : public InputEngine {
 private:
 
     char m_Path[MAX_PATH_LENGTH] = {0};               // 文件地址
@@ -27,21 +27,18 @@ private:
     shared_ptr<MediaEventCallback> m_EventCallback;
 
     AVFormatContext *m_AVFormatContext = nullptr;     // 封装格式上下文
-    int m_SeekFinish = 0x00;
 
     /*
      * Video相关
      */
-    shared_ptr<VideoFFDecoder> m_VideoCodec;
-    double m_VideoTimebase;
+    shared_ptr<FFVideoDecoder> m_VideoCodec;
     int m_VideoStreamIndex;
     bool m_VideoEnable;
 
     /*
      * Audio相关
      */
-    shared_ptr<AudioFFDecoder> m_AudioCodec;
-    double m_AudioTimebase;
+    shared_ptr<FFAudioDecoder> m_AudioCodec;
     int m_AudioStreamIndex;
     bool m_AudioEnable;
 
@@ -61,9 +58,9 @@ protected:
 
 public:
 
-    AVInputEngine(const char *path, shared_ptr<MediaEventCallback> event_cb, DecoderCallback *decoder_cb);
+    FFMediaInputEngine(const char *path, shared_ptr<MediaEventCallback> event_cb, DecoderCallback *decoder_cb);
 
-    virtual ~AVInputEngine();
+    virtual ~FFMediaInputEngine();
 };
 
-#endif //HIKIKOMORI_AVINPUTENGINE_H
+#endif //HIKIKOMORI_FFMEDIAINPUTENGINE_H

@@ -2,10 +2,10 @@
 // Created by bronyna on 2023/7/16.
 //
 
-#ifndef HIKIKOMORI_AUDIOFFDECODER_H
-#define HIKIKOMORI_AUDIOFFDECODER_H
+#ifndef HIKIKOMORI_FFAUDIODECODER_H
+#define HIKIKOMORI_FFAUDIODECODER_H
 
-#include "FFmpegDeocder.h"
+#include "FFBaseDeocder.h"
 #include <utility>
 
 extern "C" {
@@ -19,7 +19,7 @@ extern "C" {
 #define AUDIO_DST_BIT_RATE          64000                   // 音频编码比特率
 #define ACC_NB_SAMPLES              1024                    // ACC音频一帧采样数
 
-class AudioFFDecoder : public FFmpegDecoder {
+class FFAudioDecoder : public FFBaseDecoder {
 private:
     SwrContext *m_SwrContext;    // audio resample context
     int m_nbSamples = 0;         // number of sample per channel
@@ -27,16 +27,16 @@ private:
     uint8_t *m_AudioOutBuffer;
 
 protected:
-    std::shared_ptr<MediaFrame> OnFrameAvailable(AVFrame *frame, double timeBase) override;
+    std::shared_ptr<MediaFrame> OnFrameAvailable(AVFrame *frame) override;
 
 public:
-    AudioFFDecoder(DecoderCallback *callback);
+    FFAudioDecoder(DecoderCallback *callback, double timebase);
 
     int OpenCodec(const AVCodecParameters *param) override;
 
-    ~AudioFFDecoder();
+    ~FFAudioDecoder();
 
 };
 
 
-#endif //HIKIKOMORI_AUDIOFFDECODER_H
+#endif //HIKIKOMORI_FFAUDIODECODER_H

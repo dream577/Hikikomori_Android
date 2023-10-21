@@ -5,9 +5,9 @@
 #ifndef HIKIKOMORI_MEDIAPLAYER_H
 #define HIKIKOMORI_MEDIAPLAYER_H
 
-#include "ImageRenderItf.h"
+#include "AVSurface.h"
 
-class MediaPlayer : public ImageRenderItf {
+class MediaPlayer {
 public:
     MediaPlayer() {};
 

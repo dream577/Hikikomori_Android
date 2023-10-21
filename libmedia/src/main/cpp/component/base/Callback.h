@@ -25,7 +25,7 @@ public:
 
 class DecoderCallback {
 public:
-    virtual void OnDecodeOneFrame(std::shared_ptr<MediaFrame> frame) = 0;
+    virtual void OnFrameReady(std::shared_ptr<MediaFrame> frame) = 0;
 
     virtual int GetPlayerState() = 0;
 

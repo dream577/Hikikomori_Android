@@ -2,8 +2,8 @@
 // Created by bronyna on 2023/7/16.
 //
 
-#ifndef HIKIKOMORI_FFMPEGDEOCDER_H
-#define HIKIKOMORI_FFMPEGDEOCDER_H
+#ifndef HIKIKOMORI_FFBASEDEOCDER_H
+#define HIKIKOMORI_FFBASEDEOCDER_H
 
 #include <memory>
 
@@ -15,7 +15,7 @@ extern "C" {
 #include "LogUtil.h"
 #include "Callback.h"
 
-class FFmpegDecoder {
+class FFBaseDecoder {
 private:
     AVFrame *m_Frame;
 
@@ -24,22 +24,25 @@ protected:
 
     AVCodecContext *m_CodecCtx;
 
+    double timebase = 0;
+
     const AVCodec *m_Codec;
 
-    virtual std::shared_ptr<MediaFrame> OnFrameAvailable(AVFrame *frame, double timeBase) = 0;
+    virtual std::shared_ptr<MediaFrame> OnFrameAvailable(AVFrame *frame) = 0;
 
 public:
 
-    FFmpegDecoder(DecoderCallback *callback) {
+    FFBaseDecoder(DecoderCallback *callback, double timebase) {
         this->m_Callback = callback;
-        m_CodecCtx = nullptr;
-        m_Codec = nullptr;
-        m_Frame = av_frame_alloc();
+        this->m_CodecCtx = nullptr;
+        this->m_Codec = nullptr;
+        this->m_Frame = av_frame_alloc();
+        this->timebase = timebase;
     }
 
     virtual int OpenCodec(const AVCodecParameters *param) = 0;
 
-    int Decode(AVPacket *packet, double timeBase, int &flag) {
+    int Decode(AVPacket *packet) {
         int result = 0;
         int frameCount = 0;
         result = avcodec_send_packet(m_CodecCtx, packet);
@@ -48,20 +51,9 @@ public:
         }
 
         while ((result = avcodec_receive_frame(m_CodecCtx, m_Frame)) == 0) {
-            std::shared_ptr<MediaFrame> frame = OnFrameAvailable(m_Frame, timeBase);
+            std::shared_ptr<MediaFrame> frame = OnFrameAvailable(m_Frame);
             frameCount++;
-            if (m_CodecCtx->codec_type == AVMEDIA_TYPE_VIDEO) {
-                if (flag & 0x01) {
-                    frame->flag = FLAG_SEEK_FINISH;
-                    flag = flag & 0x10;
-                }
-            } else {
-                if (flag & 0x10) {
-                    frame->flag = FLAG_SEEK_FINISH;
-                    flag = flag & 0x01;
-                }
-            }
-            m_Callback->OnDecodeOneFrame(frame);
+            m_Callback->OnFrameReady(frame);
         }
 
         __EXIT:
@@ -84,10 +76,10 @@ public:
         }
     }
 
-    ~FFmpegDecoder() {
+    ~FFBaseDecoder() {
         CloseCodec();
         m_Callback = nullptr;
     }
 };
 
-#endif //HIKIKOMORI_FFMPEGDEOCDER_H
+#endif //HIKIKOMORI_FFBASEDEOCDER_H

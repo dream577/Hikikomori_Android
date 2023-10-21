@@ -41,7 +41,7 @@ enum PlayerState {
 };
 
 enum FrameFlag {
-    FLAG_NONE = 0,
+    FLAG_NONE = -1,
     FLAG_SEEK_FINISH,  // seek操作结束后的第一帧
     FLAG_RECORD_END,   // 录制的最后一帧
 };

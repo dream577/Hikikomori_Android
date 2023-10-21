@@ -77,10 +77,10 @@ static char fShaderStr[] =
 GLushort indices[] = {0, 1, 2, 0, 2, 3};
 
 GLfloat verticesCoords[] = {
-        -1.0f, 1.0f, 0.0f, 0.0f, 0.0f,
-        -1.0f, -1.0f, 0.0f, 0.0f, 1.0f,
+        -1.0f,   1.0f,  0.0f,  0.0f,  0.0f,
+        -1.0f,  -1.0f,  0.0f,  0.0f,  1.0f,
         1.0f, -1.0f, 0.0f, 1.0f, 1.0f,
-        1.0f, 1.0f, 0.0f, 1.0f, 0.0f
+        1.0f,  1.0f, 0.0f, 1.0f, 0.0f
 };
 
 GLfloat textureCoords[] = {

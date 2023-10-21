@@ -2,12 +2,12 @@
 // Created by 郝留凯 on 2023/7/2.
 //
 
-#ifndef HIKIKOMORI_IMAGERENDERITF_H
-#define HIKIKOMORI_IMAGERENDERITF_H
+#ifndef HIKIKOMORI_AVSURFACE_H
+#define HIKIKOMORI_AVSURFACE_H
 
 #include <jni.h>
 
-class ImageRenderItf {
+class AVSurface {
 public:
     virtual void OnSurfaceCreated(JNIEnv *jniEnv, jobject surface) = 0;
 
@@ -16,4 +16,4 @@ public:
     virtual void OnSurfaceDestroyed() = 0;
 };
 
-#endif //HIKIKOMORI_IMAGERENDERITF_H
+#endif //HIKIKOMORI_AVSURFACE_H

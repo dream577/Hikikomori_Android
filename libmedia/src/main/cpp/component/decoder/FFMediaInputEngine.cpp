@@ -2,33 +2,31 @@
 // Created by bronyna on 2023/2/5.
 //
 
-#include "AVInputEngine.h"
+#include "FFMediaInputEngine.h"
 
 #include <utility>
 
-AVInputEngine::AVInputEngine(const char *path, shared_ptr<MediaEventCallback> event_cb,
-                             DecoderCallback *decoder_cb) {
+FFMediaInputEngine::FFMediaInputEngine(const char *path, shared_ptr<MediaEventCallback> event_cb,
+                                       DecoderCallback *decoder_cb) {
     this->m_EventCallback = event_cb;
     this->m_DecoderCallback = decoder_cb;
     strcpy(m_Path, path);
 
     m_VideoEnable = false;
     m_VideoStreamIndex = 0;
-    m_VideoTimebase = 0;
 
     m_AudioEnable = false;
     m_AudioStreamIndex = 0;
-    m_AudioTimebase = 0;
 
     m_Pkt = nullptr;
 }
 
-int AVInputEngine::_Init() {
-    LOGCATE("AVInputEngine::_Init")
+int FFMediaInputEngine::_Init() {
+    LOGCATE("FFMediaInputEngine::_Init")
     int result = 0;
 
     if (m_DecoderCallback == nullptr) {
-        LOGCATE("AVInputEngine::_Init m_DecoderCallback==nullptr")
+        LOGCATE("FFMediaInputEngine::_Init m_DecoderCallback==nullptr")
         return result;
     }
     do {
@@ -38,24 +36,24 @@ int AVInputEngine::_Init() {
         // 打开文件
         result = avformat_open_input(&m_AVFormatContext, m_Path, nullptr, nullptr);
         if (result < 0) {
-            LOGCATE("AVInputEngine::_Init avformat_open_input fail")
+            LOGCATE("FFMediaInputEngine::_Init avformat_open_input fail")
             break;
         }
 
         // 获取音视频流信息
         result = avformat_find_stream_info(m_AVFormatContext, nullptr);
         if (result < 0) {
-            LOGCATE("AVInputEngine::_Init avformat_find_stream_info fail")
+            LOGCATE("FFMediaInputEngine::_Init avformat_find_stream_info fail")
             break;
         }
 
         m_VideoStreamIndex = av_find_best_stream(m_AVFormatContext, AVMEDIA_TYPE_VIDEO, -1,
                                                  -1, nullptr, 0);
-        LOGCATE("AVInputEngine::FindVideoStream, video_stream_index=%d", m_VideoStreamIndex)
+        LOGCATE("FFMediaInputEngine::FindVideoStream, video_stream_index=%d", m_VideoStreamIndex)
         if (m_VideoStreamIndex >= 0) {
-            m_VideoCodec = make_shared<VideoFFDecoder>(m_DecoderCallback);
             AVCodecParameters *m_VideoParam = m_AVFormatContext->streams[m_VideoStreamIndex]->codecpar;
-            m_VideoTimebase = av_q2d(m_AVFormatContext->streams[m_VideoStreamIndex]->time_base);
+            double m_VideoTimebase = av_q2d(m_AVFormatContext->streams[m_VideoStreamIndex]->time_base);
+            m_VideoCodec = make_shared<FFVideoDecoder>(m_DecoderCallback,m_VideoTimebase);
             result = m_VideoCodec->OpenCodec(m_VideoParam);
             m_VideoEnable = result >= 0;
         }
@@ -63,10 +61,10 @@ int AVInputEngine::_Init() {
         m_AudioStreamIndex = av_find_best_stream(m_AVFormatContext, AVMEDIA_TYPE_AUDIO, -1,
                                                  -1, nullptr, 0);
         if (m_AudioStreamIndex >= 0) {
-            LOGCATE("AVInputEngine::FindAudioStream, audio_stream_index=%d", m_AudioStreamIndex)
-            m_AudioCodec = make_shared<AudioFFDecoder>(m_DecoderCallback);
+            LOGCATE("FFMediaInputEngine::FindAudioStream, audio_stream_index=%d", m_AudioStreamIndex)
             AVCodecParameters *m_AudioParam = m_AVFormatContext->streams[m_AudioStreamIndex]->codecpar;
-            m_AudioTimebase = av_q2d(m_AVFormatContext->streams[m_AudioStreamIndex]->time_base);
+            double m_AudioTimebase = av_q2d(m_AVFormatContext->streams[m_AudioStreamIndex]->time_base);
+            m_AudioCodec = make_shared<FFAudioDecoder>(m_DecoderCallback, m_AudioTimebase);
             result = m_AudioCodec->OpenCodec(m_AudioParam);
             m_AudioEnable = result >= 0;
         }
@@ -79,8 +77,8 @@ int AVInputEngine::_Init() {
     return result;
 }
 
-int AVInputEngine::_UnInit() {
-    LOGCATE("AVInputEngine::_UnInit start");
+int FFMediaInputEngine::_UnInit() {
+    LOGCATE("FFMediaInputEngine::_UnInit start");
     if (m_Pkt) {
         av_packet_free(&m_Pkt);
         m_Pkt = nullptr;
@@ -93,12 +91,12 @@ int AVInputEngine::_UnInit() {
     if (m_EventCallback) {
         m_EventCallback = nullptr;
     }
-    LOGCATE("AVInputEngine::unInit finish");
+    LOGCATE("FFMediaInputEngine::unInit finish");
     return 0;
 }
 
-void AVInputEngine::_DecoderLoop() {
-//    LOGCATE("AVInputEngine::decodeLoop");
+void FFMediaInputEngine::_DecoderLoop() {
+//    LOGCATE("FFMediaInputEngine::decodeLoop");
     while (m_DecoderCallback->GetPlayerState() == STATE_PAUSE) {
         av_usleep(10 * 1000);
     }
@@ -107,8 +105,8 @@ void AVInputEngine::_DecoderLoop() {
     }
 }
 
-int AVInputEngine::DecoderLoopOnce() {
-    LOGCATE("AVInputEngine::DecoderLoopOnce")
+int FFMediaInputEngine::DecoderLoopOnce() {
+    LOGCATE("FFMediaInputEngine::DecoderLoopOnce")
     if (m_SeekPosition > 0) {
         auto seek_target = static_cast<int64_t>(m_SeekPosition * 1000000);
         int64_t seek_min = INT64_MIN;
@@ -123,8 +121,10 @@ int AVInputEngine::DecoderLoopOnce() {
             if (m_VideoCodec) {
                 m_VideoCodec->flush();
             }
-            LOGCATE("AVInputEngine::DecoderLoopOnce success while seeking")
-            m_SeekFinish = 0x11;
+            std::shared_ptr<MediaFrame> frame = std::make_shared<MediaFrame>();
+            frame->flag = FLAG_SEEK_FINISH;
+            m_DecoderCallback->OnFrameReady(frame);
+            LOGCATE("FFMediaInputEngine::DecoderLoopOnce success while seeking")
         }
         m_SeekPosition = -1;   // 重置seek标志位
     }
@@ -132,10 +132,10 @@ int AVInputEngine::DecoderLoopOnce() {
     int result = av_read_frame(m_AVFormatContext, m_Pkt);
     while (result == 0) {
         if (m_Pkt->stream_index == m_VideoStreamIndex && m_VideoEnable) {
-            result = m_VideoCodec->Decode(m_Pkt, m_VideoTimebase, m_SeekFinish);
+            result = m_VideoCodec->Decode(m_Pkt);
         }
         if (m_Pkt->stream_index == m_AudioStreamIndex && m_AudioEnable) {
-            result = m_AudioCodec->Decode(m_Pkt, m_AudioTimebase, m_SeekFinish);
+            result = m_AudioCodec->Decode(m_Pkt);
         }
 
         switch (result) {
@@ -162,11 +162,11 @@ int AVInputEngine::DecoderLoopOnce() {
     return result;
 }
 
-void AVInputEngine::_SeekPosition(float timestamp) {
+void FFMediaInputEngine::_SeekPosition(float timestamp) {
     m_SeekPosition = timestamp;
 }
 
-AVInputEngine::~AVInputEngine() {
+FFMediaInputEngine::~FFMediaInputEngine() {
     InputEngine::UnInit();
     m_DecoderCallback = nullptr;
     m_EventCallback = nullptr;

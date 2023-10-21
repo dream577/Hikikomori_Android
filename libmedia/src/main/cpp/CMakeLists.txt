@@ -35,8 +35,6 @@ file(GLOB src-files
         ${CMAKE_SOURCE_DIR}/client/player/*cpp
         ${CMAKE_SOURCE_DIR}/component/base/*cpp
         ${CMAKE_SOURCE_DIR}/component/decoder/*cpp
-        ${CMAKE_SOURCE_DIR}/component/decoder/AudioSoftwareDecoder.cpp
-        ${CMAKE_SOURCE_DIR}/component/decoder/VideoSoftwareDecoder.cpp
         ${CMAKE_SOURCE_DIR}/component/render/*cpp
         ${CMAKE_SOURCE_DIR}/component/render/audio/*cpp
         ${CMAKE_SOURCE_DIR}/component/render/video/*cpp

@@ -12,7 +12,7 @@
 #include <GLES3/gl3.h>
 
 #include "MediaDef.h"
-#include "ImageRenderItf.h"
+#include "AVSurface.h"
 #include "NativeAssertManager.h"
 
 #define MATH_PI 3.1415926535897932384626433832802
@@ -21,7 +21,7 @@
 using namespace std;
 using namespace glm;
 
-class ImageGLRender : public ImageRenderItf {
+class ImageGLRender : public AVSurface {
 private:
     GLuint m_Program = GL_NONE;
     GLuint m_TextureId[3];

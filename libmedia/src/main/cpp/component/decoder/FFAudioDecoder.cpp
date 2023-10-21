@@ -2,15 +2,15 @@
 // Created by bronyna on 2023/7/16.
 //
 
-#include "AudioFFDecoder.h"
+#include "FFAudioDecoder.h"
 
-AudioFFDecoder::AudioFFDecoder(DecoderCallback *callback) : FFmpegDecoder(
-        callback) {
+FFAudioDecoder::FFAudioDecoder(DecoderCallback *callback, double timebase) : FFBaseDecoder(
+        callback, timebase) {
     m_SwrContext = nullptr;
     m_AudioOutBuffer = nullptr;
 }
 
-int AudioFFDecoder::OpenCodec(const AVCodecParameters *param) {
+int FFAudioDecoder::OpenCodec(const AVCodecParameters *param) {
     AVCodecID codecId = param->codec_id;
     int result = -1;
 
@@ -26,7 +26,7 @@ int AudioFFDecoder::OpenCodec(const AVCodecParameters *param) {
 
     result = avcodec_parameters_to_context(m_CodecCtx, param);
     if (result < 0) {
-        LOGCATE("AudioFFDecoder::OpenCodec avcodec_parameters_to_context fail.")
+        LOGCATE("FFAudioDecoder::OpenCodec avcodec_parameters_to_context fail.")
         return result;
     }
 
@@ -39,7 +39,7 @@ int AudioFFDecoder::OpenCodec(const AVCodecParameters *param) {
     // 打开解码器
     result = avcodec_open2(m_CodecCtx, m_Codec, &pAVDictionary);
     if (result < 0) {
-        LOGCATE("AudioFFDecoder::OpenCodec avcodec_open2 fail.")
+        LOGCATE("FFAudioDecoder::OpenCodec avcodec_open2 fail.")
         return result;
     }
 
@@ -55,7 +55,7 @@ int AudioFFDecoder::OpenCodec(const AVCodecParameters *param) {
 
     swr_init(m_SwrContext);
 
-    LOGCATE("AudioFFDecoder::OpenCodec audio metadata sample rate: %d, channel: %d, format: %d, frame_size: %d, layout: %lu",
+    LOGCATE("FFAudioDecoder::OpenCodec audio metadata sample rate: %d, channel: %d, format: %d, frame_size: %d, layout: %lu",
             m_CodecCtx->sample_rate, m_CodecCtx->channels, m_CodecCtx->sample_fmt,
             m_CodecCtx->frame_size, m_CodecCtx->channel_layout)
     m_nbSamples = (int) av_rescale_rnd(ACC_NB_SAMPLES, AUDIO_DST_SAMPLE_RATE,
@@ -63,7 +63,7 @@ int AudioFFDecoder::OpenCodec(const AVCodecParameters *param) {
     m_DstFrameDataSize = av_samples_get_buffer_size(nullptr, AUDIO_DST_CHANNEL_COUNTS,
                                                     m_nbSamples, AV_SAMPLE_FMT_S16, 1);
 
-    LOGCATE("AudioFFDecoder::OpenCodec [m_nbSamples, m_DstFrameDataSize]=[%d, %d]",
+    LOGCATE("FFAudioDecoder::OpenCodec [m_nbSamples, m_DstFrameDataSize]=[%d, %d]",
             m_nbSamples, m_DstFrameDataSize);
 
     m_AudioOutBuffer = (uint8_t *) malloc(m_DstFrameDataSize);
@@ -71,7 +71,7 @@ int AudioFFDecoder::OpenCodec(const AVCodecParameters *param) {
     return result;
 }
 
-std::shared_ptr<MediaFrame> AudioFFDecoder::OnFrameAvailable(AVFrame *avFrame, double timeBase) {
+std::shared_ptr<MediaFrame> FFAudioDecoder::OnFrameAvailable(AVFrame *avFrame) {
 
     int result = swr_convert(m_SwrContext, &m_AudioOutBuffer, m_DstFrameDataSize / 2,
                              (const uint8_t **) avFrame->data, avFrame->nb_samples);
@@ -81,8 +81,8 @@ std::shared_ptr<MediaFrame> AudioFFDecoder::OnFrameAvailable(AVFrame *avFrame, d
         auto *data = (uint8_t *) malloc(m_DstFrameDataSize);
         memcpy(data, m_AudioOutBuffer, m_DstFrameDataSize);
 
-        long dts = (long) ((avFrame->pkt_dts * timeBase) * 1000);
-        long pts = (long) ((avFrame->pts * timeBase) * 1000);
+        long dts = (long) ((avFrame->pkt_dts * timebase) * 1000);
+        long pts = (long) ((avFrame->pts * timebase) * 1000);
         int channels = m_CodecCtx->channels;
         int sampleRate = m_CodecCtx->sample_rate;
 
@@ -95,12 +95,12 @@ std::shared_ptr<MediaFrame> AudioFFDecoder::OnFrameAvailable(AVFrame *avFrame, d
         frame->format = -1;
     }
 
-//    LOGCATE("AudioFFDecoder::onFrameAvailable data_size=%d channels=%d sampleRate=%d dts=%ld pts=%ld format=%d",
+//    LOGCATE("FFAudioDecoder::onFrameAvailable data_size=%d channels=%d sampleRate=%d dts=%ld pts=%ld format=%d",
 //            m_DstFrameDataSize, frame->channels, frame->sampleRate, frame->pts, frame->dts, -1);
     return frame;
 }
 
-AudioFFDecoder::~AudioFFDecoder() {
+FFAudioDecoder::~FFAudioDecoder() {
     if (m_SwrContext) {
         swr_free(&m_SwrContext);
         m_SwrContext = nullptr;

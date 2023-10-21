@@ -60,7 +60,7 @@ CameraVideoRecorder::CameraVideoRecorder() {
     LOGCATE("CameraVideoRecorder::CameraVideoRecorder")
     m_RenderWindow = make_shared<GLRenderWindow>(this);
     m_VideoRenderQueue = make_shared<LinkedBlockingQueue<MediaFrame>>(10);
-    m_RenderWindow->StartRender();
+    m_RenderWindow->StartRenderLoop();
 
     m_FormatCtx = nullptr;
     m_VideoOst = nullptr;

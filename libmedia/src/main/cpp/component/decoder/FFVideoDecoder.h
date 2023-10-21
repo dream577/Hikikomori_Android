@@ -2,24 +2,24 @@
 // Created by bronyna on 2023/7/16.
 //
 
-#ifndef HIKIKOMORI_VIDEOFFDECODER_H
-#define HIKIKOMORI_VIDEOFFDECODER_H
+#ifndef HIKIKOMORI_FFVIDEODECODER_H
+#define HIKIKOMORI_FFVIDEODECODER_H
 
-#include "FFmpegDeocder.h"
+#include "FFBaseDeocder.h"
 
 static enum AVPixelFormat hw_pix_fmt;
 
-class VideoFFDecoder : public FFmpegDecoder {
+class FFVideoDecoder : public FFBaseDecoder {
 
 private:
     AVBufferRef *hw_ctx;
     AVPixelFormat pix_fmt;
 
 protected:
-    std::shared_ptr<MediaFrame> OnFrameAvailable(AVFrame *frame, double timeBase) override;
+    std::shared_ptr<MediaFrame> OnFrameAvailable(AVFrame *frame) override;
 
 public:
-    VideoFFDecoder(DecoderCallback *callback);
+    FFVideoDecoder(DecoderCallback *callback, double timebase);
 
     int OpenCodec(const AVCodecParameters *param) override;
 
@@ -28,8 +28,8 @@ public:
     static int
     HwDecoderInit(AVCodecContext *c, AVBufferRef *hw_ctx, const enum AVHWDeviceType type);
 
-    ~VideoFFDecoder();
+    ~FFVideoDecoder();
 };
 
 
-#endif //HIKIKOMORI_VIDEOFFDECODER_H
+#endif //HIKIKOMORI_FFVIDEODECODER_H

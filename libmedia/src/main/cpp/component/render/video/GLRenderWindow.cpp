@@ -61,7 +61,7 @@ void GLRenderWindow::OnSurfaceDestroyed() {
     post(MESSAGE_ON_SURFACE_DESTROY, nullptr, true);
 }
 
-void GLRenderWindow::StartRender() {
+void GLRenderWindow::StartRenderLoop() {
     enableAutoLoop(&mLoopMsg);
 }
 

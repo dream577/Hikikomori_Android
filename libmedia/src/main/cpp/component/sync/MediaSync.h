@@ -33,5 +33,24 @@ private:
     long m_LastVideoPts = 0; // 上一帧视频的时间戳
 };
 
+class SyncClock {
+
+};
+
+class Sync {
+protected:
+    SyncClock clock;
+
+    long lastFramePts;
+};
+
+class AudioSync : public Sync {
+
+};
+
+class VideoSync : public Sync {
+
+};
+
 
 #endif //HIKIKOMORI_MEDIASYNC_H
