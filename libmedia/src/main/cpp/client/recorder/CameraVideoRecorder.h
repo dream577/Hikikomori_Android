@@ -96,9 +96,9 @@ public:
         bool enable_video_record = false;
         int image_width = 1920;
         int image_height = 1080;
-        int image_format;
-        int video_bit_rate;
-        int frame_rate;
+        int image_format = IMAGE_FORMAT_I420;
+        int64_t video_bit_rate = 0;
+        int frame_rate = 15;
 
         bool enable_audio_record = false;
         int sample_rate = 44100;
@@ -141,12 +141,12 @@ public:
         }
 
         RecorderBuilder *ConfigVideoParam(int p_image_width, int p_image_height, int p_image_format,
-                                          int p_video_bit_rate, int p_fps) {
+                                          int64_t p_video_bit_rate, int p_frame_rate) {
             this->image_width = p_image_width;
             this->image_height = p_image_height;
             this->image_format = p_image_format;
             this->video_bit_rate = p_video_bit_rate;
-            this->frame_rate = p_fps;
+            this->frame_rate = p_frame_rate;
             return this;
         }
 

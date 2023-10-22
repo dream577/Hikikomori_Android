@@ -49,12 +49,6 @@ int FFAudioEncoder::OpenCodec(AVCodecParameters *parameters) {
         goto __EXIT;
     }
 
-    result = avcodec_parameters_from_context(parameters, m_CodecCtx);
-    if (result < 0) {
-        LOGCATE("FFAudioEncoder::OpenCodec avcodec_parameters_from_context error")
-        goto __EXIT;
-    }
-
     // 存放原始音频
     m_SrcFrame = av_frame_alloc();
     if (!m_SrcFrame) {
@@ -67,6 +61,7 @@ int FFAudioEncoder::OpenCodec(AVCodecParameters *parameters) {
     } else {
         nb_samples = m_CodecCtx->frame_size;
     }
+
     // 存放重采样之后的音频
     m_DstFrame = av_frame_alloc();
     if (!m_DstFrame) {
@@ -85,7 +80,13 @@ int FFAudioEncoder::OpenCodec(AVCodecParameters *parameters) {
         }
     }
 
-    m_CodecCtx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
+    result = avcodec_parameters_from_context(parameters, m_CodecCtx);
+    if (result < 0) {
+        LOGCATE("FFAudioEncoder::OpenCodec avcodec_parameters_from_context error")
+        goto __EXIT;
+    }
+
+//    m_CodecCtx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
 
     __EXIT:
     return result;

@@ -5,7 +5,7 @@
 #include "FFVideoEncoder.h"
 
 FFVideoEncoder::FFVideoEncoder(AVCodecID encoderId, int imageWidth,
-                               int imageHeight, int videoFrameRate, int videoBitRate)
+                               int imageHeight, int videoFrameRate, int64_t videoBitRate)
         : FFBaseEncoder(encoderId) {
     this->m_ImageWidth = imageWidth;
     this->m_ImageHeight = imageHeight;
@@ -39,8 +39,8 @@ int FFVideoEncoder::OpenCodec(AVCodecParameters *parameters) {
     m_CodecCtx->bit_rate = m_VideoBitRate;
     m_CodecCtx->width = m_ImageWidth;
     m_CodecCtx->height = m_ImageHeight;
-    m_CodecCtx->time_base = AVRational{1, m_VideoFrameRate};
-    m_CodecCtx->framerate = AVRational{m_VideoFrameRate, 1};
+    m_CodecCtx->time_base = (AVRational) {1, m_VideoFrameRate};
+    m_CodecCtx->framerate = (AVRational) {m_VideoFrameRate, 1};
     m_CodecCtx->gop_size = 12;
     m_CodecCtx->pix_fmt = AV_PIX_FMT_NV12;
 
@@ -51,13 +51,7 @@ int FFVideoEncoder::OpenCodec(AVCodecParameters *parameters) {
         goto __EXIT;
     }
 
-    result = avcodec_parameters_from_context(parameters, m_CodecCtx);
-    if (result < 0) {
-        LOGCATE("FFVideoEncoder::OpenCodec avcodec_parameters_from_context error")
-        goto __EXIT;
-    }
-
-    // 申请原始数据帧
+    // 存放原始数据帧
     m_SrcFrame = av_frame_alloc();
     if (!m_SrcFrame) {
         LOGCATE("FFVideoEncoder::OpenCodec av_frame_alloc error")
@@ -65,25 +59,29 @@ int FFVideoEncoder::OpenCodec(AVCodecParameters *parameters) {
         goto __EXIT;
     }
 
-    // 申请转换后的数据帧
+    // 存放转换后的数据帧
     m_DstFrame = av_frame_alloc();
     if (!m_DstFrame) {
         LOGCATE("FFVideoEncoder::OpenCodec av_frame_alloc error")
         result = -1;
         goto __EXIT;
     }
-
     m_DstFrame->format = m_CodecCtx->pix_fmt;
     m_DstFrame->width = m_CodecCtx->width;
     m_DstFrame->height = m_CodecCtx->height;
-
     result = av_frame_get_buffer(m_DstFrame, 1);
     if (result < 0) {
         LOGCATE("FFVideoEncoder::OpenCodec av_frame_get_buffer error")
         goto __EXIT;
     }
 
-    m_CodecCtx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
+    result = avcodec_parameters_from_context(parameters, m_CodecCtx);
+    if (result < 0) {
+        LOGCATE("FFVideoEncoder::OpenCodec avcodec_parameters_from_context error")
+        goto __EXIT;
+    }
+
+//    m_CodecCtx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
 
     LOGCATE("FFVideoEncoder::OpenCodec finish: %lld", GetSysCurrentTime())
     __EXIT:

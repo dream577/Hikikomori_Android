@@ -22,7 +22,7 @@ private:
     /**
      * 视频码率
      */
-    int m_VideoBitRate;
+    int64_t m_VideoBitRate;
 
     /**
      * 用于视频格式转换: RGB->NV12
@@ -30,7 +30,7 @@ private:
     SwsContext *m_SwsCtx = nullptr;
 public:
     FFVideoEncoder(AVCodecID encoderId, int imageWidth, int imageHeight,
-                   int videoFrameRate, int videoBitRate);
+                   int videoFrameRate, int64_t videoBitRate);
 
     int OpenCodec(AVCodecParameters *parameters) override;
 

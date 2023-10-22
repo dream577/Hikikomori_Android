@@ -7,7 +7,7 @@
 CameraVideoRecorder::CameraVideoRecorder() {
     LOGCATE("CameraVideoRecorder::CameraVideoRecorder")
     m_FormatCtx = nullptr;
-    m_VideoRenderQueue = make_shared<LinkedBlockingQueue<MediaFrame>>(60);
+    m_VideoRenderQueue = make_shared<LinkedBlockingQueue<MediaFrame>>(15);
     m_RenderWindow = make_shared<GLRenderWindow>(this);
     m_RenderWindow->StartRenderLoop();
 
@@ -38,8 +38,8 @@ int CameraVideoRecorder::Init() {
         m_AudioStream = avformat_new_stream(m_FormatCtx, nullptr);
         if (m_AudioStream) {
             m_AudioStream->id = (int) (m_FormatCtx->nb_streams) - 1;
-            m_AudioStream->time_base = AVRational{1, m_SampleRate};
             result = m_AudioEncoder->OpenCodec(m_AudioStream->codecpar);
+            m_AudioStream->time_base = (AVRational) {1, m_SampleRate};
         } else {
             m_EnableAudio = false;
             LOGCATE("CameraVideoRecorder::Init() open audio encoder error")
@@ -53,11 +53,10 @@ int CameraVideoRecorder::Init() {
         m_VideoEncoder->SetEncodeCallback(this);
         // 申请存放视频的AVStream
         m_VideoStream = avformat_new_stream(m_FormatCtx, nullptr);
-
         if (m_VideoStream) {
             m_VideoStream->id = (int) (m_FormatCtx->nb_streams) - 1;
-            m_VideoStream->time_base = AVRational{1, m_FrameRate};
             result = m_VideoEncoder->OpenCodec(m_VideoStream->codecpar);
+            m_VideoStream->time_base = (AVRational) {1, m_FrameRate};
         } else {
             m_EnableVideo = false;
             LOGCATE("CameraVideoRecorder::Init() open video encoder error")
@@ -175,18 +174,20 @@ void CameraVideoRecorder::FrameRendFinish(shared_ptr<MediaFrame> frame) {
 void CameraVideoRecorder::OnFrameEncoded(AVPacket *pkt, AVMediaType type) {
     if (type == AVMEDIA_TYPE_VIDEO) {
         pkt->stream_index = m_VideoStream->index;
-
-        AVRational *time_base = &m_VideoStream->time_base;
-        av_packet_rescale_ts(pkt, *time_base, *time_base);
-        LOGCATE("CameraVideoRecorder::OnFrameEncoded pts:%s pts_time:%s dts:%s dts_time:%s duration:%s duration_time:%s",
-                av_ts2str(pkt->pts), av_ts2timestr(pkt->pts, time_base),
-                av_ts2str(pkt->dts), av_ts2timestr(pkt->dts, time_base),
-                av_ts2str(pkt->duration), av_ts2timestr(pkt->duration, time_base))
+        AVRational dst_timebase = m_VideoStream->time_base;
+        av_packet_rescale_ts(pkt, AVRational{1, m_FrameRate}, dst_timebase);
+        LOGCATE("CameraVideoRecorder::OnFrameEncoded video[pts:%s pts_time:%s dts:%s dts_time:%s duration:%s duration_time:%s]",
+                av_ts2str(pkt->pts), av_ts2timestr(pkt->pts, &dst_timebase),
+                av_ts2str(pkt->dts), av_ts2timestr(pkt->dts, &dst_timebase),
+                av_ts2str(pkt->duration), av_ts2timestr(pkt->duration, &dst_timebase))
     } else {
         pkt->stream_index = m_AudioStream->index;
-        AVRational *time_base = &m_AudioStream->time_base;
-        av_packet_rescale_ts(pkt, *time_base, *time_base);
-        LOGCATE("CameraVideoRecorder::OnFrameEncoded pkt pts=%ld, size=%d", pkt->pts, pkt->size)
+        AVRational dst_timebase = m_AudioStream->time_base;
+        av_packet_rescale_ts(pkt, AVRational{1, m_SampleRate}, dst_timebase);
+        LOGCATE("CameraVideoRecorder::OnFrameEncoded audio[pts:%s pts_time:%s dts:%s dts_time:%s duration:%s duration_time:%s]",
+                av_ts2str(pkt->pts), av_ts2timestr(pkt->pts, &dst_timebase),
+                av_ts2str(pkt->dts), av_ts2timestr(pkt->dts, &dst_timebase),
+                av_ts2str(pkt->duration), av_ts2timestr(pkt->duration, &dst_timebase))
     }
     av_interleaved_write_frame(m_FormatCtx, pkt);
 }

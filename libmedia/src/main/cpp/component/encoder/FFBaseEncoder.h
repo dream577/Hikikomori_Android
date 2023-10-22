@@ -117,7 +117,7 @@ public:
 
 
     double GetCurrentTimestamp() {
-        return m_NextPts * av_q2d(m_CodecCtx->time_base);
+        return (double) m_NextPts * av_q2d(m_CodecCtx->time_base);
     }
 
     ~FFBaseEncoder() {
