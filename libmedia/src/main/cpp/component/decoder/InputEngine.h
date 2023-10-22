@@ -11,17 +11,16 @@
 #include "Callback.h"
 #include <memory>
 
-enum DecoderMsg {
-    MESSAGE_DECODER_INIT = 0,
-    MESSAGE_REINIT,
-    MESSAGE_DECODER_LOOP,
-    MESSAGE_DECODER_UNINIT,
-    MESSAGE_DECODER_SEEK
+enum VideoInputEngineMessage {
+    MESSAGE_INIT = 0,
+    MESSAGE_LOOP,
+    MESSAGE_UNINIT,
+    MESSAGE_SEEK
 };
 
 class InputEngine : public looper {
 private:
-    int mLoopMsg = MESSAGE_DECODER_LOOP;
+    int mLoopMsg = MESSAGE_LOOP;
     int result = -1;
     float mTempStamp = -1;
     sem_t runBlock;
@@ -46,21 +45,21 @@ public:
     }
 
     virtual int Init() {
-        post(MESSAGE_DECODER_INIT, nullptr);
+        post(MESSAGE_INIT, nullptr);
         sem_wait(&runBlock);
         return result;
     };
 
     virtual int UnInit() {
         disableAutoLoop();
-        post(MESSAGE_DECODER_UNINIT, nullptr);
+        post(MESSAGE_UNINIT, nullptr);
         quit();
         return 0;
     }
 
     virtual int SeekPosition(float timestamp) {
         mTempStamp = timestamp;
-        post(MESSAGE_DECODER_SEEK, &mTempStamp);
+        post(MESSAGE_SEEK, &mTempStamp);
         return 0;
     }
 
@@ -71,19 +70,19 @@ public:
     virtual void handle(int what, void *data) override {
         looper::handle(what, data);
         switch (what) {
-            case MESSAGE_DECODER_INIT:
+            case MESSAGE_INIT:
                 result = init();
                 sem_post(&runBlock);
                 break;
-            case MESSAGE_DECODER_LOOP:
+            case MESSAGE_LOOP:
                 decodeLoop();
                 break;
-            case MESSAGE_DECODER_SEEK: {
+            case MESSAGE_SEEK: {
                 float *ts = (float *) data;
                 seekToPosition(*ts);
                 break;
             }
-            case MESSAGE_DECODER_UNINIT:
+            case MESSAGE_UNINIT:
                 unInit();
                 break;
         }

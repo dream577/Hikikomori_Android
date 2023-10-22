@@ -127,7 +127,7 @@ class CameraRecordFragment : BaseBindingFragment<FragmentCameraRecordBinding>(),
             mSupportFpsRanges = mCharacteristics.get(CameraCharacteristics.CONTROL_AE_AVAILABLE_TARGET_FPS_RANGES)
             mSupportFpsRanges?.let {
                 for (i in it.indices) {
-                    KLog.d(TAG, "fps range${i} = ${it[i]}")
+                    KLog.d(TAG, "frame_rate range${i} = ${it[i]}")
                 }
             }
 

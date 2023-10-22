@@ -6,7 +6,7 @@ set(projectName moonmedia)
 project(${projectName})
 
 include_directories(
-        include
+        ${jniLibs}/include
         glm
         utils
         component
@@ -18,6 +18,9 @@ include_directories(
         component/decoder
         component/decoder/audio
         component/decoder/video
+        component/encoder
+        component/encoder/audio
+        component/encoder/video
         component/render
         component/render/audio
         component/render/video
@@ -35,13 +38,18 @@ file(GLOB src-files
         ${CMAKE_SOURCE_DIR}/client/player/*cpp
         ${CMAKE_SOURCE_DIR}/component/base/*cpp
         ${CMAKE_SOURCE_DIR}/component/decoder/*cpp
+        ${CMAKE_SOURCE_DIR}/component/decoder/audio/*cpp
+        ${CMAKE_SOURCE_DIR}/component/decoder/video/*cpp
         ${CMAKE_SOURCE_DIR}/component/render/*cpp
         ${CMAKE_SOURCE_DIR}/component/render/audio/*cpp
         ${CMAKE_SOURCE_DIR}/component/render/video/*cpp
+        ${CMAKE_SOURCE_DIR}/component/encoder/*cpp
+        ${CMAKE_SOURCE_DIR}/component/encoder/audio/*cpp
+        ${CMAKE_SOURCE_DIR}/component/encoder/video/*cpp
         ${CMAKE_SOURCE_DIR}/component/sync/*cpp
         ${CMAKE_SOURCE_DIR}/nativeapi/*cpp
         ${CMAKE_SOURCE_DIR}/utils/*cpp
-        )
+)
 
 add_library( # Sets the name of the library.
         ${projectName}
@@ -51,7 +59,7 @@ add_library( # Sets the name of the library.
 
         # Provides a relative path to your source file(s).
         ${src-files}
-        )
+)
 
 set(third-party-libs
         x264
@@ -80,4 +88,4 @@ target_link_libraries( # Specifies the target library.
         ${log-lib}
         ${third-party-libs}
         ${native-libs}
-        )
+)

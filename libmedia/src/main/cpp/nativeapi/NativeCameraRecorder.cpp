@@ -57,7 +57,7 @@ Java_com_violet_libmedia_recoder_video_camera_CameraRecordClient_native_1InputVi
         env->GetByteArrayRegion(data, 0, len, reinterpret_cast<jbyte *>(buf));
 
         auto *recorder = reinterpret_cast<CameraVideoRecorder *>(record_handle);
-        recorder->OnDrawVideoFrame(buf, width, height, format, timestamp);
+        recorder->InputVideoFrame(buf, width, height, format, timestamp);
     }
 }
 extern "C"
@@ -71,7 +71,7 @@ Java_com_violet_libmedia_recoder_video_camera_CameraRecordClient_native_1InputAu
         env->GetByteArrayRegion(data, 0, size, reinterpret_cast<jbyte *>(buf));
 
         auto *recorder = reinterpret_cast<CameraVideoRecorder *>(record_handle);
-        recorder->InputAudioData(buf, size, timestamp, sample_rate, sample_format, channel_layout);
+        recorder->InputAudioFrame(buf, size, timestamp, sample_rate, sample_format, channel_layout);
     }
 }
 extern "C"

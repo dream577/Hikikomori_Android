@@ -8,104 +8,13 @@
 #include "Callback.h"
 #include "GLRenderWindow.h"
 #include "CustomContainer.h"
+#include "FFVideoEncoder.h"
+#include "FFAudioEncoder.h"
 
-#include <stdio.h>
-#include <pthread.h>
-
-extern "C" {
-#include "libavcodec/avcodec.h"
-#include "libavcodec/codec.h"
-#include "libavformat/avformat.h"
-#include "libavutil/frame.h"
-#include "libavutil/time.h"
-#include "libavutil/opt.h"
-#include "libavutil/avassert.h"
-#include "libavutil/mathematics.h"
-#include "libavutil/timestamp.h"
-#include "libswresample/swresample.h"
-#include "libswscale/swscale.h"
-#include "libavutil/log.h"
-#include "libavformat/avio.h"
-}
-
-#define   ADTS_HEADER_LEN   7
-
-const int sampling_frequencies[] = {
-        96000,  // 0x0
-        88200,  // 0x1
-        64000,  // 0x2
-        48000,  // 0x3
-        44100,  // 0x4
-        32000,  // 0x5
-        24000,  // 0x6
-        22050,  // 0x7
-        16000,  // 0x8
-        12000,  // 0x9
-        11025,  // 0xa
-        8000   // 0xb
-        // 0xc d e f是保留的
-};
-
-class AVOutputStream {
-public:
-    AVFormatContext *oc;
-    AVCodecContext *cc;
-    const AVCodec *c;
-    AVStream *st;
-    AVFrame *sf;
-    AVFrame *df;
-    SwsContext *ss;
-    SwrContext *sr;
-    long sampleCount;
-    long nextPts;
-
-    AVOutputStream() {
-        oc = nullptr;
-        cc = nullptr;
-        c = nullptr;
-        st = nullptr;
-        sf = nullptr;
-        df = nullptr;
-        sr = nullptr;
-        ss = nullptr;
-        sampleCount = 0;
-        nextPts = 0;
-    }
-
-    ~AVOutputStream() {
-        if (cc) {
-            avcodec_free_context(&cc);
-            cc = nullptr;
-        }
-        st = nullptr;
-        c = nullptr;
-        if (sf) {
-            av_frame_free(&sf);
-            sf = nullptr;
-        }
-        if (df) {
-            av_frame_free(&df);
-            df = nullptr;
-        }
-        if (sr) {
-            swr_free(&sr);
-            sr = nullptr;
-        }
-        if (ss) {
-            sws_freeContext(ss);
-            ss = nullptr;
-        }
-        sampleCount = 0;
-    }
-};
-
-class CameraVideoRecorder : public RenderCallback {
+class CameraVideoRecorder : public RenderCallback, public EncoderCallback {
 
 private:
     shared_ptr<GLRenderWindow> m_RenderWindow;
-
-    shared_ptr<AVOutputStream> m_VideoOst;
-    shared_ptr<AVOutputStream> m_AudioOst;
 
     AVFormatContext *m_FormatCtx = nullptr;
     char m_FilePath[1024];
@@ -114,19 +23,24 @@ private:
     /**
      * Video
      */
-    shared_ptr<LinkedBlockingQueue<MediaFrame>> m_VideoEncoderQueue;
+    shared_ptr<FFVideoEncoder> m_VideoEncoder;
+    AVStream *m_VideoStream = nullptr;
+    bool m_IsCameraRecorder = true;
     shared_ptr<LinkedBlockingQueue<MediaFrame>> m_VideoRenderQueue;
+
     bool m_EnableVideo;
     int m_ImageWidth;
     int m_ImageHeight;
     int m_ImageFormat;
     int m_VideoBitRate;
-    int fps;
+    int m_FrameRate;
 
     /**
      * Audio
      */
-    shared_ptr<LinkedBlockingQueue<MediaFrame>> m_AudioEncoderQueue;
+    shared_ptr<FFAudioEncoder> m_AudioEncoder;
+    AVStream *m_AudioStream = nullptr;
+
     bool m_EnableAudio;
     int m_SampleRate = 44100;
     int m_SampleFormat = AV_SAMPLE_FMT_S16;
@@ -136,16 +50,6 @@ private:
     volatile bool m_IsAudioRecording = false;
     volatile bool m_IsVideoRecording = false;
     volatile bool m_RecordModeExit = true;
-
-    int AddStream(shared_ptr<AVOutputStream> ost, AVCodecID codec_id, const char *codec_name);
-
-    int OpenAudio(shared_ptr<AVOutputStream> ost);
-
-    int EncodeAudioFrame(shared_ptr<AVOutputStream> ost, shared_ptr<MediaFrame> frame);
-
-    int OpenVideo(shared_ptr<AVOutputStream> ost);
-
-    int EncodeVideoFrame(shared_ptr<AVOutputStream> ost, shared_ptr<MediaFrame> frame);
 
     void RealStopRecord();
 
@@ -165,14 +69,17 @@ public:
 
     void StopRecord();
 
-    void OnDrawVideoFrame(uint8_t *data, int width, int height, int format, long timestamp);
+    void InputVideoFrame(uint8_t *data, int width, int height, int format, long timestamp);
 
-    void InputAudioData(uint8_t *data, int size, long timestamp, int sample_rate,
-                        int sample_format, int channel_layout);
+    void InputAudioFrame(uint8_t *data, int size, long timestamp, int sample_rate,
+                         int sample_format, int channel_layout);
+
 
     shared_ptr<MediaFrame> GetOneFrame(int type) override;
 
     void FrameRendFinish(shared_ptr<MediaFrame> frame) override;
+
+    void OnFrameEncoded(AVPacket *pkt, AVMediaType type) override;
 
     shared_ptr<GLRenderWindow> GetVideoRender() {
         return m_RenderWindow;
@@ -184,13 +91,14 @@ public:
         CameraVideoRecorder *r = nullptr;
         char file_path[1024];
         char file_name[1024];
+        bool use_camera_record = true;
 
         bool enable_video_record = false;
         int image_width = 1920;
         int image_height = 1080;
         int image_format;
         int video_bit_rate;
-        int fps;
+        int frame_rate;
 
         bool enable_audio_record = false;
         int sample_rate = 44100;
@@ -206,6 +114,11 @@ public:
         RecorderBuilder *InitFile(const char *p_file_path, const char *p_file_name) {
             strcpy(file_path, p_file_path);
             strcpy(file_name, p_file_name);
+            return this;
+        }
+
+        RecorderBuilder *UseCameraRecord(bool use) {
+            use_camera_record = use;
             return this;
         }
 
@@ -233,7 +146,7 @@ public:
             this->image_height = p_image_height;
             this->image_format = p_image_format;
             this->video_bit_rate = p_video_bit_rate;
-            this->fps = p_fps;
+            this->frame_rate = p_fps;
             return this;
         }
 
@@ -243,13 +156,14 @@ public:
             }
             strcpy(r->m_FilePath, file_path);
             strcpy(r->m_FileName, file_name);
+            r->m_IsCameraRecorder = use_camera_record;
 
             r->m_EnableVideo = enable_video_record;
             r->m_ImageWidth = image_width;
             r->m_ImageHeight = image_height;
             r->m_ImageFormat = image_format;
             r->m_VideoBitRate = video_bit_rate;
-            r->fps = this->fps;
+            r->m_FrameRate = this->frame_rate;
 
             r->m_EnableAudio = enable_audio_record;
             r->m_SampleRate = sample_rate;
