@@ -40,12 +40,12 @@ public class CameraRecordClient implements AudioRecorder.AudioRecordCallback {
 
     public void inputVideoFrame(byte[] data, int width, int height, int format, long timestamp) {
         if (recordHandle == 0) return;
-        native_InputVideoFrame(recordHandle, data, width, height, format, timestamp);
+        native_InputVideoFrame(recordHandle, data, width, height, format);
     }
 
-    public void inputAudioFrame(byte[] data, int size, long timestamp, int sampleRate, int sampleFormat, int channelLayout) {
+    public void inputAudioFrame(byte[] data, int size, int sampleRate, int sampleFormat, int channelLayout, long timestamp) {
         if (recordHandle == 0) return;
-        native_InputAudioFrame(recordHandle, data, size, timestamp, sampleRate, sampleFormat, channelLayout);
+        native_InputAudioFrame(recordHandle, data, size, channelLayout, sampleRate, sampleFormat);
     }
 
     public void onSurfaceCreated(Surface surface) {
@@ -65,7 +65,7 @@ public class CameraRecordClient implements AudioRecorder.AudioRecordCallback {
 
     @Override
     public void onReadSampleData(@NonNull byte[] data, int size, long timestamp, int sampleRate, int sampleFormat, int channelLayout) {
-        inputAudioFrame(data, size, timestamp, sampleRate, sampleFormat, channelLayout);
+        inputAudioFrame(data, size, sampleRate, sampleFormat, channelLayout, timestamp);
     }
 
     public void onSurfaceDestroyed() {
@@ -81,13 +81,17 @@ public class CameraRecordClient implements AudioRecorder.AudioRecordCallback {
 
     private native long native_Init();
 
+//    private native void native_setVideoParam(long recordHandle);
+//
+//    private native void native_setAudioParam(long recordHandle);
+
     private native void native_startRecord(long recordHandle, String path, String name);
 
     private native void native_stopRecord(long recordHandle);
 
-    private native void native_InputVideoFrame(long recordHandle, byte[] data, int width, int height, int format, long timestamp);
+    private native void native_InputVideoFrame(long recordHandle, byte[] data, int width, int height, int format);
 
-    private native void native_InputAudioFrame(long recordHandle, byte[] data, int size, long timestamp, int sampleRate, int sampleFormat, int channelLayout);
+    private native void native_InputAudioFrame(long recordHandle, byte[] data, int size, int sampleRate, int sampleFormat, int channelLayout);
 
     private native void native_onSurfaceCreated(long recordHandle, Object surface);
 

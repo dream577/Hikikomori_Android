@@ -27,12 +27,14 @@ public:
     /* ****************  播放API  **************** */
     virtual int
     Init(JNIEnv *jniEnv, jobject obj, char *url, int decodeType, int renderType) override;
-    virtual int UnInit() override;
     virtual void Play() override;
     virtual void Pause() override;
     virtual void Resume() override;
     virtual void Stop() override;
     virtual void SeekToPosition(float position) override;
+    virtual void StartRecord() override;
+    virtual void StopRecord() override;
+    virtual int UnInit() override;
 
     virtual void OnSurfaceCreated(JNIEnv *jniEnv, jobject surface) override;
     virtual void OnSurfaceChanged(int width, int height) override;

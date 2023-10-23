@@ -6,7 +6,7 @@ import android.opengl.Matrix
 import android.view.Surface
 import com.violet.libbasetools.util.KLog
 import com.violet.libmedia.core.GLUtils
-import com.violet.libmedia.model.ImageFormat
+import com.violet.libmedia.model.AVPixelFormat
 import com.violet.libmedia.model.MediaFrame
 import com.violet.libmedia.util.BufferUtil
 import com.violet.libmedia.util.ShaderSource
@@ -134,12 +134,12 @@ class ImageGLRender : GLRender {
 
     override fun onDrawFrame(frame: MediaFrame) {
         when (frame.format) {
-            ImageFormat.IMAGE_FORMAT_YV21 -> {
+            AVPixelFormat.IMAGE_FORMAT_YV21 -> {
                 drawYV21(frame) // YUV420SP / YV21 / I420
             }
-            ImageFormat.IMAGE_FORMAT_YV12 -> {
+            AVPixelFormat.IMAGE_FORMAT_YV12 -> {
             }
-            ImageFormat.IMAGE_FORMAT_NV12, ImageFormat.IMAGE_FORMAT_NV21 -> {
+            AVPixelFormat.AV_PIX_FMT_NV12, AVPixelFormat.AV_PIX_FMT_NV21 -> {
                 drawNV12orNV21(frame)
             }
             else -> {

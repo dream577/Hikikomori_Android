@@ -4,12 +4,14 @@
 
 #include "CameraVideoRecorder.h"
 
-CameraVideoRecorder::CameraVideoRecorder() {
+CameraVideoRecorder::CameraVideoRecorder(bool isCameraRecorder) {
     LOGCATE("CameraVideoRecorder::CameraVideoRecorder")
     m_FormatCtx = nullptr;
-    m_VideoRenderQueue = make_shared<LinkedBlockingQueue<MediaFrame>>(15);
-    m_RenderWindow = make_shared<GLRenderWindow>(this);
-    m_RenderWindow->StartRenderLoop();
+    if (isCameraRecorder) {
+        m_VideoRenderQueue = make_shared<LinkedBlockingQueue<MediaFrame>>(15);
+        m_RenderWindow = make_shared<GLRenderWindow>(this);
+        m_RenderWindow->StartRenderLoop();
+    }
 
     m_EnableAudio = false;
     m_EnableVideo = false;
@@ -64,18 +66,9 @@ int CameraVideoRecorder::Init() {
     }
 
     if (!m_EnableVideo && !m_EnableAudio) {
-        goto __EXIT;
+        // TODO 提示失败
     }
 
-    av_dump_format(m_FormatCtx, 0, m_FilePath, 1);
-    /* open the output file, if needed */
-    if (!(m_FormatCtx->flags & AVFMT_NOFILE)) {
-        result = avio_open(&m_FormatCtx->pb, m_FilePath, AVIO_FLAG_WRITE);
-        if (result < 0) {
-            LOGCATE("CameraVideoRecorder::Init() Could not open '%s': %s", m_FilePath,
-                    av_err2str(result))
-        }
-    }
     __EXIT:
     return result;
 }
@@ -87,17 +80,15 @@ void CameraVideoRecorder::StartRecord() {
     pthread_create(&worker, &attr, StartRecordLoop, this);
 }
 
-void CameraVideoRecorder::InputVideoFrame(uint8_t *data, int width, int height, int format,
-                                          long timestamp) {
+void CameraVideoRecorder::InputVideoFrame(uint8_t *data, int width, int height, int format) {
 //    LOGCATE("CameraVideoRecorder::InputVideoFrame")
-    shared_ptr<MediaFrame> frame;
+    shared_ptr<MediaFrame> frame = make_shared<MediaFrame>();
     switch (format) {
-        case IMAGE_FORMAT_I420: {
-            frame = make_shared<MediaFrame>();
+        case AV_PIX_FMT_YUV420P: {
             int yPlaneByteSize = width * height;
             int uvPlaneByteSize = yPlaneByteSize / 2;
 
-            frame->format = IMAGE_FORMAT_I420;
+            frame->format = format;
             frame->width = width;
             frame->height = height;
             frame->plane[0] = data;
@@ -106,24 +97,34 @@ void CameraVideoRecorder::InputVideoFrame(uint8_t *data, int width, int height, 
             frame->planeSize[0] = width;
             frame->planeSize[1] = width / 2;
             frame->planeSize[2] = width / 2;
-            frame->pts = timestamp;
             break;
         }
-        case IMAGE_FORMAT_NV12:
-        case IMAGE_FORMAT_NV21:
-            break;
+        case AV_PIX_FMT_NV12:
+        case AV_PIX_FMT_NV21: {
+            int yPlaneByteSize = width * height;
+            int uvPlaneByteSize = yPlaneByteSize / 2;
 
-        default: {
-            // 默认为 IMAGE_FORMAT_RGBA
-            frame = make_shared<MediaFrame>();
-
-            frame->format = IMAGE_FORMAT_RGBA;
+            frame->format = format;
             frame->width = width;
             frame->height = height;
             frame->plane[0] = data;
-            frame->planeSize[0] = width * 4;
-            frame->pts = timestamp;
+            frame->plane[1] = data + yPlaneByteSize;
+            frame->planeSize[0] = width;
+            frame->planeSize[1] = width / 2;
             break;
+        }
+        default: {
+            // 默认为 AV_PIX_FMT_RGBA
+            int yPlaneByteSize = width * height;
+            frame->format = format;
+            frame->width = width;
+            frame->height = height;
+            frame->plane[0] = data;
+            frame->plane[1] = data + yPlaneByteSize;
+            frame->plane[2] = data + yPlaneByteSize * 2;
+            frame->planeSize[0] = width;
+            frame->planeSize[1] = width;
+            frame->planeSize[2] = width;
         }
     }
 
@@ -135,8 +136,9 @@ void CameraVideoRecorder::InputVideoFrame(uint8_t *data, int width, int height, 
     }
 }
 
-void CameraVideoRecorder::InputAudioFrame(uint8_t *data, int size, long timestamp,
-                                          int sample_rate, int sample_format, int channel_layout) {
+void
+CameraVideoRecorder::InputAudioFrame(uint8_t *data, int size, int sample_rate, int sample_format,
+                                     int channel_layout) {
     if (!m_IsAudioRecording) {
         delete data;
         return;
@@ -147,7 +149,6 @@ void CameraVideoRecorder::InputAudioFrame(uint8_t *data, int size, long timestam
     frame->sampleRate = sample_rate;
     frame->sampleFormat = sample_format;
     frame->channelLayout = channel_layout;
-    frame->pts = timestamp;
     frame->type = AVMEDIA_TYPE_AUDIO;
 
     int ret = m_AudioEncoder->InputFrame(shared_ptr<MediaFrame>(frame));
@@ -172,30 +173,44 @@ void CameraVideoRecorder::FrameRendFinish(shared_ptr<MediaFrame> frame) {
 }
 
 void CameraVideoRecorder::OnFrameEncoded(AVPacket *pkt, AVMediaType type) {
+    int streamIndex = 0;
+    AVRational srcTimebase, dstTimebase;
     if (type == AVMEDIA_TYPE_VIDEO) {
-        pkt->stream_index = m_VideoStream->index;
-        AVRational dst_timebase = m_VideoStream->time_base;
-        av_packet_rescale_ts(pkt, AVRational{1, m_FrameRate}, dst_timebase);
-        LOGCATE("CameraVideoRecorder::OnFrameEncoded video[pts:%s pts_time:%s dts:%s dts_time:%s duration:%s duration_time:%s]",
-                av_ts2str(pkt->pts), av_ts2timestr(pkt->pts, &dst_timebase),
-                av_ts2str(pkt->dts), av_ts2timestr(pkt->dts, &dst_timebase),
-                av_ts2str(pkt->duration), av_ts2timestr(pkt->duration, &dst_timebase))
+        streamIndex = m_VideoStream->index;
+        srcTimebase = AVRational{1, m_FrameRate};
+        dstTimebase = m_VideoStream->time_base;
+//        LOGCATE("CameraVideoRecorder::OnFrameEncoded video[pts:%s pts_time:%s dts:%s dts_time:%s duration:%s duration_time:%s]",
+//                av_ts2str(pkt->pts), av_ts2timestr(pkt->pts, &dstTimebase),
+//                av_ts2str(pkt->dts), av_ts2timestr(pkt->dts, &dstTimebase),
+//                av_ts2str(pkt->duration), av_ts2timestr(pkt->duration, &dstTimebase))
     } else {
-        pkt->stream_index = m_AudioStream->index;
-        AVRational dst_timebase = m_AudioStream->time_base;
-        av_packet_rescale_ts(pkt, AVRational{1, m_SampleRate}, dst_timebase);
-        LOGCATE("CameraVideoRecorder::OnFrameEncoded audio[pts:%s pts_time:%s dts:%s dts_time:%s duration:%s duration_time:%s]",
-                av_ts2str(pkt->pts), av_ts2timestr(pkt->pts, &dst_timebase),
-                av_ts2str(pkt->dts), av_ts2timestr(pkt->dts, &dst_timebase),
-                av_ts2str(pkt->duration), av_ts2timestr(pkt->duration, &dst_timebase))
+        streamIndex = m_AudioStream->index;
+        srcTimebase = AVRational{1, m_SampleRate};
+        dstTimebase = m_AudioStream->time_base;
+//        LOGCATE("CameraVideoRecorder::OnFrameEncoded audio[pts:%s pts_time:%s dts:%s dts_time:%s duration:%s duration_time:%s]",
+//                av_ts2str(pkt->pts), av_ts2timestr(pkt->pts, &dstTimebase),
+//                av_ts2str(pkt->dts), av_ts2timestr(pkt->dts, &dstTimebase),
+//                av_ts2str(pkt->duration), av_ts2timestr(pkt->duration, &dstTimebase))
     }
+    pkt->stream_index = streamIndex;
+    av_packet_rescale_ts(pkt, srcTimebase, dstTimebase);
     av_interleaved_write_frame(m_FormatCtx, pkt);
 }
 
 void *CameraVideoRecorder::StartRecordLoop(void *recorder) {
     auto *mRecorder = (CameraVideoRecorder *) recorder;
     int result;
-    mRecorder->m_RecordModeExit = false;
+    mRecorder->m_RecordModeExit;
+
+    av_dump_format(mRecorder->m_FormatCtx, 0, mRecorder->m_FilePath, 1);
+    /* open the output file, if needed */
+    if (!(mRecorder->m_FormatCtx->flags & AVFMT_NOFILE)) {
+        result = avio_open(&mRecorder->m_FormatCtx->pb, mRecorder->m_FilePath, AVIO_FLAG_WRITE);
+        if (result < 0) {
+            LOGCATE("CameraVideoRecorder::Init() Could not open '%s': %s", mRecorder->m_FilePath,
+                    av_err2str(result))
+        }
+    }
 
     // 根据是否启用音频录制、视频录制来设置是否正在录制的标志位
     mRecorder->m_IsVideoRecording = mRecorder->m_EnableVideo;

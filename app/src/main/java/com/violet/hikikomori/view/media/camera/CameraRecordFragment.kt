@@ -20,7 +20,7 @@ import com.violet.hikikomori.R
 import com.violet.hikikomori.databinding.FragmentCameraRecordBinding
 import com.violet.hikikomori.view.base.BaseBindingFragment
 import com.violet.libbasetools.util.KLog
-import com.violet.libmedia.MediaContext
+import com.violet.libmedia.model.AVPixelFormat
 import com.violet.libmedia.recoder.video.camera.CameraFrameCallback
 import com.violet.libmedia.recoder.video.camera.CameraRecordClient
 import com.violet.libmedia.recoder.video.camera.util.ImageUtils
@@ -286,7 +286,7 @@ class CameraRecordFragment : BaseBindingFragment<FragmentCameraRecordBinding>(),
                 data,
                 image.width,
                 image.height,
-                MediaContext.VIDEO_FRAME_FORMAT_I420,
+                AVPixelFormat.AV_PIX_FMT_YUV420P.format,
                 image.timestamp / 1000
             )
             image.close()

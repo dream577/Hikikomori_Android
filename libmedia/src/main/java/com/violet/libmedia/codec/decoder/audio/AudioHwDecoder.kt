@@ -5,7 +5,7 @@ import com.violet.libbasetools.util.KLog
 import com.violet.libmedia.codec.decoder.HardwareDecoder
 import com.violet.libmedia.demuxer.Demuxer
 import com.violet.libmedia.demuxer.MediaDemuxer
-import com.violet.libmedia.model.ImageFormat
+import com.violet.libmedia.model.AVPixelFormat
 import com.violet.libmedia.model.MediaFrame
 import com.violet.libmedia.util.RecycledPool
 import java.nio.ByteBuffer
@@ -33,7 +33,7 @@ class AudioHwDecoder : HardwareDecoder() {
         pool.initRecycledPool {
             MediaFrame(
                 0, 0, ByteBuffer.allocateDirect(AAC_PACKET_SIZE),
-                planeSize, false, 0, 0, ImageFormat.IMAGE_FORMAT_NONE,
+                planeSize, false, 0, 0, AVPixelFormat.AV_PIX_FMT_NONE,
                 channels, sampleRate, 0, 0, false
             )
         }

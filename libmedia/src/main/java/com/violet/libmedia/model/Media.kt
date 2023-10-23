@@ -3,33 +3,34 @@ package com.violet.libmedia.model
 import java.nio.ByteBuffer
 
 class MediaFrame(
-    var dts: Long,
-    var pts: Long,
-    var buffer: ByteBuffer,
-    var planeSize: IntArray,
+        var dts: Long,
+        var pts: Long,
+        var buffer: ByteBuffer,
+        var planeSize: IntArray,
 
     // video
-    var isKeyFrame: Boolean,
-    var width: Int,
-    var height: Int,
-    var format: ImageFormat,
+        var isKeyFrame: Boolean,
+        var width: Int,
+        var height: Int,
+        var format: AVPixelFormat,
 
     // audio
-    var channels: Int,
-    var sampleRate: Int,
-    var bitRate: Int,
-    var audioFormat: Int,
+        var channels: Int,
+        var sampleRate: Int,
+        var bitRate: Int,
+        var audioFormat: Int,
 
-    var isVideo: Boolean
+        var isVideo: Boolean
 ) {
     fun isVideoFrame(): Boolean = isVideo
 }
 
-enum class ImageFormat(val format: Int) {
-    IMAGE_FORMAT_NONE(0x00),
-    IMAGE_FORMAT_RGBA(0x01),
-    IMAGE_FORMAT_NV21(0x02),
-    IMAGE_FORMAT_NV12(0x03),
+enum class AVPixelFormat(val format: Int) {
+    AV_PIX_FMT_NONE(-1),
+    AV_PIX_FMT_YUV420P(0),
+    AV_PIX_FMT_NV12(23),
+    AV_PIX_FMT_NV21(24),
+    AV_PIX_FMT_RGBA(26),
     IMAGE_FORMAT_YV21(0x04),
     IMAGE_FORMAT_YV12(0x05), ;
 }

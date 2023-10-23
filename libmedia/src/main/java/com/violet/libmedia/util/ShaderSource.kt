@@ -52,11 +52,11 @@ object ShaderSource {
             
             void main()
             {
-                if(u_nImgType == 1) //RGBA
+                if(u_nImgType == 26) //RGBA
                 {
                     outColor = texture(s_texture0, v_texCoord);
                 }
-                else if(u_nImgType == 2) //NV21
+                else if(u_nImgType == 24) //NV21
                 {
                     vec3 yuv;
                     yuv.x = texture(s_texture0, v_texCoord).r;
@@ -68,7 +68,7 @@ object ShaderSource {
                     outColor = vec4(rgb, 1.0);
             
                 }
-                else if(u_nImgType == 3) //NV12
+                else if(u_nImgType == 23) //NV12
                 {
                     vec3 yuv;
                     yuv.x = texture(s_texture0, v_texCoord).r;
@@ -79,7 +79,7 @@ object ShaderSource {
                                           1.403,  -0.714,  0.0) * yuv;
                     outColor = vec4(rgb, 1.0);
                 }
-                else if(u_nImgType == 4) //I420
+                else if(u_nImgType == 0) //I420
                 {
                     vec3 yuv;
                     yuv.x = texture(s_texture0, v_texCoord).r;

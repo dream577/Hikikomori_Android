@@ -2,17 +2,15 @@
 // Created by bronyna on 2023/2/9.
 //
 
+extern "C" {
+#include "libavutil/pixfmt.h"
+}
+
 #include "stdint.h"
 #include "CustomContainer.h"
 
 #ifndef HIKIKOMORI_MEDIADEF_H
 #define HIKIKOMORI_MEDIADEF_H
-
-// 视频帧类型
-#define  IMAGE_FORMAT_RGBA     0x01
-#define  IMAGE_FORMAT_NV21     0x02
-#define  IMAGE_FORMAT_NV12     0x03
-#define  IMAGE_FORMAT_I420     0x04
 
 // 渲染器类型
 #define VIDEO_RENDER_UNKONWN   -1
@@ -52,12 +50,12 @@ public:
     int planeSize[3];
     long dts;
     long pts;
-    int type;  // video/audio
+    int type;  // 可选值：AVMEDIA_TYPE_VIDEO, AVMEDIA_TYPE_AUDIO
 
     /**
      * video
      */
-    int format;
+    int format; // 可选值：AV_PIX_FMT_RGBA，AV_PIX_FMT_NV21，AV_PIX_FMT_NV12，AV_PIX_FMT_YUV420P
     int width;
     int height;
 

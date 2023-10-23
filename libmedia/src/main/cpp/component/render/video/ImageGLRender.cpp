@@ -30,11 +30,11 @@ static char fShaderStr[] =
         "void main()\n"
         "{\n"
         "\n"
-        "    if(u_nImgType == 1) //RGBA\n"
+        "    if(u_nImgType == 26) //RGBA\n"
         "    {\n"
         "        outColor = texture(s_texture0, v_texCoord);\n"
         "    }\n"
-        "    else if(u_nImgType == 2) //NV21\n"
+        "    else if(u_nImgType == 24) //NV21\n"
         "    {\n"
         "        vec3 yuv;\n"
         "        yuv.x = texture(s_texture0, v_texCoord).r;\n"
@@ -46,7 +46,7 @@ static char fShaderStr[] =
         "        outColor = vec4(rgb, 1.0);\n"
         "\n"
         "    }\n"
-        "    else if(u_nImgType == 3) //NV12\n"
+        "    else if(u_nImgType == 23) //NV12\n"
         "    {\n"
         "        vec3 yuv;\n"
         "        yuv.x = texture(s_texture0, v_texCoord).r;\n"
@@ -57,7 +57,7 @@ static char fShaderStr[] =
         "                              1.403,   -0.714,   0.0) * yuv;\n"
         "        outColor = vec4(rgb, 1.0);\n"
         "    }\n"
-        "    else if(u_nImgType == 4) //I420\n"
+        "    else if(u_nImgType == 0) //I420\n"
         "    {\n"
         "        vec3 yuv;\n"
         "        yuv.x = texture(s_texture0, v_texCoord).r;\n"
@@ -247,14 +247,14 @@ void ImageGLRender::UpdateMVPMatrix(float translateX, float translateY, float sc
 void ImageGLRender::OnDrawFrame(MediaFrame *frame) {
 //    LOGCATE("ImageGLRender::onDrawFrame");
     switch (frame->format) {
-        case IMAGE_FORMAT_RGBA:
+        case AV_PIX_FMT_RGBA:
             DrawGRBA(frame);
             break;
-        case IMAGE_FORMAT_I420:
+        case AV_PIX_FMT_YUV420P:
             DrawI420(frame);
             break;
-        case IMAGE_FORMAT_NV12:
-        case IMAGE_FORMAT_NV21:
+        case AV_PIX_FMT_NV12:
+        case AV_PIX_FMT_NV21:
             DrawNV12orNV21(frame);
             break;
         default:;

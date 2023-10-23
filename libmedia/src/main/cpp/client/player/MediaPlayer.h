@@ -26,6 +26,10 @@ public:
 
     virtual void Stop() = 0;
 
+    virtual void StartRecord() = 0;
+
+    virtual void StopRecord() = 0;
+
     virtual void SeekToPosition(float position) = 0;
 };
 

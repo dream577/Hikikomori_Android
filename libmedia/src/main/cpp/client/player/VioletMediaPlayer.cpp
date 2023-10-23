@@ -168,3 +168,11 @@ void VioletMediaPlayer::SetPlayerState(PlayerState state) {
     m_Cond.notify_all();
 }
 
+void VioletMediaPlayer::StartRecord() {
+
+}
+
+void VioletMediaPlayer::StopRecord() {
+
+}
+

@@ -92,7 +92,7 @@ std::shared_ptr<MediaFrame> FFAudioDecoder::OnFrameAvailable(AVFrame *avFrame) {
         frame->sampleRate = sampleRate;
         frame->dts = dts;
         frame->pts = pts;
-        frame->format = -1;
+        frame->format = m_CodecCtx->sample_fmt;
     }
 
 //    LOGCATE("FFAudioDecoder::onFrameAvailable data_size=%d channels=%d sampleRate=%d dts=%ld pts=%ld format=%d",

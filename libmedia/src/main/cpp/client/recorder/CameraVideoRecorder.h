@@ -57,7 +57,7 @@ private:
 
 public:
 
-    CameraVideoRecorder();
+    CameraVideoRecorder(bool isCameraRecorder);
 
     ~CameraVideoRecorder();
 
@@ -69,10 +69,9 @@ public:
 
     void StopRecord();
 
-    void InputVideoFrame(uint8_t *data, int width, int height, int format, long timestamp);
+    void InputVideoFrame(uint8_t *data, int width, int height, int format);
 
-    void InputAudioFrame(uint8_t *data, int size, long timestamp, int sample_rate,
-                         int sample_format, int channel_layout);
+    void InputAudioFrame(uint8_t *data, int size, int sample_rate, int sample_format, int channel_layout);
 
 
     shared_ptr<MediaFrame> GetOneFrame(int type) override;
@@ -96,7 +95,7 @@ public:
         bool enable_video_record = false;
         int image_width = 1920;
         int image_height = 1080;
-        int image_format = IMAGE_FORMAT_I420;
+        int image_format = AV_PIX_FMT_YUV420P;
         int64_t video_bit_rate = 0;
         int frame_rate = 15;
 
@@ -152,7 +151,7 @@ public:
 
         CameraVideoRecorder *Build() {
             if (!r) {
-                r = new CameraVideoRecorder();
+                r = new CameraVideoRecorder(use_camera_record);
             }
             strcpy(r->m_FilePath, file_path);
             strcpy(r->m_FileName, file_name);

@@ -10,7 +10,7 @@ extern "C"
 JNIEXPORT jlong JNICALL
 Java_com_violet_libmedia_recoder_video_camera_CameraRecordClient_native_1Init(JNIEnv *env,
                                                                               jobject thiz) {
-    auto *recorder = new CameraVideoRecorder();
+    auto *recorder = new CameraVideoRecorder(true);
     return reinterpret_cast<jlong>(recorder);
 }
 extern "C"
@@ -24,7 +24,8 @@ Java_com_violet_libmedia_recoder_video_camera_CameraRecordClient_native_1startRe
 
         auto builder = recorder->Rebuild(recorder);
         // TODO 此处的数据暂时先固定写死
-        recorder = builder->EnableAudioRecord(true)
+        recorder = builder->UseCameraRecord(true)
+                ->EnableAudioRecord(true)
                 ->EnableVideoRecord(true)
                 ->ConfigAudioParam(44100, AV_SAMPLE_FMT_FLTP, AV_CH_LAYOUT_STEREO)
                 ->ConfigVideoParam(1920, 1080, AV_PIX_FMT_YUV420P,
@@ -51,28 +52,28 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_violet_libmedia_recoder_video_camera_CameraRecordClient_native_1InputVideoFrame(
         JNIEnv *env, jobject thiz, jlong record_handle, jbyteArray data, jint width, jint height,
-        jint format, jlong timestamp) {
+        jint format) {
     if (record_handle != 0) {
         int len = env->GetArrayLength(data);
         auto *buf = new unsigned char[len];
         env->GetByteArrayRegion(data, 0, len, reinterpret_cast<jbyte *>(buf));
 
         auto *recorder = reinterpret_cast<CameraVideoRecorder *>(record_handle);
-        recorder->InputVideoFrame(buf, width, height, format, timestamp);
+        recorder->InputVideoFrame(buf, width, height, format);
     }
 }
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_violet_libmedia_recoder_video_camera_CameraRecordClient_native_1InputAudioFrame(
-        JNIEnv *env, jobject thiz, jlong record_handle, jbyteArray data, jint size, jlong timestamp,
-        jint sample_rate, jint sample_format, jint channel_layout) {
+        JNIEnv *env, jobject thiz, jlong record_handle, jbyteArray data, jint size,
+        jint channel_layout, jint sample_rate, jint sample_format) {
     if (record_handle != 0) {
         int len = env->GetArrayLength(data);
         auto *buf = new unsigned char[len];
         env->GetByteArrayRegion(data, 0, size, reinterpret_cast<jbyte *>(buf));
 
         auto *recorder = reinterpret_cast<CameraVideoRecorder *>(record_handle);
-        recorder->InputAudioFrame(buf, size, timestamp, sample_rate, sample_format, channel_layout);
+        recorder->InputAudioFrame(buf, size, sample_rate, sample_format, channel_layout);
     }
 }
 extern "C"

@@ -97,8 +97,7 @@ std::shared_ptr<MediaFrame> FFVideoDecoder::OnFrameAvailable(AVFrame *avFrame) {
     shared_ptr<MediaFrame> frame;
 
     switch (avFrame->format) {
-        case AV_PIX_FMT_YUV420P:
-        case AV_PIX_FMT_YUVJ420P: {
+        case AV_PIX_FMT_YUV420P: {
             int yPlaneByteSize = avFrame->width * avFrame->height;
             int uvPlaneByteSize = yPlaneByteSize / 2;
 
@@ -116,7 +115,7 @@ std::shared_ptr<MediaFrame> FFVideoDecoder::OnFrameAvailable(AVFrame *avFrame) {
             frame = pool->poll();
             if (!frame) break;
             frame->pool = pool;
-            frame->format = IMAGE_FORMAT_I420;
+            frame->format = avFrame->format;
             frame->width = avFrame->width;
             frame->height = avFrame->height;
             memcpy(frame->plane[0], avFrame->data[0], yPlaneByteSize);
@@ -131,39 +130,11 @@ std::shared_ptr<MediaFrame> FFVideoDecoder::OnFrameAvailable(AVFrame *avFrame) {
             if (frame->plane[0] && frame->plane[1] && !frame->plane[2] &&
                 frame->planeSize[0] == frame->planeSize[1] && frame->planeSize[2] == 0) {
                 // on some android device, output of h264 mediacodec decoder is NV12 兼容某些设备可能出现的格式不匹配问题
-                frame->format = IMAGE_FORMAT_NV12;
+                frame->format = AV_PIX_FMT_NV12;
             }
             break;
         }
-        case AV_PIX_FMT_NV12: {
-            int yPlaneByteSize = avFrame->width * avFrame->height;
-            int uvPlaneByteSize = yPlaneByteSize / 2;
-
-            if (!pool) {
-                auto fun = [&](int i) -> shared_ptr<MediaFrame> {
-                    auto f = make_shared<MediaFrame>();
-                    f->plane[0] = (uint8_t *) malloc((yPlaneByteSize + uvPlaneByteSize));
-                    f->plane[1] = f->plane[0] + yPlaneByteSize;
-                    f->plane[2] = nullptr;
-                    return f;
-                };
-                pool = make_shared<LinkedBlockingQueue<MediaFrame>>(15, fun);
-            }
-
-            frame = pool->poll();
-            if (!frame) break;
-            frame->pool = pool;
-            frame->format = IMAGE_FORMAT_NV12;
-            frame->width = avFrame->width;
-            frame->height = avFrame->height;
-            memcpy(frame->plane[0], avFrame->data[0], yPlaneByteSize);
-            memcpy(frame->plane[1], avFrame->data[1], uvPlaneByteSize);
-            frame->planeSize[0] = avFrame->linesize[0];
-            frame->planeSize[1] = avFrame->linesize[1];
-            frame->dts = dts;
-            frame->pts = pts;
-            break;
-        }
+        case AV_PIX_FMT_NV12:
         case AV_PIX_FMT_NV21: {
             int yPlaneByteSize = avFrame->width * avFrame->height;
             int uvPlaneByteSize = yPlaneByteSize / 2;
@@ -182,7 +153,7 @@ std::shared_ptr<MediaFrame> FFVideoDecoder::OnFrameAvailable(AVFrame *avFrame) {
             frame = pool->poll();
             if (!frame) break;
             frame->pool = pool;
-            frame->format = IMAGE_FORMAT_NV21;
+            frame->format = avFrame->format;
             frame->width = avFrame->width;
             frame->height = avFrame->height;
             memcpy(frame->plane[0], avFrame->data[0], yPlaneByteSize);

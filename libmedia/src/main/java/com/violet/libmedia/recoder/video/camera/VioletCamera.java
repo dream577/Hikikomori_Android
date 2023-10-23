@@ -23,7 +23,7 @@ import android.view.Surface;
 import androidx.annotation.NonNull;
 
 import com.violet.libbasetools.util.KLog;
-import com.violet.libmedia.MediaContext;
+import com.violet.libmedia.model.AVPixelFormat;
 import com.violet.libmedia.recoder.video.camera.util.CameraSizesKt;
 import com.violet.libmedia.recoder.video.camera.util.ImageUtils;
 
@@ -249,7 +249,7 @@ public class VioletCamera {
         public void onImageAvailable(ImageReader reader) {
             Image image = reader.acquireLatestImage();
             byte[] data = ImageUtils.convert_YUV420_888_To_YUV420I_Data(image);
-            mCallback.onPreviewFrame(data, image.getWidth(), image.getHeight(), MediaContext.VIDEO_FRAME_FORMAT_I420, image.getTimestamp());
+            mCallback.onPreviewFrame(data, image.getWidth(), image.getHeight(), AVPixelFormat.AV_PIX_FMT_YUV420P.getFormat(), image.getTimestamp());
             image.close();
         }
     };

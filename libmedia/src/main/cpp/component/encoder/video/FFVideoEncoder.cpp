@@ -104,7 +104,7 @@ int FFVideoEncoder::EncodeFrame() {
     m_SrcFrame->linesize[0] = frame->planeSize[0];
     m_SrcFrame->linesize[1] = frame->planeSize[1];
     m_SrcFrame->linesize[2] = frame->planeSize[2];
-    m_SrcFrame->format = AV_PIX_FMT_YUV420P;
+    m_SrcFrame->format = frame->format;
     m_SrcFrame->width = frame->width;
     m_SrcFrame->height = frame->height;
 
@@ -114,10 +114,10 @@ int FFVideoEncoder::EncodeFrame() {
         goto __EXIT;
     }
 
-    if (m_SrcFrame->format != AV_PIX_FMT_NV12) {
+    if (frame->format != m_CodecCtx->pix_fmt) {
         if (!m_SwsCtx) {
-            m_SwsCtx = sws_getContext(m_CodecCtx->width, m_CodecCtx->height, AV_PIX_FMT_YUV420P,
-                                      m_CodecCtx->width, m_CodecCtx->height, AV_PIX_FMT_NV12,
+            m_SwsCtx = sws_getContext(m_CodecCtx->width, m_CodecCtx->height, AVPixelFormat(frame->format),
+                                      m_CodecCtx->width, m_CodecCtx->height, m_CodecCtx->pix_fmt,
                                       SWS_FAST_BILINEAR, nullptr, nullptr, nullptr);
             if (!m_SwsCtx) {
                 LOGCATE("FFVideoEncoder::EncodeFrame sws_getContext error")
@@ -128,8 +128,8 @@ int FFVideoEncoder::EncodeFrame() {
         sws_scale(m_SwsCtx, m_SrcFrame->data, m_SrcFrame->linesize,
                   0, m_CodecCtx->height,
                   m_DstFrame->data, m_DstFrame->linesize);
-        m_DstFrame->pts = m_NextPts++;
     }
+    m_DstFrame->pts = m_NextPts++;
 
     // 编码输入
     result = avcodec_send_frame(m_CodecCtx, m_DstFrame);
