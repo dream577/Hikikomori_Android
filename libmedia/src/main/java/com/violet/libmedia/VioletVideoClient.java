@@ -6,7 +6,6 @@ import com.violet.libbasetools.util.KLog;
 
 public class VioletVideoClient {
     static {
-        System.loadLibrary("x264");
         System.loadLibrary("moonmedia");
         KLog.d("FFMpegVersion", native_GetFFmpegVersion());
     }
