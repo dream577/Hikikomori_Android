@@ -55,7 +55,7 @@ add_library( # Sets the name of the library.
         ${projectName}
 
         # Sets the library as a shared library.
-        STATIC
+        SHARED
 
         # Provides a relative path to your source file(s).
         ${src-files}
