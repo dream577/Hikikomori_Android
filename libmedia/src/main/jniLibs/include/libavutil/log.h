@@ -214,7 +214,7 @@ typedef struct AVClass {
 /**
  * Sets additional colors for extended debugging sessions.
  * @code
-   av_log(ctx, AV_LOG_DEBUG|AV_LOG_C(134), "VideoInputEngineMessage in purple\n");
+   av_log(ctx, AV_LOG_DEBUG|AV_LOG_C(134), "Message in purple\n");
    @endcode
  * Requires 256color terminal support. Uses outside debugging is not
  * recommended.

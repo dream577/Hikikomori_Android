@@ -476,7 +476,7 @@ typedef struct AVFrame {
 
     /**
      * When decoding, this signals how much the picture must be delayed.
-     * extra_delay = repeat_pict / (2*frame_rate)
+     * extra_delay = repeat_pict / (2*fps)
      */
     int repeat_pict;
 

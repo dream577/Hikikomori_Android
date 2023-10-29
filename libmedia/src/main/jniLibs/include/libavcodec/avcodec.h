@@ -27,15 +27,15 @@
  * Libavcodec external API header
  */
 
-#include "../libavutil/samplefmt.h"
-#include "../libavutil/attributes.h"
-#include "../libavutil/avutil.h"
-#include "../libavutil/buffer.h"
-#include "../libavutil/dict.h"
-#include "../libavutil/frame.h"
-#include "../libavutil/log.h"
-#include "../libavutil/pixfmt.h"
-#include "../libavutil/rational.h"
+#include "libavutil/samplefmt.h"
+#include "libavutil/attributes.h"
+#include "libavutil/avutil.h"
+#include "libavutil/buffer.h"
+#include "libavutil/dict.h"
+#include "libavutil/frame.h"
+#include "libavutil/log.h"
+#include "libavutil/pixfmt.h"
+#include "libavutil/rational.h"
 
 #include "codec.h"
 #include "codec_desc.h"
@@ -529,7 +529,7 @@ typedef struct AVCodecContext {
 
     /**
      * This is the fundamental unit of time (in seconds) in terms
-     * of which frame timestamps are represented. For fixed-frame_rate content,
+     * of which frame timestamps are represented. For fixed-fps content,
      * timebase should be 1/framerate and timestamp increments should be
      * identically 1.
      * This often, but not always is the inverse of the frame rate or field rate

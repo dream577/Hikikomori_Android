@@ -113,7 +113,7 @@ char *av_timecode_make_string(const AVTimecode *tc, char *buf, int framenum);
  * Get the timecode string from the SMPTE timecode format.
  *
  * In contrast to av_timecode_make_smpte_tc_string this function supports 50/60
- * frame_rate timecodes by using the field bit.
+ * fps timecodes by using the field bit.
  *
  * @param buf        destination buffer, must be at least AV_TIMECODE_STR_SIZE long
  * @param rate       frame rate of the timecode

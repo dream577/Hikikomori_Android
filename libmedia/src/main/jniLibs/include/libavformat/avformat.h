@@ -310,21 +310,21 @@
 #include <time.h>
 #include <stdio.h>  /* FILE */
 
-#include "../libavcodec/codec.h"
-#include "../libavcodec/codec_par.h"
-#include "../libavcodec/defs.h"
-#include "../libavcodec/packet.h"
+#include "libavcodec/codec.h"
+#include "libavcodec/codec_par.h"
+#include "libavcodec/defs.h"
+#include "libavcodec/packet.h"
 
-#include "../libavutil/dict.h"
-#include "../libavutil/log.h"
+#include "libavutil/dict.h"
+#include "libavutil/log.h"
 
 #include "avio.h"
-#include "version_major.h"
+#include "libavformat/version_major.h"
 #ifndef HAVE_AV_CONFIG_H
 /* When included as part of the ffmpeg build, only include the major version
  * to avoid unnecessary rebuilds. When included externally, keep including
  * the full version information. */
-#include "version.h"
+#include "libavformat/version.h"
 #endif
 
 struct AVFormatContext;
@@ -479,7 +479,7 @@ typedef struct AVProbeData {
 #define AVFMT_NOTIMESTAMPS  0x0080 /**< Format does not need / have any timestamps. */
 #define AVFMT_GENERIC_INDEX 0x0100 /**< Use generic index building code. */
 #define AVFMT_TS_DISCONT    0x0200 /**< Format allows timestamp discontinuities. Note, muxers always require valid (monotone) timestamps */
-#define AVFMT_VARIABLE_FPS  0x0400 /**< Format allows variable frame_rate. */
+#define AVFMT_VARIABLE_FPS  0x0400 /**< Format allows variable fps. */
 #define AVFMT_NODIMENSIONS  0x0800 /**< Format does not need width/height */
 #define AVFMT_NOSTREAMS     0x1000 /**< Format does not require any streams */
 #define AVFMT_NOBINSEARCH   0x2000 /**< Format does not allow to fall back on binary search via read_timestamp */
