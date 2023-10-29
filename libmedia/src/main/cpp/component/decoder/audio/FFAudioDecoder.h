@@ -27,7 +27,7 @@ private:
     uint8_t *m_AudioOutBuffer;
 
 protected:
-    std::shared_ptr<MediaFrame> OnFrameAvailable(AVFrame *frame) override;
+    std::shared_ptr<MediaFrame> _OnFrameAvailable(AVFrame *frame) override;
 
 public:
     FFAudioDecoder(DecoderCallback *callback, double timebase);

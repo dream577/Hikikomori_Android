@@ -90,7 +90,7 @@ int FFVideoDecoder::OpenCodec(const AVCodecParameters *param) {
     return result;
 }
 
-std::shared_ptr<MediaFrame> FFVideoDecoder::OnFrameAvailable(AVFrame *avFrame) {
+std::shared_ptr<MediaFrame> FFVideoDecoder::_OnFrameAvailable(AVFrame *avFrame) {
     LOGCATE("FFMediaInputEngine::VideoFrameAvailable")
     long dts = (long) ((avFrame->pkt_dts * timebase) * 1000);
     long pts = (long) ((avFrame->pts * timebase) * 1000);

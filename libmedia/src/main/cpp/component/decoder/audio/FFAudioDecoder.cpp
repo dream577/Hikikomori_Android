@@ -71,7 +71,7 @@ int FFAudioDecoder::OpenCodec(const AVCodecParameters *param) {
     return result;
 }
 
-std::shared_ptr<MediaFrame> FFAudioDecoder::OnFrameAvailable(AVFrame *avFrame) {
+std::shared_ptr<MediaFrame> FFAudioDecoder::_OnFrameAvailable(AVFrame *avFrame) {
 
     int result = swr_convert(m_SwrContext, &m_AudioOutBuffer, m_DstFrameDataSize / 2,
                              (const uint8_t **) avFrame->data, avFrame->nb_samples);

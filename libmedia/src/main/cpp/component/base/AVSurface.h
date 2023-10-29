@@ -13,6 +13,9 @@ public:
 
     virtual void OnSurfaceChanged(int width, int height) = 0;
 
+    virtual void UpdateMVPMatrix(float translateX, float translateY, float scaleX, float scaleY, int degree,
+                         int mirror) = 0;
+
     virtual void OnSurfaceDestroyed() = 0;
 };
 

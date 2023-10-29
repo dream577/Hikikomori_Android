@@ -4,80 +4,95 @@
 
 #include "CameraVideoRecorder.h"
 
-CameraVideoRecorder::CameraVideoRecorder(bool isCameraRecorder) {
+CameraVideoRecorder::CameraVideoRecorder() {
     LOGCATE("CameraVideoRecorder::CameraVideoRecorder")
     m_FormatCtx = nullptr;
-    if (isCameraRecorder) {
-        m_VideoRenderQueue = make_shared<LinkedBlockingQueue<MediaFrame>>(15);
-        m_RenderWindow = make_shared<GLRenderWindow>(this);
-        m_RenderWindow->StartRenderLoop();
-    }
-
-    m_EnableAudio = false;
-    m_EnableVideo = false;
-    m_RecordModeExit = true;
 }
 
-int CameraVideoRecorder::Init() {
-    LOGCATE("CameraVideoRecorder::Init()")
-    int result;
+void CameraVideoRecorder::OnSurfaceCreated(JNIEnv *jniEnv, jobject surface) {
+    m_VideoRenderQueue = make_shared<LinkedBlockingQueue<MediaFrame>>(15);
+    m_RenderWindow = make_shared<GLRenderWindow>(this);
+    m_RenderWindow->StartRenderLoop();
+    m_RenderWindow->OnSurfaceCreated(jniEnv, surface);
+}
 
-    // 申请AVFormatContext，主要是在进行封装格式相关的操作时作为操作上下文的线索
-    result = avformat_alloc_output_context2(&m_FormatCtx, nullptr, nullptr, m_FileName);
-    if (result < 0) {
-        result = avformat_alloc_output_context2(&m_FormatCtx, nullptr, "mp4", m_FileName);
-    }
-    if (result < 0) {
-        LOGCATE("CameraVideoRecorder::Init() avformat_alloc_output_context2 ret=%d", result)
-        goto __EXIT;
-    }
+void CameraVideoRecorder::OnSurfaceChanged(int width, int height) {
+    m_RenderWindow->OnSurfaceChanged(width, height);
+}
 
-    if (m_EnableAudio) {
-        m_AudioEncoder = make_shared<FFAudioEncoder>(AV_CODEC_ID_AAC, m_SampleRate,
-                                                     m_ChannelLayout, 96000);
-        m_AudioEncoder->SetEncodeCallback(this);
-        // 申请存放音频的AVStream
-        m_AudioStream = avformat_new_stream(m_FormatCtx, nullptr);
-        if (m_AudioStream) {
-            m_AudioStream->id = (int) (m_FormatCtx->nb_streams) - 1;
-            result = m_AudioEncoder->OpenCodec(m_AudioStream->codecpar);
-            m_AudioStream->time_base = (AVRational) {1, m_SampleRate};
-        } else {
-            m_EnableAudio = false;
-            LOGCATE("CameraVideoRecorder::Init() open audio encoder error")
-        }
-    }
+void CameraVideoRecorder::OnSurfaceDestroyed() {
+    m_RenderWindow->OnSurfaceDestroyed();
+}
 
-    if (m_EnableVideo) {
-        m_VideoEncoder = make_shared<FFVideoEncoder>(AV_CODEC_ID_H264, m_ImageWidth,
-                                                     m_ImageHeight, m_FrameRate,
-                                                     m_VideoBitRate);
-        m_VideoEncoder->SetEncodeCallback(this);
-        // 申请存放视频的AVStream
-        m_VideoStream = avformat_new_stream(m_FormatCtx, nullptr);
-        if (m_VideoStream) {
-            m_VideoStream->id = (int) (m_FormatCtx->nb_streams) - 1;
-            result = m_VideoEncoder->OpenCodec(m_VideoStream->codecpar);
-            m_VideoStream->time_base = (AVRational) {1, m_FrameRate};
-        } else {
-            m_EnableVideo = false;
-            LOGCATE("CameraVideoRecorder::Init() open video encoder error")
-        }
-    }
-
-    if (!m_EnableVideo && !m_EnableAudio) {
-        // TODO 提示失败
-    }
-
-    __EXIT:
-    return result;
+void CameraVideoRecorder::UpdateMVPMatrix(float translateX, float translateY, float scaleX,
+                                          float scaleY, int degree, int mirror) {
+    m_RenderWindow->UpdateMVPMatrix(translateX, translateY, scaleX, scaleY, degree, mirror);
 }
 
 void CameraVideoRecorder::StartRecord() {
     LOGCATE("CameraVideoRecorder::StartRecord()")
+    if (m_IsRecording) return;
+    // 申请AVFormatContext，主要是在进行封装格式相关的操作时作为操作上下文的线索
+    int result = avformat_alloc_output_context2(&m_FormatCtx, nullptr, nullptr, m_FileName);
+    if (result < 0) {
+        result = avformat_alloc_output_context2(&m_FormatCtx, nullptr, "mp4", m_FileName);
+    }
+    if (result < 0) {
+        LOGCATE("CameraVideoRecorder::StartRecord() avformat_alloc_output_context2 ret=%d", result)
+        return;
+    }
+
+    m_VideoEncoder = make_shared<FFVideoEncoder>(AV_CODEC_ID_H264, m_ImageWidth,
+                                                 m_ImageHeight, m_FrameRate,
+                                                 m_VideoBitRate);
+    m_VideoEncoder->SetEncodeCallback(this);
+    // 申请存放视频的AVStream
+    m_VideoStream = avformat_new_stream(m_FormatCtx, nullptr);
+    if (m_VideoStream) {
+        m_VideoStream->id = (int) (m_FormatCtx->nb_streams) - 1;
+        result = m_VideoEncoder->OpenCodec(m_VideoStream->codecpar);
+        m_VideoStream->time_base = (AVRational) {1, m_FrameRate};
+    }
+    if (result < 0) {
+        m_VideoEncoder.reset();
+        LOGCATE("CameraVideoRecorder::StartRecord() open video encoder error")
+        m_IsRecording = false;
+        goto __EXIT;
+    }
+
+    m_AudioEncoder = make_shared<FFAudioEncoder>(AV_CODEC_ID_AAC, m_SampleRate,
+                                                 m_ChannelLayout, 96000);
+    m_AudioEncoder->SetEncodeCallback(this);
+    // 申请存放音频的AVStream
+    m_AudioStream = avformat_new_stream(m_FormatCtx, nullptr);
+    if (m_AudioStream) {
+        m_AudioStream->id = (int) (m_FormatCtx->nb_streams) - 1;
+        result = m_AudioEncoder->OpenCodec(m_AudioStream->codecpar);
+        m_AudioStream->time_base = (AVRational) {1, m_SampleRate};
+    }
+    if (result < 0) {
+        m_AudioEncoder.reset();
+        LOGCATE("CameraVideoRecorder::StartRecord() open audio encoder error")
+        m_IsRecording = false;
+        goto __EXIT;
+    }
+
+    av_dump_format(m_FormatCtx, 0, m_FilePath, 1);
+    /* open the output file, if needed */
+    if (!(m_FormatCtx->flags & AVFMT_NOFILE)) {
+        result = avio_open(&m_FormatCtx->pb, m_FilePath, AVIO_FLAG_WRITE);
+        if (result < 0) {
+            LOGCATE("CameraVideoRecorder::Init() Could not open '%s': %s", m_FilePath,
+                    av_err2str(result))
+        }
+    }
+
     pthread_attr_t attr;
     pthread_attr_init(&attr);
     pthread_create(&worker, &attr, StartRecordLoop, this);
+
+    __EXIT:
+    return;
 }
 
 void CameraVideoRecorder::InputVideoFrame(uint8_t *data, int width, int height, int format) {
@@ -129,47 +144,43 @@ void CameraVideoRecorder::InputVideoFrame(uint8_t *data, int width, int height, 
     }
 
     frame->type = AVMEDIA_TYPE_VIDEO;
-    if (m_IsCameraRecorder) {
+    if (m_RenderWindow) {
         m_VideoRenderQueue->offer(frame);
-    } else {
+    } else if (m_VideoEncoder && m_IsRecording) {
         m_VideoEncoder->InputFrame(frame);
     }
 }
 
-void
-CameraVideoRecorder::InputAudioFrame(uint8_t *data, int size, int sample_rate, int sample_format,
-                                     int channel_layout) {
-    if (!m_IsAudioRecording) {
+void CameraVideoRecorder::FrameRendFinish(shared_ptr<MediaFrame> frame) {
+//    LOGCATE("CameraVideoRecorder::FrameRendFinish")
+    if (frame && frame->type == AVMEDIA_TYPE_VIDEO) {
+        if (m_VideoEncoder && m_IsRecording) {
+            m_VideoEncoder->InputFrame(frame);
+        }
+    }
+}
+
+void CameraVideoRecorder::InputAudioFrame(uint8_t *data, int size, int sample_rate,
+                                          int sample_format, int channel_layout) {
+    if (!m_IsRecording) {
         delete data;
         return;
     }
-    auto *frame = new MediaFrame();
+    auto frame = make_shared<MediaFrame>();
     frame->plane[0] = data;
     frame->planeSize[0] = size;
     frame->sampleRate = sample_rate;
     frame->sampleFormat = sample_format;
     frame->channelLayout = channel_layout;
     frame->type = AVMEDIA_TYPE_AUDIO;
-
-    int ret = m_AudioEncoder->InputFrame(shared_ptr<MediaFrame>(frame));
-    if (ret < 0) {
-        delete frame;
+    if (m_AudioEncoder && m_IsRecording) {
+        m_AudioEncoder->InputFrame(frame);
     }
 }
-
 
 shared_ptr<MediaFrame> CameraVideoRecorder::GetOneFrame(int type) {
 //    LOGCATE("CameraVideoRecorder::GetOneFrame")
     return m_VideoRenderQueue->poll();
-}
-
-void CameraVideoRecorder::FrameRendFinish(shared_ptr<MediaFrame> frame) {
-//    LOGCATE("CameraVideoRecorder::FrameRendFinish")
-    if (frame && frame->type == AVMEDIA_TYPE_VIDEO) {
-        if (m_IsVideoRecording) {
-            m_VideoEncoder->InputFrame(shared_ptr<MediaFrame>(frame));
-        }
-    }
 }
 
 void CameraVideoRecorder::OnFrameEncoded(AVPacket *pkt, AVMediaType type) {
@@ -200,27 +211,8 @@ void CameraVideoRecorder::OnFrameEncoded(AVPacket *pkt, AVMediaType type) {
 void *CameraVideoRecorder::StartRecordLoop(void *recorder) {
     auto *mRecorder = (CameraVideoRecorder *) recorder;
     int result;
-    mRecorder->m_RecordModeExit;
 
-    av_dump_format(mRecorder->m_FormatCtx, 0, mRecorder->m_FilePath, 1);
-    /* open the output file, if needed */
-    if (!(mRecorder->m_FormatCtx->flags & AVFMT_NOFILE)) {
-        result = avio_open(&mRecorder->m_FormatCtx->pb, mRecorder->m_FilePath, AVIO_FLAG_WRITE);
-        if (result < 0) {
-            LOGCATE("CameraVideoRecorder::Init() Could not open '%s': %s", mRecorder->m_FilePath,
-                    av_err2str(result))
-        }
-    }
-
-    // 根据是否启用音频录制、视频录制来设置是否正在录制的标志位
-    mRecorder->m_IsVideoRecording = mRecorder->m_EnableVideo;
-    mRecorder->m_IsAudioRecording = mRecorder->m_EnableAudio;
-    LOGCATE("CameraVideoRecorder::StartRecordLoop  %d, %d", mRecorder->m_IsAudioRecording,
-            mRecorder->m_IsVideoRecording)
-
-    if (!mRecorder->m_IsVideoRecording && !mRecorder->m_IsAudioRecording) {
-        goto __EXIT;
-    }
+    mRecorder->m_IsRecording = true;
 
     // 写文件头
     result = avformat_write_header(mRecorder->m_FormatCtx, nullptr);
@@ -231,19 +223,13 @@ void *CameraVideoRecorder::StartRecordLoop(void *recorder) {
     }
 
     // 音频或者视频录制未结束
-    while (mRecorder->m_IsAudioRecording || mRecorder->m_IsVideoRecording) {
-        if (mRecorder->m_IsAudioRecording && mRecorder->m_IsVideoRecording) {
-            double videoTimestamp = mRecorder->m_VideoEncoder->GetCurrentTimestamp();
-            double audioTimestamp = mRecorder->m_AudioEncoder->GetCurrentTimestamp();
-            if (videoTimestamp < audioTimestamp) {
-                mRecorder->m_VideoEncoder->EncodeFrame();
-            } else {
-                mRecorder->m_AudioEncoder->EncodeFrame();
-            }
-        } else if (mRecorder->m_IsAudioRecording) {
-            mRecorder->m_AudioEncoder->EncodeFrame();
-        } else {
+    while (mRecorder->m_IsRecording) {
+        double videoTimestamp = mRecorder->m_VideoEncoder->GetCurrentTimestamp();
+        double audioTimestamp = mRecorder->m_AudioEncoder->GetCurrentTimestamp();
+        if (videoTimestamp < audioTimestamp) {
             mRecorder->m_VideoEncoder->EncodeFrame();
+        } else {
+            mRecorder->m_AudioEncoder->EncodeFrame();
         }
     }
 
@@ -254,8 +240,7 @@ void *CameraVideoRecorder::StartRecordLoop(void *recorder) {
     avio_close(mRecorder->m_FormatCtx->pb);
 
     __EXIT:
-    mRecorder->RealStopRecord();
-    mRecorder->m_RecordModeExit = true;
+    mRecorder->_RealStopRecord();
     return nullptr;
 }
 
@@ -263,21 +248,17 @@ void *CameraVideoRecorder::StartRecordLoop(void *recorder) {
 void CameraVideoRecorder::StopRecord() {
     LOGCATE("CameraVideoRecorder::StopRecord() start")
     // 设置停止标志位并等待直到录制真正结束
-    m_IsVideoRecording = false;
-    m_IsAudioRecording = false;
+    m_IsRecording = false;
     if (m_VideoEncoder) {
         m_VideoEncoder->Flush();
     }
     if (m_AudioEncoder) {
         m_AudioEncoder->Flush();
     }
-    while (!m_RecordModeExit) {
-        av_usleep(1000 * 10);
-    }
     LOGCATE("CameraVideoRecorder::StopRecord() end")
 }
 
-void CameraVideoRecorder::RealStopRecord() {
+void CameraVideoRecorder::_RealStopRecord() {
     if (m_VideoStream) {
         m_VideoStream = nullptr;
     }
@@ -294,10 +275,7 @@ void CameraVideoRecorder::RealStopRecord() {
         avformat_free_context(m_FormatCtx);
         m_FormatCtx = nullptr;
     }
-    // 重置标志位
-    m_EnableVideo = false;
-    m_EnableAudio = false;
-    LOGCATE("CameraVideoRecorder::RealStopRecord()")
+    LOGCATE("CameraVideoRecorder::_RealStopRecord()")
 }
 
 int CameraVideoRecorder::UnInit() {

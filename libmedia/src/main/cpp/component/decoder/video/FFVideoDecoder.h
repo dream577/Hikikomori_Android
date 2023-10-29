@@ -16,7 +16,7 @@ private:
     AVPixelFormat pix_fmt;
 
 protected:
-    std::shared_ptr<MediaFrame> OnFrameAvailable(AVFrame *frame) override;
+    std::shared_ptr<MediaFrame> _OnFrameAvailable(AVFrame *frame) override;
 
 public:
     FFVideoDecoder(DecoderCallback *callback, double timebase);

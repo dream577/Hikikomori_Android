@@ -33,7 +33,7 @@ protected:
 
     const AVCodec *m_Codec;
 
-    virtual std::shared_ptr<MediaFrame> OnFrameAvailable(AVFrame *frame) = 0;
+    virtual std::shared_ptr<MediaFrame> _OnFrameAvailable(AVFrame *frame) = 0;
 
 public:
 
@@ -56,7 +56,7 @@ public:
         }
 
         while ((result = avcodec_receive_frame(m_CodecCtx, m_Frame)) == 0) {
-            std::shared_ptr<MediaFrame> frame = OnFrameAvailable(m_Frame);
+            std::shared_ptr<MediaFrame> frame = _OnFrameAvailable(m_Frame);
             frameCount++;
             m_Callback->OnFrameReady(frame);
         }

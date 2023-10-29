@@ -39,6 +39,8 @@ public:
     virtual void OnSurfaceCreated(JNIEnv *jniEnv, jobject surface) override;
     virtual void OnSurfaceChanged(int width, int height) override;
     virtual void OnSurfaceDestroyed() override;
+    virtual void UpdateMVPMatrix(float translateX, float translateY, float scaleX, float scaleY, int degree,
+                         int mirror) override;
 
     /* 解码相关 */
     virtual void OnFrameReady(std::shared_ptr<MediaFrame> frame) override;

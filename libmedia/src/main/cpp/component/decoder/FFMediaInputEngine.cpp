@@ -29,54 +29,54 @@ int FFMediaInputEngine::init() {
         LOGCATE("FFMediaInputEngine::init m_DecoderCallback==nullptr")
         return result;
     }
-    do {
-        // 创建封装格式上下文
-        m_AVFormatContext = avformat_alloc_context();
+    // 创建封装格式上下文
+    m_AVFormatContext = avformat_alloc_context();
 
-        // 打开文件
-        result = avformat_open_input(&m_AVFormatContext, m_Path, nullptr, nullptr);
-        if (result < 0) {
-            LOGCATE("FFMediaInputEngine::init avformat_open_input fail")
-            break;
-        }
+    // 打开文件
+    result = avformat_open_input(&m_AVFormatContext, m_Path, nullptr, nullptr);
+    if (result < 0) {
+        LOGCATE("FFMediaInputEngine::init avformat_open_input fail")
+        goto __EXIT;
+    }
 
-        // 获取音视频流信息
-        result = avformat_find_stream_info(m_AVFormatContext, nullptr);
-        if (result < 0) {
-            LOGCATE("FFMediaInputEngine::init avformat_find_stream_info fail")
-            break;
-        }
+    // 获取音视频流信息
+    result = avformat_find_stream_info(m_AVFormatContext, nullptr);
+    if (result < 0) {
+        LOGCATE("FFMediaInputEngine::init avformat_find_stream_info fail")
+        goto __EXIT;
+    }
 
-        m_VideoStreamIndex = av_find_best_stream(m_AVFormatContext, AVMEDIA_TYPE_VIDEO, -1,
-                                                 -1, nullptr, 0);
-        LOGCATE("FFMediaInputEngine::FindVideoStream, video_stream_index=%d", m_VideoStreamIndex)
-        if (m_VideoStreamIndex >= 0) {
-            AVCodecParameters *m_VideoParam = m_AVFormatContext->streams[m_VideoStreamIndex]->codecpar;
-            double m_VideoTimebase = av_q2d(
-                    m_AVFormatContext->streams[m_VideoStreamIndex]->time_base);
-            m_VideoCodec = make_shared<FFVideoDecoder>(m_DecoderCallback, m_VideoTimebase);
-            result = m_VideoCodec->OpenCodec(m_VideoParam);
-            m_VideoEnable = result >= 0;
-        }
+    m_VideoStreamIndex = av_find_best_stream(m_AVFormatContext, AVMEDIA_TYPE_VIDEO, -1,
+                                             -1, nullptr, 0);
+    LOGCATE("FFMediaInputEngine::FindVideoStream, video_stream_index=%d", m_VideoStreamIndex)
+    if (m_VideoStreamIndex >= 0) {
+        AVCodecParameters *m_VideoParam = m_AVFormatContext->streams[m_VideoStreamIndex]->codecpar;
+        double m_VideoTimebase = av_q2d(
+                m_AVFormatContext->streams[m_VideoStreamIndex]->time_base);
+        m_VideoCodec = make_shared<FFVideoDecoder>(m_DecoderCallback, m_VideoTimebase);
+        result = m_VideoCodec->OpenCodec(m_VideoParam);
+        m_VideoEnable = result >= 0;
+    }
 
-        m_AudioStreamIndex = av_find_best_stream(m_AVFormatContext, AVMEDIA_TYPE_AUDIO, -1,
-                                                 -1, nullptr, 0);
-        if (m_AudioStreamIndex >= 0) {
-            LOGCATE("FFMediaInputEngine::FindAudioStream, audio_stream_index=%d",
-                    m_AudioStreamIndex)
-            AVCodecParameters *m_AudioParam = m_AVFormatContext->streams[m_AudioStreamIndex]->codecpar;
-            double m_AudioTimebase = av_q2d(
-                    m_AVFormatContext->streams[m_AudioStreamIndex]->time_base);
-            m_AudioCodec = make_shared<FFAudioDecoder>(m_DecoderCallback, m_AudioTimebase);
-            result = m_AudioCodec->OpenCodec(m_AudioParam);
-            m_AudioEnable = result >= 0;
-        }
-        m_Pkt = av_packet_alloc();
+    m_AudioStreamIndex = av_find_best_stream(m_AVFormatContext, AVMEDIA_TYPE_AUDIO, -1,
+                                             -1, nullptr, 0);
+    if (m_AudioStreamIndex >= 0) {
+        LOGCATE("FFMediaInputEngine::FindAudioStream, audio_stream_index=%d",
+                m_AudioStreamIndex)
+        AVCodecParameters *m_AudioParam = m_AVFormatContext->streams[m_AudioStreamIndex]->codecpar;
+        double m_AudioTimebase = av_q2d(
+                m_AVFormatContext->streams[m_AudioStreamIndex]->time_base);
+        m_AudioCodec = make_shared<FFAudioDecoder>(m_DecoderCallback, m_AudioTimebase);
+        result = m_AudioCodec->OpenCodec(m_AudioParam);
+        m_AudioEnable = result >= 0;
+    }
+    m_Pkt = av_packet_alloc();
 
-        if (m_EventCallback) {
-            m_EventCallback->PostMessage(EVENT_DURATION, m_AVFormatContext->duration / 1000);
-        }
-    } while (false);
+    if (m_EventCallback) {
+        m_EventCallback->PostMessage(EVENT_DURATION, m_AVFormatContext->duration / 1000);
+    }
+
+    __EXIT:
     return result;
 }
 

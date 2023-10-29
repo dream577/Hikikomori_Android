@@ -10,7 +10,7 @@ extern "C"
 JNIEXPORT jlong JNICALL
 Java_com_violet_libmedia_recoder_video_camera_CameraRecordClient_native_1Init(JNIEnv *env,
                                                                               jobject thiz) {
-    auto *recorder = new CameraVideoRecorder(true);
+    auto *recorder = new CameraVideoRecorder();
     return reinterpret_cast<jlong>(recorder);
 }
 extern "C"
@@ -24,16 +24,12 @@ Java_com_violet_libmedia_recoder_video_camera_CameraRecordClient_native_1startRe
 
         auto builder = recorder->Rebuild(recorder);
         // TODO 此处的数据暂时先固定写死
-        recorder = builder->UseCameraRecord(true)
-                ->EnableAudioRecord(true)
-                ->EnableVideoRecord(true)
-                ->ConfigAudioParam(44100, AV_SAMPLE_FMT_FLTP, AV_CH_LAYOUT_STEREO)
+        recorder = builder->ConfigAudioParam(44100, AV_SAMPLE_FMT_FLTP, AV_CH_LAYOUT_STEREO)
                 ->ConfigVideoParam(1920, 1080, AV_PIX_FMT_YUV420P,
                                    (int64_t) 1920 * 1080 * 15 * 24 * 3 / 2, 15)
                 ->InitFile(mPath, mName)
                 ->Build();
         delete builder;
-        recorder->Init();
         recorder->StartRecord();
         env->ReleaseStringUTFChars(path, mPath);
         env->ReleaseStringUTFChars(name, mName);
@@ -82,8 +78,7 @@ Java_com_violet_libmedia_recoder_video_camera_CameraRecordClient_native_1onSurfa
         JNIEnv *env, jobject thiz, jlong record_handler, jobject surface) {
     if (record_handler != 0) {
         auto *recorder = reinterpret_cast<CameraVideoRecorder *>(record_handler);
-        shared_ptr<GLRenderWindow> render = recorder->GetVideoRender();
-        render->OnSurfaceCreated(env, surface);
+        recorder->OnSurfaceCreated(env, surface);
     }
 }
 extern "C"
@@ -92,8 +87,7 @@ Java_com_violet_libmedia_recoder_video_camera_CameraRecordClient_native_1onSurfa
         JNIEnv *env, jobject thiz, jlong record_handler, jint width, jint height) {
     if (record_handler != 0) {
         auto *recorder = reinterpret_cast<CameraVideoRecorder *>(record_handler);
-        shared_ptr<GLRenderWindow> render = recorder->GetVideoRender();
-        render->OnSurfaceChanged(width, height);
+        recorder->OnSurfaceChanged(width, height);
     }
 }
 extern "C"
@@ -102,9 +96,8 @@ Java_com_violet_libmedia_recoder_video_camera_CameraRecordClient_native_1onSurfa
         JNIEnv *env, jobject thiz, jlong record_handler) {
     if (record_handler != 0) {
         auto *recorder = reinterpret_cast<CameraVideoRecorder *>(record_handler);
-        shared_ptr<GLRenderWindow> render = recorder->GetVideoRender();
         recorder->StopRecord();
-        render->OnSurfaceDestroyed();
+        recorder->OnSurfaceDestroyed();
     }
 }
 
@@ -115,8 +108,7 @@ Java_com_violet_libmedia_recoder_video_camera_CameraRecordClient_native_1SetTran
         jfloat scale_x, jfloat scale_y, jint degree, jint mirror) {
     if (record_handle != 0) {
         auto *recorder = reinterpret_cast<CameraVideoRecorder *>(record_handle);
-        shared_ptr<GLRenderWindow> render = recorder->GetVideoRender();
-        render->UpdateMVPMatrix(translate_x, translate_y, scale_x, scale_y, degree, mirror);
+        recorder->UpdateMVPMatrix(translate_x, translate_y, scale_x, scale_y, degree, mirror);
     }
 }
 extern "C"

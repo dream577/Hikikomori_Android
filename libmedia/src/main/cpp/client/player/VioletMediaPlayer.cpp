@@ -62,6 +62,14 @@ void VioletMediaPlayer::OnSurfaceDestroyed() {
     }
 }
 
+void VioletMediaPlayer::UpdateMVPMatrix(float translateX, float translateY, float scaleX,
+                                        float scaleY, int degree, int mirror) {
+    if (m_ImageRenderWindow) {
+        m_ImageRenderWindow->UpdateMVPMatrix(translateX, translateY, scaleX,
+                                             scaleY, degree, mirror);
+    }
+}
+
 void VioletMediaPlayer::Play() {
     LOGCATE("VioletMediaPlayer::Play")
     if (GetPlayerState() != STATE_UNKNOWN) return;
