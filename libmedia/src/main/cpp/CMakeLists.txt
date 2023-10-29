@@ -27,8 +27,6 @@ include_directories(
         component/sync
 )
 
-link_directories(${jniLibs}/${ANDROID_ABI})
-
 file(GLOB src-files
         ${CMAKE_SOURCE_DIR}/*cpp
         ${CMAKE_SOURCE_DIR}/egl/*cpp
@@ -61,6 +59,51 @@ add_library( # Sets the name of the library.
         ${src-files}
 )
 
+add_library(x264 SHARED IMPORTED)
+set_target_properties(x264
+        PROPERTIES IMPORTED_LOCATION
+        ${jniLibs}/${ANDROID_ABI}/libx264.so)
+
+add_library(mp3lame SHARED IMPORTED)
+set_target_properties(mp3lame
+        PROPERTIES IMPORTED_LOCATION
+        ${jniLibs}/${ANDROID_ABI}/libmp3lame.so)
+
+add_library(fdk-aac SHARED IMPORTED)
+set_target_properties(fdk-aac
+        PROPERTIES IMPORTED_LOCATION
+        ${jniLibs}/${ANDROID_ABI}/libfdk-aac.so)
+
+add_library(avcodec SHARED IMPORTED)
+set_target_properties(avcodec
+        PROPERTIES IMPORTED_LOCATION
+        ${jniLibs}/${ANDROID_ABI}/libavcodec.so)
+
+add_library(avfilter SHARED IMPORTED)
+set_target_properties(avfilter
+        PROPERTIES IMPORTED_LOCATION
+        ${jniLibs}/${ANDROID_ABI}/libavfilter.so)
+
+add_library(avformat SHARED IMPORTED)
+set_target_properties(avformat
+        PROPERTIES IMPORTED_LOCATION
+        ${jniLibs}/${ANDROID_ABI}/libavformat.so)
+
+add_library(avutil SHARED IMPORTED)
+set_target_properties(avutil
+        PROPERTIES IMPORTED_LOCATION
+        ${jniLibs}/${ANDROID_ABI}/libavutil.so)
+
+add_library(swresample SHARED IMPORTED)
+set_target_properties(swresample
+        PROPERTIES IMPORTED_LOCATION
+        ${jniLibs}/${ANDROID_ABI}/libswresample.so)
+
+add_library(swscale SHARED IMPORTED)
+set_target_properties(swscale
+        PROPERTIES IMPORTED_LOCATION
+        ${jniLibs}/${ANDROID_ABI}/libswscale.so)
+
 set(third-party-libs
         x264
         fdk-aac
@@ -85,7 +128,6 @@ target_link_libraries( # Specifies the target library.
 
         # Links the target library to the log library
         # included in the NDK.
-        ${log-lib}
         ${third-party-libs}
         ${native-libs}
 )
