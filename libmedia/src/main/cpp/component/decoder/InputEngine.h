@@ -27,13 +27,13 @@ private:
 
 protected:
 
-    virtual int init() = 0;
+    virtual int _Init() = 0;
 
-    virtual void decodeLoop() = 0;
+    virtual void _DecodeLoop() = 0;
 
-    virtual void seekToPosition(float timestamp) = 0;
+    virtual void _SeekToPosition(float timestamp) = 0;
 
-    virtual int unInit() = 0;
+    virtual int _UnInit() = 0;
 
 public:
     InputEngine() {
@@ -71,19 +71,19 @@ public:
         looper::handle(what, data);
         switch (what) {
             case MESSAGE_INIT:
-                result = init();
+                result = _Init();
                 sem_post(&runBlock);
                 break;
             case MESSAGE_LOOP:
-                decodeLoop();
+                _DecodeLoop();
                 break;
             case MESSAGE_SEEK: {
                 float *ts = (float *) data;
-                seekToPosition(*ts);
+                _SeekToPosition(*ts);
                 break;
             }
             case MESSAGE_UNINIT:
-                unInit();
+                _UnInit();
                 break;
         }
     }

@@ -109,7 +109,7 @@ std::shared_ptr<MediaFrame> FFVideoDecoder::_OnFrameAvailable(AVFrame *avFrame) 
                     f->plane[2] = f->plane[0] + yPlaneByteSize + uvPlaneByteSize / 2;
                     return f;
                 };
-                pool = make_shared<LinkedBlockingQueue<MediaFrame>>(15, fun);
+                pool = make_shared<LinkedBlockingQueue<MediaFrame>>(VIDEO_FRAME_POOL_SIZE, fun);
             }
 
             frame = pool->poll();
@@ -147,7 +147,7 @@ std::shared_ptr<MediaFrame> FFVideoDecoder::_OnFrameAvailable(AVFrame *avFrame) 
                     f->plane[2] = nullptr;
                     return f;
                 };
-                pool = make_shared<LinkedBlockingQueue<MediaFrame>>(15, fun);
+                pool = make_shared<LinkedBlockingQueue<MediaFrame>>(VIDEO_FRAME_POOL_SIZE, fun);
             }
 
             frame = pool->poll();

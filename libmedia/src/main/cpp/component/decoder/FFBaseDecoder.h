@@ -47,22 +47,16 @@ public:
 
     virtual int OpenCodec(const AVCodecParameters *param) = 0;
 
-    int Decode(AVPacket *packet) {
-        int result = 0;
-        int frameCount = 0;
-        result = avcodec_send_packet(m_CodecCtx, packet);
-        if (result == AVERROR_EOF) {
-            goto __EXIT;
-        }
+    int DecodeInput(AVPacket *packet) {
+        return avcodec_send_packet(m_CodecCtx, packet);
+    }
 
+    int DecodeOutput() {
+        int result;
         while ((result = avcodec_receive_frame(m_CodecCtx, m_Frame)) == 0) {
             std::shared_ptr<MediaFrame> frame = _OnFrameAvailable(m_Frame);
-            frameCount++;
             m_Callback->OnFrameReady(frame);
         }
-
-        __EXIT:
-        if (result == 0 || frameCount > 0) return frameCount;
         return result;
     }
 

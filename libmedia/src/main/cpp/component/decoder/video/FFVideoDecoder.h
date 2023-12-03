@@ -7,6 +7,8 @@
 
 #include "decoder/FFBaseDecoder.h"
 
+#define VIDEO_FRAME_POOL_SIZE  30
+
 static enum AVPixelFormat hw_pix_fmt;
 
 class FFVideoDecoder : public FFBaseDecoder {

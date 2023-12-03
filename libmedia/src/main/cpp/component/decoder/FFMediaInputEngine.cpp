@@ -12,16 +12,13 @@ FFMediaInputEngine::FFMediaInputEngine(const char *path, shared_ptr<MediaEventCa
     this->m_DecoderCallback = decoder_cb;
     strcpy(m_Path, path);
 
-    m_VideoEnable = false;
     m_VideoStreamIndex = 0;
-
-    m_AudioEnable = false;
     m_AudioStreamIndex = 0;
 
     m_Pkt = nullptr;
 }
 
-int FFMediaInputEngine::init() {
+int FFMediaInputEngine::_Init() {
     LOGCATE("FFMediaInputEngine::init")
     int result = 0;
 
@@ -55,7 +52,6 @@ int FFMediaInputEngine::init() {
                 m_AVFormatContext->streams[m_VideoStreamIndex]->time_base);
         m_VideoCodec = make_shared<FFVideoDecoder>(m_DecoderCallback, m_VideoTimebase);
         result = m_VideoCodec->OpenCodec(m_VideoParam);
-        m_VideoEnable = result >= 0;
     }
 
     m_AudioStreamIndex = av_find_best_stream(m_AVFormatContext, AVMEDIA_TYPE_AUDIO, -1,
@@ -68,7 +64,6 @@ int FFMediaInputEngine::init() {
                 m_AVFormatContext->streams[m_AudioStreamIndex]->time_base);
         m_AudioCodec = make_shared<FFAudioDecoder>(m_DecoderCallback, m_AudioTimebase);
         result = m_AudioCodec->OpenCodec(m_AudioParam);
-        m_AudioEnable = result >= 0;
     }
     m_Pkt = av_packet_alloc();
 
@@ -80,8 +75,8 @@ int FFMediaInputEngine::init() {
     return result;
 }
 
-void FFMediaInputEngine::decodeLoop() {
-//    LOGCATE("FFMediaInputEngine::decodeLoop");
+void FFMediaInputEngine::_DecodeLoop() {
+    LOGCATE("FFMediaInputEngine::_DecodeLoop");
     while (m_DecoderCallback->GetPlayerState() == STATE_PAUSE) {
         av_usleep(10 * 1000);
     }
@@ -114,44 +109,50 @@ int FFMediaInputEngine::DecoderLoopOnce() {
         m_SeekPosition = -1;   // 重置seek标志位
     }
 
-    int result = av_read_frame(m_AVFormatContext, m_Pkt);
-    while (result == 0) {
-        if (m_Pkt->stream_index == m_VideoStreamIndex && m_VideoEnable) {
-            result = m_VideoCodec->Decode(m_Pkt);
-        }
-        if (m_Pkt->stream_index == m_AudioStreamIndex && m_AudioEnable) {
-            result = m_AudioCodec->Decode(m_Pkt);
+    shared_ptr<FFBaseDecoder> codec;
+    int result = 0;
+    while (true) {
+        result = av_read_frame(m_AVFormatContext, m_Pkt);
+        if (result < 0) break;
+        if (m_Pkt->stream_index == m_VideoStreamIndex) {
+            codec = m_VideoCodec;
+        } else {
+            codec = m_AudioCodec;
         }
 
-        switch (result) {
-            case AVERROR(EAGAIN):
-                av_packet_unref(m_Pkt);
-                result = av_read_frame(m_AVFormatContext, m_Pkt);
+        result = codec->DecodeInput(m_Pkt);
+        if (result < 0) {
+            if (result == AVERROR(EAGAIN)) {
+                codec->DecodeOutput();
+                codec->DecodeInput(m_Pkt);
+            } else if (result == AVERROR_EOF) {
+                // AVERROR_EOF \ AVERROR(EINVAL) \ AVERROR(ENOMEM)
                 break;
-            case AVERROR_EOF:
-                m_DecoderCallback->SetPlayerState(STATE_PAUSE); // 暂停整个播放器
-                goto __EXIT;
-            case AVERROR(EINVAL):
-            case AVERROR_INPUT_CHANGED:
-            case AVERROR(ENOMEM):
+            }
+        }
+
+        result = codec->DecodeOutput();
+        if (result < 0) {
+            if (result == AVERROR(EAGAIN)) {
+
+            } else {
+                // AVERROR_EOF \ AVERROR(EINVAL) \ AVERROR_INPUT_CHANGED
                 break;
-            default:
-                break;
+            }
         }
 
         if (m_DecoderCallback->GetPlayerState() == STATE_STOP) break;
     }
 
-    __EXIT:
     av_packet_unref(m_Pkt);
     return result;
 }
 
-void FFMediaInputEngine::seekToPosition(float timestamp) {
+void FFMediaInputEngine::_SeekToPosition(float timestamp) {
     m_SeekPosition = timestamp;
 }
 
-int FFMediaInputEngine::unInit() {
+int FFMediaInputEngine::_UnInit() {
     if (m_Pkt) {
         av_packet_free(&m_Pkt);
         m_Pkt = nullptr;

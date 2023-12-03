@@ -31,28 +31,26 @@ private:
     /*
      * Video相关
      */
-    shared_ptr<FFVideoDecoder> m_VideoCodec;
+    shared_ptr<FFBaseDecoder> m_VideoCodec;
     int m_VideoStreamIndex;
-    bool m_VideoEnable;
 
     /*
      * Audio相关
      */
-    shared_ptr<FFAudioDecoder> m_AudioCodec;
+    shared_ptr<FFBaseDecoder> m_AudioCodec;
     int m_AudioStreamIndex;
-    bool m_AudioEnable;
 
     AVPacket *m_Pkt;
 
 protected:
 
-    int init() override;
+    int _Init() override;
 
-    virtual int unInit() override;
+    virtual int _UnInit() override;
 
-    virtual void decodeLoop() override;
+    virtual void _DecodeLoop() override;
 
-    virtual void seekToPosition(float timestamp) override;
+    virtual void _SeekToPosition(float timestamp) override;
 
     virtual int DecoderLoopOnce();
 
