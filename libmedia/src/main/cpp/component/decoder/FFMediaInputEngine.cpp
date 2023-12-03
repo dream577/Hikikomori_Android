@@ -80,13 +80,13 @@ void FFMediaInputEngine::_DecodeLoop() {
     while (m_DecoderCallback->GetPlayerState() == STATE_PAUSE) {
         av_usleep(10 * 1000);
     }
-    if (DecoderLoopOnce() == AVERROR_EOF || m_DecoderCallback->GetPlayerState() == STATE_STOP) {
+    if (_DecoderLoopOnce() == AVERROR_EOF || m_DecoderCallback->GetPlayerState() == STATE_STOP) {
         disableAutoLoop();
     }
 }
 
-int FFMediaInputEngine::DecoderLoopOnce() {
-//    LOGCATE("FFMediaInputEngine::DecoderLoopOnce")
+int FFMediaInputEngine::_DecoderLoopOnce() {
+//    LOGCATE("FFMediaInputEngine::_DecoderLoopOnce")
     if (m_SeekPosition > 0) {
         auto seek_target = static_cast<int64_t>(m_SeekPosition * 1000000);
         int64_t seek_min = INT64_MIN;
@@ -104,7 +104,7 @@ int FFMediaInputEngine::DecoderLoopOnce() {
             std::shared_ptr<MediaFrame> frame = std::make_shared<MediaFrame>();
             frame->flag = FLAG_SEEK_FINISH;
             m_DecoderCallback->OnFrameReady(frame);
-            LOGCATE("FFMediaInputEngine::DecoderLoopOnce success while seeking")
+            LOGCATE("FFMediaInputEngine::_DecoderLoopOnce success while seeking")
         }
         m_SeekPosition = -1;   // 重置seek标志位
     }

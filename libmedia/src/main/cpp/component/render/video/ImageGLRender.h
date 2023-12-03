@@ -32,11 +32,11 @@ private:
     TransformMatrix m_transformMatrix;
     mat4 m_MVPMatrix;
 
-    void DrawGRBA(MediaFrame *frame);
+    void _DrawGRBA(MediaFrame *frame);
 
-    void DrawI420(MediaFrame *frame);
+    void _DrawI420(MediaFrame *frame);
 
-    void DrawNV12orNV21(MediaFrame *frame);
+    void _DrawNV12orNV21(MediaFrame *frame);
 
 public:
     void OnDrawFrame(MediaFrame *frame);

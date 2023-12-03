@@ -26,7 +26,6 @@ enum AudioRenderMessage {
 
 class OpenSLAudioRender : public looper {
 private:
-    int mLoopMsg = MESSAGE_AUDIO_RENDER_LOOP;
     RenderCallback *m_Callback;
 
     SLObjectItf m_EngineObj;
@@ -41,23 +40,23 @@ private:
     sem_t runBlock;
     volatile bool stop;
 
-    int CreateEngine();
+    int _CreateEngine();
 
-    int CreateOutputMixer();
+    int _CreateOutputMixer();
 
-    int CreateAudioPlayer();
+    int _CreateAudioPlayer();
 
-    void onStartPlay();
+    void _StartPlay();
 
-    static void audioPlayerCallback(SLAndroidSimpleBufferQueueItf bufferQueue, void *context);
+    static void _AudioPlayCallback(SLAndroidSimpleBufferQueueItf bufferQueue, void *context);
 
-    void playAudioFrame();
+    void _LoopOnce();
 
-    void onPlayFrame();
+    void _EnqueueAudioFrame();
 
-    int init();
+    int _Init();
 
-    int unInit();
+    int _UnInit();
 
 protected:
     virtual void handle(int what, void *data) override;

@@ -52,7 +52,7 @@ protected:
 
     virtual void _SeekToPosition(float timestamp) override;
 
-    virtual int DecoderLoopOnce();
+    virtual int _DecoderLoopOnce();
 
 public:
 

@@ -11,10 +11,10 @@
 #include "GLRenderWindow.h"
 #include "VideoNativeRender.h"
 #include "OpenSLAudioRender.h"
-#include "CustomContainer.h"
+#include "LinkedBlockingQueue.h"
 
 #include "MediaSync.h"
-#include "CustomContainer.h"
+#include "LinkedBlockingQueue.h"
 
 class VioletMediaPlayer : public MediaPlayer, public DecoderCallback,
                           public AVSurface, public RenderCallback {

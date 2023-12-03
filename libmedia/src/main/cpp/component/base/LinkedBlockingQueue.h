@@ -2,8 +2,8 @@
 // Created by bronyna on 2023/7/15.
 //
 
-#ifndef HIKIKOMORI_CUSTOMCONTAINER_H
-#define HIKIKOMORI_CUSTOMCONTAINER_H
+#ifndef HIKIKOMORI_LINKEDBLOCKINGQUEUE_H
+#define HIKIKOMORI_LINKEDBLOCKINGQUEUE_H
 
 #include <mutex>
 #include <condition_variable>
@@ -167,4 +167,4 @@ class RecyclerPool {
 };
 
 
-#endif //HIKIKOMORI_CUSTOMCONTAINER_H
+#endif //HIKIKOMORI_LINKEDBLOCKINGQUEUE_H

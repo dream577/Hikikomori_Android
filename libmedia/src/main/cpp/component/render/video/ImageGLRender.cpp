@@ -91,7 +91,7 @@ GLfloat textureCoords[] = {
 };
 
 void ImageGLRender::OnSurfaceCreated(JNIEnv *jniEnv, jobject surface) {
-    LOGCATE("ImageGLRender::onSurfaceCreated");
+    LOGCATE("ImageGLRender::_OnSurfaceCreated");
     m_Program = GLUtils::CreateProgram(vShaderStr, fShaderStr);
 
     if (!m_Program) {
@@ -142,7 +142,7 @@ void ImageGLRender::OnSurfaceChanged(int width, int height) {
 }
 
 void ImageGLRender::UpdateMVPMatrix(int angleX, int angleY, float scaleX, float scaleY) {
-    LOGCATE("ImageGLRender::updateMVPMatrix [%d,%d,%f,%f]", angleX, angleY, scaleX, scaleY)
+    LOGCATE("ImageGLRender::_UpdateMVPMatrix [%d,%d,%f,%f]", angleX, angleY, scaleX, scaleY)
 
 
     angleX = angleX % 360;
@@ -175,7 +175,7 @@ void ImageGLRender::UpdateMVPMatrix(int angleX, int angleY, float scaleX, float 
 
 void ImageGLRender::UpdateMVPMatrix(float translateX, float translateY, float scaleX,
                                     float scaleY, int degree, int mirror) {
-    LOGCATE("ImageGLRender::updateMVPMatrix [angleX=%d,angleY=%d,scaleX=%f,scaleY=%f,degree=%d,mirror=%d]",
+    LOGCATE("ImageGLRender::_UpdateMVPMatrix [angleX=%d,angleY=%d,scaleX=%f,scaleY=%f,degree=%d,mirror=%d]",
             m_transformMatrix.angleX, m_transformMatrix.angleY, m_transformMatrix.scaleX,
             m_transformMatrix.scaleY, m_transformMatrix.degree, m_transformMatrix.mirror)
 
@@ -236,7 +236,7 @@ void ImageGLRender::UpdateMVPMatrix(float translateX, float translateY, float sc
                            glm::vec3(m_transformMatrix.translateX, m_transformMatrix.translateY,
                                      0.0f));
 
-    LOGCATE("ImageGLRender::updateMVPMatrix rotate %d,%.2f,%0.5f,%0.5f,%0.5f,%0.5f,",
+    LOGCATE("ImageGLRender::_UpdateMVPMatrix rotate %d,%.2f,%0.5f,%0.5f,%0.5f,%0.5f,",
             m_transformMatrix.degree, fRotate,
             m_transformMatrix.translateX, m_transformMatrix.translateY,
             fFactorX * m_transformMatrix.scaleX, fFactorY * m_transformMatrix.scaleY);
@@ -245,17 +245,17 @@ void ImageGLRender::UpdateMVPMatrix(float translateX, float translateY, float sc
 }
 
 void ImageGLRender::OnDrawFrame(MediaFrame *frame) {
-//    LOGCATE("ImageGLRender::onDrawFrame");
+//    LOGCATE("ImageGLRender::_OnDrawFrame");
     switch (frame->format) {
         case AV_PIX_FMT_RGBA:
-            DrawGRBA(frame);
+            _DrawGRBA(frame);
             break;
         case AV_PIX_FMT_YUV420P:
-            DrawI420(frame);
+            _DrawI420(frame);
             break;
         case AV_PIX_FMT_NV12:
         case AV_PIX_FMT_NV21:
-            DrawNV12orNV21(frame);
+            _DrawNV12orNV21(frame);
             break;
         default:;
     }
@@ -278,55 +278,55 @@ void ImageGLRender::OnDrawFrame(MediaFrame *frame) {
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (const void *) 0);
 }
 
-void ImageGLRender::DrawGRBA(MediaFrame *videoFrame) {
+void ImageGLRender::_DrawGRBA(MediaFrame *frame) {
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, m_TextureId[0]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, videoFrame->width, videoFrame->height,
-                 0, GL_RGBA, GL_UNSIGNED_BYTE, videoFrame->plane[0]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, frame->width, frame->height,
+                 0, GL_RGBA, GL_UNSIGNED_BYTE, frame->plane[0]);
     glBindTexture(GL_TEXTURE_2D, GL_NONE);
 }
 
-void ImageGLRender::DrawI420(MediaFrame *videoFrame) {
+void ImageGLRender::_DrawI420(MediaFrame *frame) {
     //upload Y plane data
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, m_TextureId[0]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, videoFrame->width,
-                 videoFrame->height, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE,
-                 videoFrame->plane[0]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, frame->width,
+                 frame->height, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE,
+                 frame->plane[0]);
     glBindTexture(GL_TEXTURE_2D, GL_NONE);
 
     //update U plane data
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, m_TextureId[1]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, videoFrame->width >> 1,
-                 videoFrame->height >> 1, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE,
-                 videoFrame->plane[1]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, frame->width >> 1,
+                 frame->height >> 1, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE,
+                 frame->plane[1]);
     glBindTexture(GL_TEXTURE_2D, GL_NONE);
 
     //update V plane data
     glActiveTexture(GL_TEXTURE2);
     glBindTexture(GL_TEXTURE_2D, m_TextureId[2]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, videoFrame->width >> 1,
-                 videoFrame->height >> 1, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE,
-                 videoFrame->plane[2]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, frame->width >> 1,
+                 frame->height >> 1, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE,
+                 frame->plane[2]);
     glBindTexture(GL_TEXTURE_2D, GL_NONE);
 }
 
-void ImageGLRender::DrawNV12orNV21(MediaFrame *videoFrame) {
+void ImageGLRender::_DrawNV12orNV21(MediaFrame *frame) {
     // update Y plane data
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, m_TextureId[0]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, videoFrame->width,
-                 videoFrame->height, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE,
-                 videoFrame->plane[0]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, frame->width,
+                 frame->height, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE,
+                 frame->plane[0]);
     glBindTexture(GL_TEXTURE_2D, GL_NONE);
 
     // update UV plane data
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, m_TextureId[1]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE_ALPHA, videoFrame->width >> 1,
-                 videoFrame->height >> 1, 0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE,
-                 videoFrame->plane[1]
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE_ALPHA, frame->width >> 1,
+                 frame->height >> 1, 0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE,
+                 frame->plane[1]
     );
     glBindTexture(GL_TEXTURE_2D, GL_NONE);
 }
@@ -338,7 +338,7 @@ void ImageGLRender::OnSurfaceDestroyed() {
     if (m_Program != GL_NONE) {
         glDeleteProgram(m_Program);
     }
-    LOGCATE("ImageGLRender::onSurfaceDestroyed finish")
+    LOGCATE("ImageGLRender::_OnSurfaceDestroyed finish")
 }
 
 

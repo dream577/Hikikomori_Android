@@ -65,7 +65,7 @@ void GLRenderWindow::StartRenderLoop() {
     enableAutoLoop(&mLoopMsg);
 }
 
-void GLRenderWindow::onSurfaceCreated() {
+void GLRenderWindow::_OnSurfaceCreated() {
     m_Surface = new VioletEGLSurface();
     m_Surface->createWindowSurface(m_NativeWindow);
     m_Surface->makeCurrent();
@@ -75,8 +75,8 @@ void GLRenderWindow::onSurfaceCreated() {
     glRender->OnSurfaceCreated(m_JniEnv, m_JavaSurface);
 }
 
-void GLRenderWindow::onSurfaceChanged() {
-    LOGCATE("GLRenderWindow::onSurfaceChanged [w,h]=%d, %d", mWindowWidth, mWindowHeight);
+void GLRenderWindow::_OnSurfaceChanged() {
+    LOGCATE("GLRenderWindow::_OnSurfaceChanged [w,h]=%d, %d", mWindowWidth, mWindowHeight);
     int x, y;
     int rWidth, rHeight;
     int iWidth, iHeight;
@@ -105,7 +105,7 @@ void GLRenderWindow::onSurfaceChanged() {
         rHeight = wHeight;
     }
 
-    LOGCATE("GLRenderWindow::onSurfaceChanged window[w,h]=[%d, %d], image[w, h]=[%d, %d], real[w, h]=[%d, %d]",
+    LOGCATE("GLRenderWindow::_OnSurfaceChanged window[w,h]=[%d, %d], image[w, h]=[%d, %d], real[w, h]=[%d, %d]",
             mWindowWidth, mWindowHeight, mImageWidth, mImageHeight, rWidth, rHeight);
 
     x = (mWindowWidth - rWidth) / 2;
@@ -120,20 +120,20 @@ void GLRenderWindow::onSurfaceChanged() {
     }
 }
 
-void GLRenderWindow::updateMVPMatrix(float translateX, float translateY, float scaleX, float scaleY,
-                                     int degree, int mirror) {
+void GLRenderWindow::_UpdateMVPMatrix(float translateX, float translateY, float scaleX, float scaleY,
+                                      int degree, int mirror) {
     if (glRender) {
         glRender->UpdateMVPMatrix(translateX, translateY, scaleX, scaleY, degree, mirror);
     }
 }
 
-void GLRenderWindow::onDrawFrame() {
+void GLRenderWindow::_OnDrawFrame() {
     shared_ptr<MediaFrame> frame =  m_Callback->GetOneFrame(AVMEDIA_TYPE_VIDEO);
     if (frame) {
         if (frame->width != mImageWidth || frame->height != mImageHeight) {
             mImageWidth = frame->width;
             mImageHeight = frame->height;
-            onSurfaceChanged();
+            _OnSurfaceChanged();
         }
         if (glRender) {
             glRender->OnDrawFrame(frame.get());
@@ -145,7 +145,7 @@ void GLRenderWindow::onDrawFrame() {
     }
 }
 
-void GLRenderWindow::onSurfaceDestroyed() {
+void GLRenderWindow::_OnSurfaceDestroyed() {
     if (glRender) {
         glRender->OnSurfaceDestroyed();
         glRender = nullptr;
@@ -159,7 +159,7 @@ void GLRenderWindow::onSurfaceDestroyed() {
         ANativeWindow_release(m_NativeWindow);
         m_NativeWindow = nullptr;
     }
-    LOGCATE("GLRenderWindow::onSurfaceDestroyed finish")
+    LOGCATE("GLRenderWindow::_OnSurfaceDestroyed finish")
 }
 
 void GLRenderWindow::Destroy() {
@@ -175,27 +175,27 @@ void GLRenderWindow::handle(int what, void *data) {
     looper::handle(what, data);
     switch (what) {
         case MESSAGE_ON_SURFACE_CREATED: {
-            onSurfaceCreated();
+            _OnSurfaceCreated();
             break;
         }
         case MESSAGE_ON_SURFACE_CHANGED: {
-            onSurfaceChanged();
+            _OnSurfaceChanged();
             break;
         }
         case MESSAGE_IMAGE_RENDER_LOOP: {
-            onDrawFrame();
+            _OnDrawFrame();
             break;
         }
         case MESSAGE_IMAGE_DRAW_FRAME: {
-            onDrawFrame();
+            _OnDrawFrame();
             break;
         }
         case MESSAGE_UPDATE_MATRIX: {
-            updateMVPMatrix(mTranslateX, mTranslateY, mScaleX, mScaleY, mDegree, mMirror);
+            _UpdateMVPMatrix(mTranslateX, mTranslateY, mScaleX, mScaleY, mDegree, mMirror);
             break;
         }
         case MESSAGE_ON_SURFACE_DESTROY: {
-            onSurfaceDestroyed();
+            _OnSurfaceDestroyed();
             break;
         }
         default:;

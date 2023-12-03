@@ -11,25 +11,25 @@ OpenSLAudioRender::OpenSLAudioRender(RenderCallback *callback) {
     stop = false;
 }
 
-int OpenSLAudioRender::init() {
+int OpenSLAudioRender::_Init() {
     LOGCATE("OpenSLRender::init");
     int result = -1;
     do {
-        result = CreateEngine();
+        result = _CreateEngine();
         if (result != SL_RESULT_SUCCESS) {
-            LOGCATE("OpenSLRender::Init CreateEngine fail. result=%d", result);
+            LOGCATE("OpenSLRender::Init _CreateEngine fail. result=%d", result);
             break;
         }
 
-        result = CreateOutputMixer();
+        result = _CreateOutputMixer();
         if (result != SL_RESULT_SUCCESS) {
-            LOGCATE("OpenSLRender::Init CreateOutputMixer fail. result=%d", result);
+            LOGCATE("OpenSLRender::Init _CreateOutputMixer fail. result=%d", result);
             break;
         }
 
-        result = CreateAudioPlayer();
+        result = _CreateAudioPlayer();
         if (result != SL_RESULT_SUCCESS) {
-            LOGCATE("OpenSLRender::Init CreateAudioPlayer fail. result=%d", result);
+            LOGCATE("OpenSLRender::Init _CreateAudioPlayer fail. result=%d", result);
             break;
         }
 
@@ -42,7 +42,7 @@ int OpenSLAudioRender::init() {
     return result;
 }
 
-int OpenSLAudioRender::unInit() {
+int OpenSLAudioRender::_UnInit() {
     if (m_AudioPlayerObj) {
         (*m_AudioPlayerPlay)->SetPlayState(m_AudioPlayerPlay, SL_PLAYSTATE_STOPPED);
         m_AudioPlayerPlay = nullptr;
@@ -68,8 +68,8 @@ int OpenSLAudioRender::unInit() {
     return 0;
 }
 
-int OpenSLAudioRender::CreateEngine() {
-    LOGCATE("OpenSLAudioRender::CreateEngine")
+int OpenSLAudioRender::_CreateEngine() {
+    LOGCATE("OpenSLAudioRender::_CreateEngine")
     SLresult result = SL_RESULT_SUCCESS;
     do {
         SLEngineOption engineOptions[] = {
@@ -77,25 +77,25 @@ int OpenSLAudioRender::CreateEngine() {
         result = slCreateEngine(&m_EngineObj, sizeof(engineOptions) / sizeof(engineOptions[0]),
                                 engineOptions, 0, nullptr, nullptr);
         if (result != SL_RESULT_SUCCESS) {
-            LOGCATE("OpenSLAudioRender::CreateEngine slCreateEngine fail. result=%d", result);
+            LOGCATE("OpenSLAudioRender::_CreateEngine slCreateEngine fail. result=%d", result);
             break;
         }
         result = (*m_EngineObj)->Realize(m_EngineObj, SL_BOOLEAN_FALSE);
         if (result != SL_RESULT_SUCCESS) {
-            LOGCATE("OpenSLAudioRender::CreateEngine Realize fail. result=%d", result);
+            LOGCATE("OpenSLAudioRender::_CreateEngine Realize fail. result=%d", result);
             break;
         }
         result = (*m_EngineObj)->GetInterface(m_EngineObj, SL_IID_ENGINE, &m_EngineEngine);
         if (result != SL_RESULT_SUCCESS) {
-            LOGCATE("OpenSLAudioRender::CreateEngine GetInterface fail. result=%d", result);
+            LOGCATE("OpenSLAudioRender::_CreateEngine GetInterface fail. result=%d", result);
             break;
         }
     } while (false);
     return result;
 }
 
-int OpenSLAudioRender::CreateOutputMixer() {
-    LOGCATE("OpenSLAudioRender::CreateOutputMixer")
+int OpenSLAudioRender::_CreateOutputMixer() {
+    LOGCATE("OpenSLAudioRender::_CreateOutputMixer")
     SLresult result = SL_RESULT_SUCCESS;
     do {
         const SLInterfaceID mids[1] = {SL_IID_ENVIRONMENTALREVERB};
@@ -103,21 +103,21 @@ int OpenSLAudioRender::CreateOutputMixer() {
 
         result = (*m_EngineEngine)->CreateOutputMix(m_EngineEngine, &m_OutputMixObj, 1, mids, mreq);
         if (result != SL_RESULT_SUCCESS) {
-            LOGCATE("OpenSLAudioRender::CreateEngine CreateOutputMix fail. result=%d", result);
+            LOGCATE("OpenSLAudioRender::_CreateEngine CreateOutputMix fail. result=%d", result);
             break;
         }
 
         result = (*m_OutputMixObj)->Realize(m_OutputMixObj, SL_BOOLEAN_FALSE);
         if (result != SL_RESULT_SUCCESS) {
-            LOGCATE("OpenSLAudioRender::CreateEngine Realize fail. result=%d", result);
+            LOGCATE("OpenSLAudioRender::_CreateEngine Realize fail. result=%d", result);
             break;
         }
     } while (false);
     return result;
 }
 
-int OpenSLAudioRender::CreateAudioPlayer() {
-    LOGCATE("OpenSLAudioRender::CreateAudioPlayer")
+int OpenSLAudioRender::_CreateAudioPlayer() {
+    LOGCATE("OpenSLAudioRender::_CreateAudioPlayer")
     SLDataLocator_AndroidSimpleBufferQueue android_queue = {SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE,
                                                             2};
     SLDataFormat_PCM pcm = {
@@ -144,47 +144,47 @@ int OpenSLAudioRender::CreateAudioPlayer() {
                                                       &dataSource, &slDataSink, 3, ids, req);
 
         if (result != SL_RESULT_SUCCESS) {
-            LOGCATE("OpenSLAudioRender::CreateEngine CreateAudioPlayer fail. result=%d", result);
+            LOGCATE("OpenSLAudioRender::_CreateEngine _CreateAudioPlayer fail. result=%d", result);
             break;
         }
 
         result = (*m_AudioPlayerObj)->Realize(m_AudioPlayerObj, SL_BOOLEAN_FALSE);
         if (result != SL_RESULT_SUCCESS) {
-            LOGCATE("OpenSLAudioRender::CreateEngine Realize fail. result=%d", result);
+            LOGCATE("OpenSLAudioRender::_CreateEngine Realize fail. result=%d", result);
             break;
         }
 
         result = (*m_AudioPlayerObj)->GetInterface(m_AudioPlayerObj, SL_IID_PLAY,
                                                    &m_AudioPlayerPlay);
         if (result != SL_RESULT_SUCCESS) {
-            LOGCATE("OpenSLAudioRender::CreateEngine GetInterface fail. result=%d", result);
+            LOGCATE("OpenSLAudioRender::_CreateEngine GetInterface fail. result=%d", result);
             break;
         }
 
         result = (*m_AudioPlayerObj)->GetInterface(m_AudioPlayerObj, SL_IID_BUFFERQUEUE,
                                                    &m_BufferQueue);
         if (result != SL_RESULT_SUCCESS) {
-            LOGCATE("OpenSLAudioRender::CreateEngine GetInterface fail. result=%d", result);
+            LOGCATE("OpenSLAudioRender::_CreateEngine GetInterface fail. result=%d", result);
             break;
         }
 
-        result = (*m_BufferQueue)->RegisterCallback(m_BufferQueue, audioPlayerCallback, this);
+        result = (*m_BufferQueue)->RegisterCallback(m_BufferQueue, _AudioPlayCallback, this);
         if (result != SL_RESULT_SUCCESS) {
-            LOGCATE("OpenSLAudioRender::CreateEngine RegisterCallback fail. result=%d", result);
+            LOGCATE("OpenSLAudioRender::_CreateEngine RegisterCallback fail. result=%d", result);
             break;
         }
 
         result = (*m_AudioPlayerObj)->GetInterface(m_AudioPlayerObj, SL_IID_VOLUME,
                                                    &m_AudioPlayerVolume);
         if (result != SL_RESULT_SUCCESS) {
-            LOGCATE("OpenSLAudioRender::CreateEngine GetInterface fail. result=%d", result);
+            LOGCATE("OpenSLAudioRender::_CreateEngine GetInterface fail. result=%d", result);
             break;
         }
     } while (false);
     return result;
 }
 
-void OpenSLAudioRender::onPlayFrame() {
+void OpenSLAudioRender::_EnqueueAudioFrame() {
     shared_ptr<MediaFrame> frame = m_Callback->GetOneFrame(AVMEDIA_TYPE_AUDIO);
     if (frame && !stop) {
         (*m_BufferQueue)->Enqueue(m_BufferQueue, frame->plane[0], frame->planeSize[0]);
@@ -193,17 +193,17 @@ void OpenSLAudioRender::onPlayFrame() {
 }
 
 void
-OpenSLAudioRender::audioPlayerCallback(SLAndroidSimpleBufferQueueItf bufferQueue, void *context) {
+OpenSLAudioRender::_AudioPlayCallback(SLAndroidSimpleBufferQueueItf bufferQueue, void *context) {
     auto *audioRender = (OpenSLAudioRender *) (context);
-    audioRender->playAudioFrame();
+    audioRender->_LoopOnce();
 }
 
-void OpenSLAudioRender::onStartPlay() {
+void OpenSLAudioRender::_StartPlay() {
     (*m_AudioPlayerPlay)->SetPlayState(m_AudioPlayerPlay, SL_PLAYSTATE_PLAYING);
-    audioPlayerCallback(m_BufferQueue, this);
+    _AudioPlayCallback(m_BufferQueue, this);
 }
 
-void OpenSLAudioRender::playAudioFrame() {
+void OpenSLAudioRender::_LoopOnce() {
     post(MESSAGE_AUDIO_RENDER_LOOP, nullptr);
 }
 
@@ -211,21 +211,21 @@ void OpenSLAudioRender::handle(int what, void *data) {
     looper::handle(what, data);
     switch (what) {
         case MESSAGE_AUDIO_RENDER_INIT:
-            result = init();
+            result = _Init();
             sem_post(&runBlock);
             break;
         case MESSAGE_AUDIO_RENDER_START : {
-            onStartPlay();
+            _StartPlay();
             break;
         }
         case MESSAGE_AUDIO_RENDER_LOOP:
-            onPlayFrame();
+            _EnqueueAudioFrame();
             break;
         case MESSAGE_CHANGE_VOLUME:
 
             break;
         case MESSAGE_AUDIO_RENDER_UNINIT:
-            unInit();
+            _UnInit();
             break;
     }
 }

@@ -22,10 +22,10 @@ void VideoNativeRender::onSurfaceChanged(int width, int height) {
         mRenderWidth = mWindowHeight * mImageWidth / mImageHeight;
         mRenderHeight = mWindowHeight;
     }
-    LOGCATE("VideoNativeRender::onSurfaceChanged m_NativeWindow=%p, video[w,h]=[%d, %d]",
+    LOGCATE("VideoNativeRender::_OnSurfaceChanged m_NativeWindow=%p, video[w,h]=[%d, %d]",
             m_NativeWindow, mImageWidth, mImageHeight)
 
-    LOGCATE("VideoNativeRender::onSurfaceChanged window[w,h]=[%d, %d],DstSize[w, h]=[%d, %d]",
+    LOGCATE("VideoNativeRender::_OnSurfaceChanged window[w,h]=[%d, %d],DstSize[w, h]=[%d, %d]",
             mWindowWidth, mWindowHeight, mRenderWidth, mRenderHeight);
     ANativeWindow_setBuffersGeometry(m_NativeWindow, mRenderWidth, mRenderHeight,
                                      WINDOW_FORMAT_RGBA_8888);
@@ -46,7 +46,7 @@ void VideoNativeRender::onSurfaceChanged(int width, int height) {
 }
 
 void VideoNativeRender::onDrawFrame() {
-    LOGCATE("VideoNativeRender::onDrawFrame");
+    LOGCATE("VideoNativeRender::_OnDrawFrame");
     shared_ptr<MediaFrame> p =  m_Callback->GetOneFrame(AVMEDIA_TYPE_VIDEO);
     MediaFrame *frame = p.get();
     if (m_NativeWindow == nullptr || frame == nullptr) return;
@@ -68,7 +68,7 @@ void VideoNativeRender::onDrawFrame() {
 }
 
 void VideoNativeRender::onSurfaceDestroyed() {
-    LOGCATE("VideoNativeRender::onSurfaceDestroyed start")
+    LOGCATE("VideoNativeRender::_OnSurfaceDestroyed start")
 }
 
 int VideoNativeRender::init() {

@@ -89,7 +89,7 @@ void CameraVideoRecorder::StartRecord() {
 
     pthread_attr_t attr;
     pthread_attr_init(&attr);
-    pthread_create(&worker, &attr, StartRecordLoop, this);
+    pthread_create(&worker, &attr, _StartRecordLoop, this);
 
     __EXIT:
     return;
@@ -208,7 +208,7 @@ void CameraVideoRecorder::OnFrameEncoded(AVPacket *pkt, AVMediaType type) {
     av_interleaved_write_frame(m_FormatCtx, pkt);
 }
 
-void *CameraVideoRecorder::StartRecordLoop(void *recorder) {
+void *CameraVideoRecorder::_StartRecordLoop(void *recorder) {
     auto *mRecorder = (CameraVideoRecorder *) recorder;
     int result;
 
@@ -217,7 +217,7 @@ void *CameraVideoRecorder::StartRecordLoop(void *recorder) {
     // 写文件头
     result = avformat_write_header(mRecorder->m_FormatCtx, nullptr);
     if (result < 0) {
-        LOGCATE("CameraVideoRecorder::StartRecordLoop Error occurred when opening output file: %s",
+        LOGCATE("CameraVideoRecorder::_StartRecordLoop Error occurred when opening output file: %s",
                 av_err2str(result))
         goto __EXIT;
     }
@@ -235,7 +235,7 @@ void *CameraVideoRecorder::StartRecordLoop(void *recorder) {
 
     // 写文件尾
     av_write_trailer(mRecorder->m_FormatCtx);
-    LOGCATE("CameraVideoRecorder::StartRecordLoop record finish, save as: %s",
+    LOGCATE("CameraVideoRecorder::_StartRecordLoop record finish, save as: %s",
             mRecorder->m_FilePath)
     avio_close(mRecorder->m_FormatCtx->pb);
 

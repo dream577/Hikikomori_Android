@@ -7,7 +7,7 @@
 
 #include "Callback.h"
 #include "GLRenderWindow.h"
-#include "CustomContainer.h"
+#include "LinkedBlockingQueue.h"
 #include "FFVideoEncoder.h"
 #include "FFAudioEncoder.h"
 
@@ -49,7 +49,7 @@ private:
 
     void _RealStopRecord();
 
-    static void *StartRecordLoop(void *recorder);
+    static void *_StartRecordLoop(void *recorder);
 
 public:
 

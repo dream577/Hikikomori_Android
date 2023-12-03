@@ -73,16 +73,16 @@ private:
     VioletEGLSurface *m_Surface = nullptr;
     ImageGLRender *glRender = nullptr;
 
-    void onSurfaceCreated();
+    void _OnSurfaceCreated();
 
-    void onSurfaceChanged();
+    void _OnSurfaceChanged();
 
-    void updateMVPMatrix(float translateX, float translateY, float scaleX, float scaleY, int degree,
-                         int mirror);
+    void _UpdateMVPMatrix(float translateX, float translateY, float scaleX, float scaleY, int degree,
+                          int mirror);
 
-    void onDrawFrame();
+    void _OnDrawFrame();
 
-    void onSurfaceDestroyed();
+    void _OnSurfaceDestroyed();
 
     void handle(int what, void *data) override;
 };
