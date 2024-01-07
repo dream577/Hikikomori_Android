@@ -42,6 +42,7 @@
         </activity>
         <activity
             android:name=".view.media.file.FileActivity"
+            android:theme="@style/Theme.Material3.Light.NoActionBar"
             android:exported="false">
             <meta-data
                 android:name="android.app.lib_name"
