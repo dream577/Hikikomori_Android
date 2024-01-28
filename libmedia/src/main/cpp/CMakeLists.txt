@@ -6,45 +6,18 @@ set(projectName moonmedia)
 project(${projectName})
 
 include_directories(
-        ${jniLibs}/include
+        libs/include
+        core/include
+        client/include
         glm
         utils
-        component
-        egl
-        egl/eglexample
-        client/player
-        client/recorder
-        component/base
-        component/decoder
-        component/decoder/audio
-        component/decoder/video
-        component/encoder
-        component/encoder/audio
-        component/encoder/video
-        component/render
-        component/render/audio
-        component/render/video
-        component/sync
+        eglexample
 )
 
 file(GLOB src-files
-        ${CMAKE_SOURCE_DIR}/*cpp
-        ${CMAKE_SOURCE_DIR}/egl/*cpp
-        ${CMAKE_SOURCE_DIR}/egl/eglexample/*cpp
+        ${CMAKE_SOURCE_DIR}/core/*cpp
+        ${CMAKE_SOURCE_DIR}/eglexample/*cpp
         ${CMAKE_SOURCE_DIR}/client/*cpp
-        ${CMAKE_SOURCE_DIR}/client/recorder/*cpp
-        ${CMAKE_SOURCE_DIR}/client/player/*cpp
-        ${CMAKE_SOURCE_DIR}/component/base/*cpp
-        ${CMAKE_SOURCE_DIR}/component/decoder/*cpp
-        ${CMAKE_SOURCE_DIR}/component/decoder/audio/*cpp
-        ${CMAKE_SOURCE_DIR}/component/decoder/video/*cpp
-        ${CMAKE_SOURCE_DIR}/component/render/*cpp
-        ${CMAKE_SOURCE_DIR}/component/render/audio/*cpp
-        ${CMAKE_SOURCE_DIR}/component/render/video/*cpp
-        ${CMAKE_SOURCE_DIR}/component/encoder/*cpp
-        ${CMAKE_SOURCE_DIR}/component/encoder/audio/*cpp
-        ${CMAKE_SOURCE_DIR}/component/encoder/video/*cpp
-        ${CMAKE_SOURCE_DIR}/component/sync/*cpp
         ${CMAKE_SOURCE_DIR}/nativeapi/*cpp
         ${CMAKE_SOURCE_DIR}/utils/*cpp
 )

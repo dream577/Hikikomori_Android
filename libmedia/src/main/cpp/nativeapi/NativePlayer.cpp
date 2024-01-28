@@ -26,7 +26,7 @@ Java_com_violet_libmedia_VioletVideoClient_native_1GetFFmpegVersion(JNIEnv *env,
     strcat(strBuffer, avcodec_configuration());
     strcat(strBuffer, "\navcodec_license : ");
     strcat(strBuffer, avcodec_license());
-//    LOGCATE("GetFFmpegVersion\n%s", strBuffer);
+    DEBUG_LOGCATE("test")
 
     return env->NewStringUTF(strBuffer);
 }
